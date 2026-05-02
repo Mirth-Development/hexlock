@@ -1,4 +1,5 @@
 pub mod plugin;
 mod lock;
-mod lockpick;
+pub mod lockpick;
 mod controls;
+mod camera;
