@@ -5,7 +5,7 @@ pub fn spawn_camera(
     camera: Query<Entity, With<Camera>>,
 ) {
     //Code to check that camera already exists in the environment
-    if let Ok(camera) = camera.single() {
+    if let Ok(_) = camera.single() {
         println!("Camera already exists");
         return
     } else {
