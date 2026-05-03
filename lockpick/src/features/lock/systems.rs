@@ -2,16 +2,21 @@ use bevy::prelude::*;
 use bevy::ui::debug::print_ui_layout_tree;
 use rand::prelude::*;
 
-use super::components::LockComponent;
+use super::components::{LockComponent, TumblerChamberComponent};
 use super::resource::{LockSpriteHandles, NumberOfTumblersToSpawn};
-use super::tumblers;
+use super::tumblers::components::TumblerComponent;
+use super::spring::components::SpringComponent;
 
 
 //Hardcoded Sprite Sizes so that they don't have to be sought dynamically, async loading is a pain in the ass
-const START_SPRITE_SIZE : f32= 669.0;
-const TUMBLER_SPRITE_SIZE : f32= 77.0;
-const END_SPRITE_SIZE : f32= 149.0;
+const LOCK_START_SPRITE_WIDTH: f32= 669.0;
+const TUMBLER_CHAMBER_SPRITE_WIDTH: f32= 77.0;
+const LOCK_END_SPRITE_WIDTH: f32= 149.0;
+const TOP_OF_CHAMBER: f32= 298.0;
 
+const HEIGHT_OF_TUMBLER_SPRITE: f32= 92.0;
+
+const HEIGHT_OF_SPRING_SPRITE: f32= 92.0;
 
 
 
@@ -24,12 +29,18 @@ pub fn load_sprite_resources(
     println!("Loading LockSprites!");
 
     let start_handle: Handle<Image> = asset_server.load("images/Test_for_Start_of_Lock.png");
-    let tumbler_handle: Handle<Image> = asset_server.load("images/Test_for_Tumbler_Section.png");
+    let tumbler_section_handle: Handle<Image> = asset_server.load("images/Test_for_Tumbler_Section.png");
     let end_handle: Handle<Image> = asset_server.load("images/Test_for_End_of_Lock.png");
+    let spring_handle: Handle<Image> = asset_server.load("images/Test_for_Spring.png");
+    let tumbler_handle: Handle<Image> = asset_server.load("images/Test_for_Tumbler.png");
     commands.insert_resource(LockSpriteHandles {
         start_sprite: start_handle,
-        tumbler_sprite: tumbler_handle,
-        end_sprite: end_handle
+        tumbler_chamber_sprite: tumbler_section_handle,
+        end_sprite: end_handle,
+        spring_sprite: spring_handle,
+        tumbler_sprite: tumbler_handle
+
+
     });
 
 }
@@ -69,7 +80,7 @@ pub fn spawn_lock(
     let mut offset: f32 = 0.0;
 
     //Sprites are spawned centered on their spawn coords, so the offset calculates where to place them
-    offset += (START_SPRITE_SIZE/2.0);
+    offset += (LOCK_START_SPRITE_WIDTH /2.0);
 
     let mut lock = LockComponent::default();
 
@@ -87,21 +98,39 @@ pub fn spawn_lock(
 
             )
         );
-        offset += START_SPRITE_SIZE/2.0 + TUMBLER_SPRITE_SIZE/2.0;
+        offset += LOCK_START_SPRITE_WIDTH /2.0 + TUMBLER_CHAMBER_SPRITE_WIDTH /2.0;
 
         for x in 1..=lock.num_of_tumblers {
             parent_node.spawn(
                 (
-                    Sprite::from_image(lock_sprite_handles.tumbler_sprite.clone()),
+                    Sprite::from_image(lock_sprite_handles.tumbler_chamber_sprite.clone()),
+                    TumblerChamberComponent,
                     Transform::from_xyz(offset, 0.0, 0.0),
 
                 )
             );
+            parent_node.spawn(
+                (
+                    Sprite::from_image(lock_sprite_handles.tumbler_sprite.clone()),
+                    TumblerComponent,
+                    Transform::from_xyz(offset, TOP_OF_CHAMBER-(HEIGHT_OF_TUMBLER_SPRITE /2.0)-(HEIGHT_OF_SPRING_SPRITE), 0.0),
+
+                )
+            );
+            parent_node.spawn(
+                (
+                    Sprite::from_image(lock_sprite_handles.spring_sprite.clone()),
+                    SpringComponent,
+                    Transform::from_xyz(offset, TOP_OF_CHAMBER-(HEIGHT_OF_SPRING_SPRITE /2.0), 0.0),
+
+                )
+            );
+
             if x != lock.num_of_tumblers {
-            offset += TUMBLER_SPRITE_SIZE;
+            offset += TUMBLER_CHAMBER_SPRITE_WIDTH;
             }
         };
-        offset += TUMBLER_SPRITE_SIZE/2.0 + END_SPRITE_SIZE/2.0;
+        offset += TUMBLER_CHAMBER_SPRITE_WIDTH /2.0 + LOCK_END_SPRITE_WIDTH /2.0;
 
         parent_node.spawn(
             (
@@ -114,7 +143,7 @@ pub fn spawn_lock(
 
             )
         );
-        offset += END_SPRITE_SIZE/2.0;
+        offset += LOCK_END_SPRITE_WIDTH /2.0;
 
     })
         //Add the offset back into the entity by replacing the Transform of the parent
