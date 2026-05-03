@@ -18,5 +18,6 @@ impl Plugin for LockpickFeaturesPlugin {
             // .add_systems(Startup, spawn_lock)
             // .add_systems(Startup, (load_sprites, build_lock.run_if(resource_exists::<LockSprites>).chain()));
             .add_systems(Startup, (load_game_resources, load_sprite_resources, spawn_lock).chain());
+            //.add_systems(Startup, center_lock);
     }
 }

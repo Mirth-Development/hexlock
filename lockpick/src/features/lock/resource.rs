@@ -8,5 +8,5 @@ pub struct LockSpriteHandles {
 }
 
 #[derive(Resource)]
-pub struct NumberOfTumblers (pub i32);
+pub struct NumberOfTumblersToSpawn(pub i32);
 
