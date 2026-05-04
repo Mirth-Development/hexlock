@@ -7,7 +7,7 @@ use crate::features::lockpick::events::LockpickAction;
 use crate::features::rand::systems::load_random_seed;
 use super::lockpick::systems::{handle_lockpick_message, move_to_focused_tumbler, spawn_lockpick};
 use super::camera::systems::spawn_camera;
-use super::lock::systems::{spawn_lock, load_sprite_resources, load_lock_resources};
+use super::lock::systems::{spawn_lock, load_sprite_resources, load_lock_resources, handle_catching_tumblers};
 use super::controls::systems::user_control_system;
 
 
@@ -29,7 +29,7 @@ impl Plugin for LockpickFeaturesPlugin {
             .add_systems(Startup, (load_lock_resources, load_sprite_resources, load_random_seed, spawn_lock).chain())
             // .add_systems(PostUpdate, populate_global_positions.run_if(run_once)) //Global Transform is only populated in PostUpdate
             .add_systems(Update, (move_to_focused_tumbler, tumbler_movement, user_control_system, stretch_to_tumbler))
-            .add_systems(Update, (handle_lockpick_message, handle_pick_message));
+            .add_systems(Update, (handle_lockpick_message, handle_pick_message, handle_catching_tumblers));
             //.add_systems(Startup, center_lock);
     }
 }

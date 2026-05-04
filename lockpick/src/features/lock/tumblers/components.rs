@@ -10,13 +10,16 @@ pub struct TumblerComponent{
 #[derive(Component)]
 pub struct FocusedTumblerComponent;
 
+#[derive(Component)]
+pub struct SetTumblerComponent;
 
 
 impl Default for TumblerComponent {
     fn default() -> Self {
         Self {
             position: 0,
-            velocity: Vec3::splat(0.0)
+            velocity: Vec3::splat(0.0),
+            //set: false //Handle this with a component
         }
     }
 }

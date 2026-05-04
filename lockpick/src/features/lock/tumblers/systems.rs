@@ -2,7 +2,7 @@ use bevy::prelude::*;
 use rand::RngExt;
 use crate::features::lock::spring::systems::HEIGHT_OF_SPRING_SPRITE;
 use crate::features::lock::systems::TOP_OF_CHAMBER;
-use crate::features::lock::tumblers::components::{FocusedTumblerComponent, TumblerComponent};
+use crate::features::lock::tumblers::components::{FocusedTumblerComponent, SetTumblerComponent, TumblerComponent};
 use crate::features::lockpick::events::LockpickAction;
 use crate::features::rand::resources::RandomSeed;
 
@@ -67,16 +67,19 @@ pub const HEIGHT_OF_TUMBLER_SPRITE: f32= 92.0;
 pub fn handle_pick_message(
     mut actions: MessageReader<LockpickAction>,
     mut random: ResMut<RandomSeed>,
-    mut focused_tumbler_query: Query<(&mut Transform, &mut TumblerComponent), With<FocusedTumblerComponent>>
+    mut focused_tumbler_query: Query<(Entity, &mut TumblerComponent), With<FocusedTumblerComponent>>,
+    check_set: Query<(), With<SetTumblerComponent>> //Call all set elements
 
 ){
-    let Ok((mut tumbler_transform, mut tumbler)) = focused_tumbler_query.single_mut() else {return};
+    let Ok((tumbler_entity, mut tumbler)) = focused_tumbler_query.single_mut() else {return};
 
     for action in actions.read(){
         match action {
             LockpickAction::Pick => {
-               let rand = random.RandomNumberGenerator.random_range(0..=2);
-                tumbler.velocity.y = 150.0 + (100.0 * rand as f32);
+                if !check_set.contains(tumbler_entity){
+                    let rand = random.RandomNumberGenerator.random_range(0..=2);
+                    tumbler.velocity.y = 150.0 + (100.0 * rand as f32);
+                }
             }
             _ => {
                 continue

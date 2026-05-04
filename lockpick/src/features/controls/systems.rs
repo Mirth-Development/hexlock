@@ -1,6 +1,6 @@
 use bevy::prelude::*;
+use crate::features::lock::messages::CatchTumbler;
 use crate::features::lockpick::events::LockpickAction;
-use super::super::lock::tumblers::systems::move_tumbler_focus;
 use super::super::lock::components::LockComponent;
 use super::super::lockpick::component::LockpickComponent;
 
@@ -39,6 +39,7 @@ pub fn user_control_system(
     lock_component: Query<(&Transform, &LockComponent)>,
     //mut current_focused_tumbler: ResMut<CurrentFocusedTumbler>,
     mut pick_event: MessageWriter<LockpickAction>,
+    mut tumbler_event: MessageWriter<CatchTumbler>,
     mut exit: MessageWriter<AppExit>
 
 ) {
@@ -62,6 +63,7 @@ pub fn user_control_system(
     }
     if keyboard_input.just_pressed(KeyCode::Space){
         println!("Space Sent!");
+        tumbler_event.write(CatchTumbler::Catch);
     }
     if keyboard_input.just_pressed(KeyCode::Escape){
         exit.write(AppExit::Success);

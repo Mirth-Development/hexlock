@@ -4,5 +4,6 @@ use rand::prelude::*;
 
 #[derive(Resource)]
 pub struct RandomSeed {
-    pub RandomNumberGenerator: StdRng
+    pub RandomNumberGenerator: StdRng,
+    pub seed: u64
 }

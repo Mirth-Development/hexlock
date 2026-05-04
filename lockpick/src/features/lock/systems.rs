@@ -1,10 +1,13 @@
 use bevy::prelude::*;
+use rand::{make_rng, rng};
+use rand::seq::IteratorRandom;
 use crate::features::lock::messages::CatchTumbler;
 use crate::features::lock::spring::systems::HEIGHT_OF_SPRING_SPRITE;
 use crate::features::lock::tumblers::systems::HEIGHT_OF_TUMBLER_SPRITE;
+use crate::features::rand::resources::RandomSeed;
 use super::components::{LockComponent, TumblerChamberComponent};
 use super::resource::{LockSpriteHandles, NumberOfTumblersToSpawn, TumblerSpringPairings};
-use super::tumblers::components::{FocusedTumblerComponent, TumblerComponent};
+use super::tumblers::components::{FocusedTumblerComponent, SetTumblerComponent, TumblerComponent};
 use super::spring::components::SpringComponent;
 
 
@@ -12,7 +15,11 @@ use super::spring::components::SpringComponent;
 const LOCK_START_SPRITE_WIDTH: f32= 669.0;
 const TUMBLER_CHAMBER_SPRITE_WIDTH: f32= 77.0;
 const LOCK_END_SPRITE_WIDTH: f32= 149.0;
+
+const TUMBLER_SET_THRESHOLD: f32= 10.0;
 pub const TOP_OF_CHAMBER: f32= 298.0;
+
+
 
 
 
@@ -184,8 +191,41 @@ pub fn spawn_lock(
 
 }
 
-pub fn handle_catching_lockpick (
-    mut actions: MessageReader<CatchTumbler>
+pub fn handle_catching_tumblers (
+    mut commands: Commands,
+    mut random_seed: ResMut<RandomSeed>,
+    mut actions: MessageReader<CatchTumbler>,
+    mut tumbler_query: Query<(Entity, &mut Transform, &mut TumblerComponent), With<FocusedTumblerComponent>>,
+    mut tumblers: Query<(Entity, &mut TumblerComponent), (With<SetTumblerComponent>, Without<FocusedTumblerComponent>)>
 ) {
+    let Ok((focused_entity, mut focused_tumbler_transform, mut focused_tumbler)) = tumbler_query.single_mut() else {return};
+
+    for action in actions.read(){
+        match action {
+            CatchTumbler::Catch => {
+                if focused_tumbler_transform.translation.y + (HEIGHT_OF_TUMBLER_SPRITE/2.0) >= (TOP_OF_CHAMBER - TUMBLER_SET_THRESHOLD){
+                    //focused_tumbler.set = true;
+                    focused_tumbler.velocity = Vec3::splat(0.0);
+                    focused_tumbler_transform.translation.y = TOP_OF_CHAMBER - (HEIGHT_OF_TUMBLER_SPRITE/2.0);
+                    commands.entity(focused_entity).insert(SetTumblerComponent);
+                } else {
+                    //Break random Tumbler
+                    let picked: Option<(Entity, Mut<TumblerComponent>)> = tumblers.iter_mut().choose(&mut random_seed.RandomNumberGenerator); //Change random here *Can break!
+                    println!("Here");
+                    if let Some((picked_entity, mut picked_tumbler)) = picked {
+                        println!("ARE YOU FUCKING lLISTENING TO ME");
+                        picked_tumbler.velocity = Vec3::new(0.0,-100.0, 0.0);
+                        commands.entity(picked_entity).remove::<SetTumblerComponent>();
+                    }
+                    println!("after");
+                    //If not at the bottom, set massive negative velocity
+                    if focused_tumbler.velocity.y != (TOP_OF_CHAMBER-(HEIGHT_OF_TUMBLER_SPRITE /2.0)-(HEIGHT_OF_SPRING_SPRITE/2.0)){
+                        focused_tumbler.velocity.y = -600.0;
+                    }
+                }
+            }
+        }
+    }
 
 }
+
