@@ -70,15 +70,16 @@ pub fn load_lock_resources(
 //Spawn and Build Lock
 pub fn spawn_lock(
     mut commands: Commands,
-    // lock_query: Query<(&LockComponent, &Transform), With<LockComponent>>,
     lock_sprite_handles: Res<LockSpriteHandles>,
     mut tumbler_spring_pairings: ResMut<TumblerSpringPairings>
 ) {
     //Sanity code
     println!("Building Locks");
     let mut offset: f32 = 0.0;
-    // let mut tumbler: Entity;
-    // let mut spring: Entity;
+    //
+    let mut tumbler_set_timer = Timer::from_seconds(10.0, TimerMode::Once);
+    //Pause timer after creation
+    tumbler_set_timer.pause();
 
     //Sprites are spawned centered on their spawn coords, so the offset calculates where to place them
     offset += (LOCK_START_SPRITE_WIDTH /2.0);
@@ -123,6 +124,7 @@ pub fn spawn_lock(
                         Sprite::from_image(lock_sprite_handles.tumbler_sprite.clone()),
                         TumblerComponent {
                             position: x,
+                            timer: tumbler_set_timer.clone(),
                             ..default()
                         },
                         FocusedTumblerComponent,
@@ -136,6 +138,7 @@ pub fn spawn_lock(
                         Sprite::from_image(lock_sprite_handles.tumbler_sprite.clone()),
                         TumblerComponent {
                             position: x,
+                            timer: tumbler_set_timer.clone(),
                             ..default()
                         },
                         Transform::from_xyz(offset, TOP_OF_CHAMBER-(HEIGHT_OF_TUMBLER_SPRITE /2.0)-(HEIGHT_OF_SPRING_SPRITE), 0.0),
@@ -187,10 +190,10 @@ pub fn spawn_lock(
 
 pub fn handle_catching_tumblers (
     mut commands: Commands,
-    mut random_seed: ResMut<RandomSeed>,
+    //mut random_seed: ResMut<RandomSeed>,
     mut actions: MessageReader<CatchTumbler>,
     mut tumbler_query: Query<(Entity, &mut Transform, &mut TumblerComponent), With<FocusedTumblerComponent>>,
-    mut tumblers: Query<(Entity, &mut TumblerComponent), (With<SetTumblerComponent>, Without<FocusedTumblerComponent>)>
+    //mut tumblers: Query<(Entity, &mut TumblerComponent), (With<SetTumblerComponent>, Without<FocusedTumblerComponent>)>
 ) {
     let Ok((focused_entity, mut focused_tumbler_transform, mut focused_tumbler)) = tumbler_query.single_mut() else {return};
 
@@ -201,19 +204,23 @@ pub fn handle_catching_tumblers (
                     //focused_tumbler.set = true;
                     focused_tumbler.velocity = Vec3::splat(0.0);
                     focused_tumbler_transform.translation.y = TOP_OF_CHAMBER - (HEIGHT_OF_TUMBLER_SPRITE/2.0);
+                    focused_tumbler.timer.reset();
                     commands.entity(focused_entity).insert(SetTumblerComponent);
+
                 } else {
                     //Break random Tumbler
                     //FIX THIS, SEEMS TO BUG ON SINGLE TUMBLER, MOVE TO SEPARATE MESSAGE BASED SYSTEM
-                    let picked: Option<(Entity, Mut<TumblerComponent>)> = tumblers.iter_mut().choose(&mut random_seed.RandomNumberGenerator); //Change random here *Can break!
-                    println!("Here");
-                    if let Some((picked_entity, mut picked_tumbler)) = picked {
-                        println!("ARE YOU FUCKING lLISTENING TO ME");
-                        picked_tumbler.velocity = Vec3::new(0.0,-100.0, 0.0);
-                        commands.entity(picked_entity).remove::<SetTumblerComponent>();
-                    }
-                    println!("after");
+                    // Unneeded for game idea, tied to timer instead.
+                    // let picked: Option<(Entity, Mut<TumblerComponent>)> = tumblers.iter_mut().choose(&mut random_seed.RandomNumberGenerator); //Change random here *Can break!
+                    // if let Some((picked_entity, mut picked_tumbler)) = picked {
+                    //     println!("ARE YOU FUCKING lLISTENING TO ME");
+                    //     picked_tumbler.velocity = Vec3::new(0.0,-100.0, 0.0);
+                    //     commands.entity(picked_entity).remove::<SetTumblerComponent>();
+                    // }
                     //If not at the bottom, set massive negative velocity
+
+                    //Add time/score reducing code here!
+
                     if focused_tumbler.velocity.y != (TOP_OF_CHAMBER-(HEIGHT_OF_TUMBLER_SPRITE /2.0)-(HEIGHT_OF_SPRING_SPRITE/2.0)){
                         focused_tumbler.velocity.y = -600.0;
                     }

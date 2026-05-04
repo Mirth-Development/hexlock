@@ -1,16 +1,11 @@
-use std::arch::x86_64::__cpuid;
-use bevy::ecs::error::panic;
 use bevy::prelude::*;
-use bevy::ui::debug::print_ui_layout_tree;
-use rand::RngExt;
 use crate::features::lock::spring::systems::HEIGHT_OF_SPRING_SPRITE;
 use crate::features::lock::systems::TOP_OF_CHAMBER;
-use crate::features::lock::tumblers::components::{FocusedTumblerComponent, SetTumblerComponent, TumblerComponent};
-use crate::features::lockpick::component::LockpickComponent;
-use crate::features::lockpick::events::LockpickAction;
-use crate::features::rand::resources::RandomSeed;
+use crate::features::lock::tumblers::components::{SetTumblerComponent, TumblerComponent};
+use super::messages::TumblerTimerMessage;
 
 pub const HEIGHT_OF_TUMBLER_SPRITE: f32= 150.0;
+pub const TUMBLER_SET_RELEASE_VELOCITY: f32= -150.0;
 
 pub fn tumbler_movement(
     time: Res<Time>,
@@ -30,3 +25,26 @@ pub fn tumbler_movement(
     }
 
 }
+
+
+pub fn tumbler_timer_finished (
+    mut commands: Commands,
+    mut tumbler_query: Query<(Entity ,&mut TumblerComponent), With<SetTumblerComponent>>,
+) {
+
+    for (tumbler_entity, mut tumbler) in &mut tumbler_query{
+        if tumbler.timer.is_finished(){
+            tumbler.timer.reset();
+            tumbler.timer.pause();
+            tumbler.velocity.y = TUMBLER_SET_RELEASE_VELOCITY;
+            commands.entity(tumbler_entity).remove::<SetTumblerComponent>();
+
+        }
+    }
+}
+
+// pub fn handle_tumbler_set (
+//     mut actions: MessageReader<TumblerTimerMessage>
+// ){
+//
+// }

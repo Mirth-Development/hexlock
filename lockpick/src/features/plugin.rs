@@ -3,7 +3,7 @@ use crate::features::controls::messages::QuitGame;
 use crate::features::lock::messages::CatchTumbler;
 use crate::features::lock::spring::systems::stretch_to_tumbler;
 use crate::features::lock::tumblers::systems::{ tumbler_movement};
-use crate::features::lockpick::events::LockpickAction;
+use crate::features::lockpick::messages::LockpickAction;
 use crate::features::rand::systems::load_random_seed;
 use super::lockpick::systems::{handle_lockpick_message, lockpick_movement, move_to_focused_tumbler, spawn_lockpick};
 use super::camera::systems::spawn_camera;

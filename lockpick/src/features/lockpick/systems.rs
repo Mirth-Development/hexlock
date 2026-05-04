@@ -6,7 +6,7 @@ use crate::features::lock::systems::TOP_OF_CHAMBER;
 use crate::features::lock::tumblers::components::{FocusedTumblerComponent, SetTumblerComponent, TumblerComponent};
 use crate::features::lock::tumblers::systems::HEIGHT_OF_TUMBLER_SPRITE;
 use crate::features::lockpick::component::LockpickComponent;
-use crate::features::lockpick::events::LockpickAction;
+use crate::features::lockpick::messages::LockpickAction;
 use crate::features::rand::resources::RandomSeed;
 
 const LOCKPICK_HEAD_OFFSET: f32 = 1041.0;
@@ -121,6 +121,7 @@ pub fn handle_lockpick_message(
                 LockpickAction::Pick => {
                     if !check_set.contains(focused_entity) {
                         println!("Picking!");
+                        //Remove below section?
                         let rand = random.RandomNumberGenerator.random_range(0..=2); //Random speed selection
                         focused_tumbler.velocity.y = 150.0 + (100.0 * rand as f32);
                         lockpick.is_moving = true;

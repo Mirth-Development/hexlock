@@ -5,6 +5,7 @@ use bevy::prelude::*;
 pub struct TumblerComponent{
     pub position: u32,
     pub velocity: Vec3,
+    pub timer: Timer,
 }
 
 #[derive(Component)]
@@ -19,6 +20,7 @@ impl Default for TumblerComponent {
         Self {
             position: 0,
             velocity: Vec3::splat(0.0),
+            timer: Timer::from_seconds(10.0, TimerMode::Once),
             //set: false //Handle this with a component
         }
     }
