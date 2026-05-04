@@ -1,5 +1,6 @@
 use bevy::prelude::*;
 use super::resources::LockpickType;
+
 //Amount of time before you can activate the lockpick again *unused*
 #[derive(Component)]
 pub struct LockpickTimer{
@@ -24,5 +25,3 @@ impl Default for LockpickComponent {
         }
     }
 }
-
-

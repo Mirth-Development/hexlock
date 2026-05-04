@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 
 #[derive(Message)]
-pub enum  LockpickAction {
+pub enum LockpickAction {
     Pick,
     Left,
     Right

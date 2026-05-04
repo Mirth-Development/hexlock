@@ -1,8 +1,8 @@
 pub mod plugin;
 pub mod lock;
 pub mod lockpick;
+pub mod rand;
 mod controls;
 mod camera;
-pub mod rand;
 mod game_controller;
 mod scene_controller;

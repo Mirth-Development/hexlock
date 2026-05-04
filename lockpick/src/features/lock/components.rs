@@ -1,12 +1,12 @@
 use bevy::prelude::*;
 
+#[derive(Component)]
+pub struct TumblerChamberComponent;
+
 #[derive(Component, Clone, Copy)]
 pub struct LockComponent {
     pub num_of_tumblers: u32,
 }
-
-#[derive(Component)]
-pub struct TumblerChamberComponent;
 
 //Implementations
 impl Default for LockComponent {
