@@ -1,9 +1,15 @@
 use bevy::prelude::*;
-
-use super::lockpick::systems::spawn_lockpick;
+use crate::features::controls::messages::QuitGame;
+use crate::features::lock::messages::CatchTumbler;
+use crate::features::lock::spring::systems::stretch_to_tumbler;
+use crate::features::lock::tumblers::systems::{handle_pick_message, tumbler_movement};
+use crate::features::lockpick::events::LockpickAction;
+use crate::features::rand::systems::load_random_seed;
+use super::lockpick::systems::{handle_lockpick_message, move_to_focused_tumbler, spawn_lockpick};
 use super::camera::systems::spawn_camera;
-use super::lock::resource::LockSpriteHandles;
-use super::lock::systems::{spawn_lock, load_sprite_resources, load_game_resources};
+use super::lock::systems::{spawn_lock, load_sprite_resources, load_lock_resources};
+use super::controls::systems::user_control_system;
+
 
 fn load_plugin() -> () {
     println!("Feature plugin loaded");
@@ -17,7 +23,13 @@ impl Plugin for LockpickFeaturesPlugin {
             .add_systems(Startup, spawn_lockpick)
             // .add_systems(Startup, spawn_lock)
             // .add_systems(Startup, (load_sprites, build_lock.run_if(resource_exists::<LockSprites>).chain()));
-            .add_systems(Startup, (load_game_resources, load_sprite_resources, spawn_lock).chain());
+            .add_message::<LockpickAction>()
+            .add_message::<CatchTumbler>()
+            .add_message::<QuitGame>()
+            .add_systems(Startup, (load_lock_resources, load_sprite_resources, load_random_seed, spawn_lock).chain())
+            // .add_systems(PostUpdate, populate_global_positions.run_if(run_once)) //Global Transform is only populated in PostUpdate
+            .add_systems(Update, (move_to_focused_tumbler, tumbler_movement, user_control_system, stretch_to_tumbler))
+            .add_systems(Update, (handle_lockpick_message, handle_pick_message));
             //.add_systems(Startup, center_lock);
     }
 }
