@@ -1,10 +1,10 @@
 use bevy::prelude::*;
-use bevy::ui::debug::print_ui_layout_tree;
-use rand::prelude::*;
-
+use crate::features::lock::messages::CatchTumbler;
+use crate::features::lock::spring::systems::HEIGHT_OF_SPRING_SPRITE;
+use crate::features::lock::tumblers::systems::HEIGHT_OF_TUMBLER_SPRITE;
 use super::components::{LockComponent, TumblerChamberComponent};
-use super::resource::{LockSpriteHandles, NumberOfTumblersToSpawn};
-use super::tumblers::components::TumblerComponent;
+use super::resource::{LockSpriteHandles, NumberOfTumblersToSpawn, TumblerSpringPairings};
+use super::tumblers::components::{FocusedTumblerComponent, TumblerComponent};
 use super::spring::components::SpringComponent;
 
 
@@ -12,11 +12,9 @@ use super::spring::components::SpringComponent;
 const LOCK_START_SPRITE_WIDTH: f32= 669.0;
 const TUMBLER_CHAMBER_SPRITE_WIDTH: f32= 77.0;
 const LOCK_END_SPRITE_WIDTH: f32= 149.0;
-const TOP_OF_CHAMBER: f32= 298.0;
+pub const TOP_OF_CHAMBER: f32= 298.0;
 
-const HEIGHT_OF_TUMBLER_SPRITE: f32= 92.0;
 
-const HEIGHT_OF_SPRING_SPRITE: f32= 92.0;
 
 
 
@@ -45,7 +43,7 @@ pub fn load_sprite_resources(
 
 }
 
-pub fn load_game_resources(
+pub fn load_lock_resources(
     mut commands: Commands,
     asset_server: Res<AssetServer>
 ){
@@ -54,6 +52,13 @@ pub fn load_game_resources(
 
     //List all resources required for load on startup here
     commands.insert_resource(NumberOfTumblersToSpawn(4));
+    commands.insert_resource(TumblerSpringPairings{
+        array: Vec::new()
+
+    })
+        // commands.insert_resource(TumblerPositionCollection{
+        //     tumbler_positions: Vec::new()
+        // })
 }
 
 // //Spawn Command
@@ -74,10 +79,13 @@ pub fn spawn_lock(
     mut commands: Commands,
     // lock_query: Query<(&LockComponent, &Transform), With<LockComponent>>,
     lock_sprite_handles: Res<LockSpriteHandles>,
+    mut tumbler_spring_pairings: ResMut<TumblerSpringPairings>
 ) {
     //Sanity code
     println!("Building Locks");
     let mut offset: f32 = 0.0;
+    // let mut tumbler: Entity;
+    // let mut spring: Entity;
 
     //Sprites are spawned centered on their spawn coords, so the offset calculates where to place them
     offset += (LOCK_START_SPRITE_WIDTH /2.0);
@@ -109,23 +117,46 @@ pub fn spawn_lock(
 
                 )
             );
-            parent_node.spawn(
-                (
-                    Sprite::from_image(lock_sprite_handles.tumbler_sprite.clone()),
-                    TumblerComponent,
-                    Transform::from_xyz(offset, TOP_OF_CHAMBER-(HEIGHT_OF_TUMBLER_SPRITE /2.0)-(HEIGHT_OF_SPRING_SPRITE), 0.0),
+            let tumbler;
+            if x == 1 {
+                tumbler =parent_node.spawn(
+                    (
+                        Sprite::from_image(lock_sprite_handles.tumbler_sprite.clone()),
+                        TumblerComponent {
+                            position: x,
+                            ..default()
+                        },
+                        FocusedTumblerComponent,
+                        Transform::from_xyz(offset, TOP_OF_CHAMBER-(HEIGHT_OF_TUMBLER_SPRITE /2.0)-(HEIGHT_OF_SPRING_SPRITE), 0.0),
 
-                )
-            );
-            parent_node.spawn(
+                    )
+                ).id();
+            } else {
+                tumbler =parent_node.spawn(
+                    (
+                        Sprite::from_image(lock_sprite_handles.tumbler_sprite.clone()),
+                        TumblerComponent {
+                            position: x,
+                            ..default()
+                        },
+                        Transform::from_xyz(offset, TOP_OF_CHAMBER-(HEIGHT_OF_TUMBLER_SPRITE /2.0)-(HEIGHT_OF_SPRING_SPRITE), 0.0),
+
+                    )
+                ).id();
+            }
+            let spring = parent_node.spawn(
                 (
                     Sprite::from_image(lock_sprite_handles.spring_sprite.clone()),
-                    SpringComponent,
+                    SpringComponent{
+                        position: x
+                    },
                     Transform::from_xyz(offset, TOP_OF_CHAMBER-(HEIGHT_OF_SPRING_SPRITE /2.0), 0.0),
 
                 )
-            );
+            ).id();
 
+
+            tumbler_spring_pairings.array.push((tumbler,spring));
             if x != lock.num_of_tumblers {
             offset += TUMBLER_CHAMBER_SPRITE_WIDTH;
             }
@@ -150,5 +181,11 @@ pub fn spawn_lock(
         .insert(
         Transform::from_xyz( -offset/2.0, 0.0,0.0)
     );
+
+}
+
+pub fn handle_catching_lockpick (
+    mut actions: MessageReader<CatchTumbler>
+) {
 
 }

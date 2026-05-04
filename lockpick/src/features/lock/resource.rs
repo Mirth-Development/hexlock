@@ -1,4 +1,7 @@
+use bevy::ecs::entity::EntityIndex;
 use bevy::prelude::*;
+use crate::features::lock::components::LockComponent;
+use crate::features::lock::tumblers::components::TumblerComponent;
 
 #[derive(Resource)]
 pub struct LockSpriteHandles {
@@ -10,5 +13,10 @@ pub struct LockSpriteHandles {
 }
 
 #[derive(Resource)]
-pub struct NumberOfTumblersToSpawn(pub i32);
+pub struct NumberOfTumblersToSpawn(pub u32);
+
+#[derive(Resource)]
+pub struct TumblerSpringPairings {
+    pub array: Vec<(Entity, Entity)> //Tumbler, Spring
+}
 
