@@ -12,13 +12,16 @@ use super::spring::components::SpringComponent;
 
 
 //Hardcoded Sprite Sizes so that they don't have to be sought dynamically, async loading is a pain in the ass
-const LOCK_START_SPRITE_WIDTH: f32= 669.0;
-const TUMBLER_CHAMBER_SPRITE_WIDTH: f32= 77.0;
-const LOCK_END_SPRITE_WIDTH: f32= 149.0;
+const LOCK_START_SPRITE_WIDTH: f32= 875.0;
+const TUMBLER_CHAMBER_SPRITE_WIDTH: f32= 150.0;
+const LOCK_END_SPRITE_WIDTH: f32= 120.0;
 
 const TUMBLER_SET_THRESHOLD: f32= 10.0;
-pub const TOP_OF_CHAMBER: f32= 298.0;
+pub const TOP_OF_CHAMBER: f32= 399.0;
 
+const LOCK_START_OFFSET: f32 = -170.0;
+
+const LOCK_END_OFFSET: f32 = -80.0;
 
 
 
@@ -33,11 +36,11 @@ pub fn load_sprite_resources(
     //Sanity code
     println!("Loading LockSprites!");
 
-    let start_handle: Handle<Image> = asset_server.load("images/Test_for_Start_of_Lock.png");
-    let tumbler_section_handle: Handle<Image> = asset_server.load("images/Test_for_Tumbler_Section.png");
-    let end_handle: Handle<Image> = asset_server.load("images/Test_for_End_of_Lock.png");
-    let spring_handle: Handle<Image> = asset_server.load("images/Test_for_Spring.png");
-    let tumbler_handle: Handle<Image> = asset_server.load("images/Test_for_Tumbler.png");
+    let start_handle: Handle<Image> = asset_server.load("images/Lock_Start.png");
+    let tumbler_section_handle: Handle<Image> = asset_server.load("images/Lock_Tumbler.png");
+    let end_handle: Handle<Image> = asset_server.load("images/Lock_End.png");
+    let spring_handle: Handle<Image> = asset_server.load("images/Spring.png");
+    let tumbler_handle: Handle<Image> = asset_server.load("images/Head_Medium.png");
     commands.insert_resource(LockSpriteHandles {
         start_sprite: start_handle,
         tumbler_chamber_sprite: tumbler_section_handle,
@@ -53,33 +56,16 @@ pub fn load_sprite_resources(
 pub fn load_lock_resources(
     mut commands: Commands,
     asset_server: Res<AssetServer>
-){
+) {
     //Sanity code
     println!("Loading GameResources!");
 
     //List all resources required for load on startup here
     commands.insert_resource(NumberOfTumblersToSpawn(4));
-    commands.insert_resource(TumblerSpringPairings{
+    commands.insert_resource(TumblerSpringPairings {
         array: Vec::new()
-
-    })
-        // commands.insert_resource(TumblerPositionCollection{
-        //     tumbler_positions: Vec::new()
-        // })
+    });
 }
-
-// //Spawn Command
-// pub fn spawn_lock(mut commands: Commands) {
-//     //Sanity Code
-//     println!("Spawning Lock!");
-//     commands.spawn(
-//         (LockComponent{
-//             num_of_tumblers: 4,
-//         },
-//          Transform::from_translation(Vec3::new(10.0, 0.0, 0.0)),
-//         )
-//     );
-// }
 
 //Spawn and Build Lock
 pub fn spawn_lock(
@@ -97,7 +83,10 @@ pub fn spawn_lock(
     //Sprites are spawned centered on their spawn coords, so the offset calculates where to place them
     offset += (LOCK_START_SPRITE_WIDTH /2.0);
 
-    let mut lock = LockComponent::default();
+    let mut lock = LockComponent {
+        num_of_tumblers: 8, //Max amount for our purposes
+        ..default()
+    };
 
     commands.spawn(
         (
@@ -106,16 +95,18 @@ pub fn spawn_lock(
             Visibility::default()
         )
     ).with_children(|parent_node| {
+        //Start of Lock
         parent_node.spawn(
             (
                 Sprite::from_image(lock_sprite_handles.start_sprite.clone()),
-                Transform::from_xyz(offset, 0.0, 0.0),
+                Transform::from_xyz(offset, LOCK_START_OFFSET, 0.0),
 
             )
         );
         offset += LOCK_START_SPRITE_WIDTH /2.0 + TUMBLER_CHAMBER_SPRITE_WIDTH /2.0;
 
         for x in 1..=lock.num_of_tumblers {
+            //Spawn Tumbler Chamber
             parent_node.spawn(
                 (
                     Sprite::from_image(lock_sprite_handles.tumbler_chamber_sprite.clone()),
@@ -125,6 +116,7 @@ pub fn spawn_lock(
                 )
             );
             let tumbler;
+            //Spawn Tumbler
             if x == 1 {
                 tumbler =parent_node.spawn(
                     (
@@ -151,6 +143,7 @@ pub fn spawn_lock(
                     )
                 ).id();
             }
+            //Spawn_Spring
             let spring = parent_node.spawn(
                 (
                     Sprite::from_image(lock_sprite_handles.spring_sprite.clone()),
@@ -170,12 +163,13 @@ pub fn spawn_lock(
         };
         offset += TUMBLER_CHAMBER_SPRITE_WIDTH /2.0 + LOCK_END_SPRITE_WIDTH /2.0;
 
+        //Spawn End of Lock
         parent_node.spawn(
             (
                 Sprite::from_image(lock_sprite_handles.end_sprite.clone()),
                 Transform{
                     //scale: Vec3::new(0.3, 0.3, 1.0),
-                    translation: Vec3::new(offset, 0.0, 0.0),
+                    translation: Vec3::new(offset, -LOCK_END_OFFSET, 0.0),
                     ..Default::default()
                 },
 
@@ -210,6 +204,7 @@ pub fn handle_catching_tumblers (
                     commands.entity(focused_entity).insert(SetTumblerComponent);
                 } else {
                     //Break random Tumbler
+                    //FIX THIS, SEEMS TO BUG ON SINGLE TUMBLER, MOVE TO SEPARATE MESSAGE BASED SYSTEM
                     let picked: Option<(Entity, Mut<TumblerComponent>)> = tumblers.iter_mut().choose(&mut random_seed.RandomNumberGenerator); //Change random here *Can break!
                     println!("Here");
                     if let Some((picked_entity, mut picked_tumbler)) = picked {

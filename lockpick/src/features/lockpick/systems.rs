@@ -9,8 +9,10 @@ use crate::features::lockpick::component::LockpickComponent;
 use crate::features::lockpick::events::LockpickAction;
 use crate::features::rand::resources::RandomSeed;
 
-const LOCKPICK_HEAD_OFFSET: f32 = 280.0;
-const LOCKPICK_MAX_HEIGHT: f32 = (TOP_OF_CHAMBER-(HEIGHT_OF_TUMBLER_SPRITE + HEIGHT_OF_SPRING_SPRITE));
+const LOCKPICK_HEAD_OFFSET: f32 = 1041.0;
+const LOCKPICK_MAX_HEIGHT: f32 = (TOP_OF_CHAMBER-(HEIGHT_OF_TUMBLER_SPRITE/2.0 + HEIGHT_OF_SPRING_SPRITE));
+
+const LOCKPICK_LOWER_BOUND: f32 = -200.0;
 
 
 //Spawn Systems
@@ -21,13 +23,13 @@ pub fn spawn_lockpick (
     commands.spawn(
         (
             Sprite{
-                image: asset_server.load("images/lockpick.png"),
+                image: asset_server.load("images/Lockpick.png"),
                 //custom_size: Option::from(Vec2::new(250.0, 280.0)),
                 ..Default::default()
             },
             LockpickComponent::default(),
             Transform {
-                translation: Vec3::new(0.0,0.0,0.0),
+                translation: Vec3::new(0.0,LOCKPICK_LOWER_BOUND,0.0),
                 //scale: Vec3::new(0.3,0.3,1.0),
                 ..Default::default()
             }
@@ -135,14 +137,15 @@ pub fn lockpick_movement(
     time: Res<Time>,
     mut lockpick_query: Query<(&mut Transform, &mut LockpickComponent)>
 ) {
+
     let Ok((mut lockpick_transform, mut lockpick)) = lockpick_query.single_mut() else {return};
 
     if lockpick_transform.translation.y > LOCKPICK_MAX_HEIGHT {
         lockpick_transform.translation.y = LOCKPICK_MAX_HEIGHT;
         lockpick.velocity.y *= -1.0;
-    } else if lockpick_transform.translation.y < 0.0 {
+    } else if lockpick_transform.translation.y < LOCKPICK_LOWER_BOUND {
         lockpick.velocity.y = 0.0;
-        lockpick_transform.translation.y = 0.0;
+        lockpick_transform.translation.y = LOCKPICK_LOWER_BOUND;
         lockpick.is_moving = false;
     }
     lockpick_transform.translation += lockpick.velocity * time.delta_secs();

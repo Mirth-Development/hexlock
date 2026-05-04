@@ -5,7 +5,7 @@ use crate::features::lock::tumblers::components::{TumblerComponent};
 use crate::features::lock::tumblers::systems::HEIGHT_OF_TUMBLER_SPRITE;
 use crate::features::lock::systems::TOP_OF_CHAMBER;
 
-pub const HEIGHT_OF_SPRING_SPRITE: f32= 92.0;
+pub const HEIGHT_OF_SPRING_SPRITE: f32= 440.0;
 pub fn stretch_to_tumbler(
     tumbler_spring_pairings: Res<TumblerSpringPairings>,
     transforms: Query<&Transform, Without<SpringComponent>>,
