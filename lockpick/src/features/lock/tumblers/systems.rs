@@ -1,8 +1,12 @@
+use std::arch::x86_64::__cpuid;
+use bevy::ecs::error::panic;
 use bevy::prelude::*;
+use bevy::ui::debug::print_ui_layout_tree;
 use rand::RngExt;
 use crate::features::lock::spring::systems::HEIGHT_OF_SPRING_SPRITE;
 use crate::features::lock::systems::TOP_OF_CHAMBER;
 use crate::features::lock::tumblers::components::{FocusedTumblerComponent, SetTumblerComponent, TumblerComponent};
+use crate::features::lockpick::component::LockpickComponent;
 use crate::features::lockpick::events::LockpickAction;
 use crate::features::rand::resources::RandomSeed;
 
@@ -63,30 +67,39 @@ pub const HEIGHT_OF_TUMBLER_SPRITE: f32= 92.0;
 // }
 
 
-
-pub fn handle_pick_message(
-    mut actions: MessageReader<LockpickAction>,
-    mut random: ResMut<RandomSeed>,
-    mut focused_tumbler_query: Query<(Entity, &mut TumblerComponent), With<FocusedTumblerComponent>>,
-    check_set: Query<(), With<SetTumblerComponent>> //Call all set elements
-
-){
-    let Ok((tumbler_entity, mut tumbler)) = focused_tumbler_query.single_mut() else {return};
-
-    for action in actions.read(){
-        match action {
-            LockpickAction::Pick => {
-                if !check_set.contains(tumbler_entity){
-                    let rand = random.RandomNumberGenerator.random_range(0..=2);
-                    tumbler.velocity.y = 150.0 + (100.0 * rand as f32);
-                }
-            }
-            _ => {
-                continue
-            }
-        }
-    }
-}
+//If message is to check the same Type of message in multiple places on the same layer, e.g "Startup". Don't be stupid and have them also manipulate the same elements
+// pub fn handle_pick_message(
+//     mut actions: MessageReader<LockpickAction>,
+//     mut random: ResMut<RandomSeed>,
+//     lockpick_query: Query<&LockpickComponent>,
+//     mut focused_tumbler_query: Query<(Entity, &mut TumblerComponent), With<FocusedTumblerComponent>>,
+//     check_set: Query<(), With<SetTumblerComponent>> //Call all set elements
+// 
+// ){
+//     let Ok(lockpick) = lockpick_query.single() else {return};
+//     let Ok((tumbler_entity, mut tumbler)) = focused_tumbler_query.single_mut() else {return};
+// 
+//     for action in actions.read(){
+//         match action {
+//             LockpickAction::Pick => {
+//                 if !check_set.contains(tumbler_entity) && !lockpick.is_moving{
+//                     println!("Picking!");
+//                     let rand = random.RandomNumberGenerator.random_range(0..=2); //Random speed selection
+//                     tumbler.velocity.y = 150.0 + (100.0 * rand as f32);
+//                 }
+//             }
+//             LockpickAction::Right => {
+//                 continue
+//             }
+//             LockpickAction::Left => {
+//                 continue
+//             }
+//             _ => {
+//                 panic!("WTF")
+//             }
+//         }
+//     }
+// }
 
 // pub fn move_tumbler_up (
 //     time: Res<Time>,

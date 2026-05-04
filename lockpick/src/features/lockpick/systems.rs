@@ -1,10 +1,16 @@
 use bevy::prelude::*;
+use rand::RngExt;
 use crate::features::lock::components::LockComponent;
-use crate::features::lock::tumblers::components::{FocusedTumblerComponent, TumblerComponent};
+use crate::features::lock::spring::systems::HEIGHT_OF_SPRING_SPRITE;
+use crate::features::lock::systems::TOP_OF_CHAMBER;
+use crate::features::lock::tumblers::components::{FocusedTumblerComponent, SetTumblerComponent, TumblerComponent};
+use crate::features::lock::tumblers::systems::HEIGHT_OF_TUMBLER_SPRITE;
 use crate::features::lockpick::component::LockpickComponent;
 use crate::features::lockpick::events::LockpickAction;
+use crate::features::rand::resources::RandomSeed;
 
 const LOCKPICK_HEAD_OFFSET: f32 = 280.0;
+const LOCKPICK_MAX_HEIGHT: f32 = (TOP_OF_CHAMBER-(HEIGHT_OF_TUMBLER_SPRITE + HEIGHT_OF_SPRING_SPRITE));
 
 
 //Spawn Systems
@@ -19,10 +25,7 @@ pub fn spawn_lockpick (
                 //custom_size: Option::from(Vec2::new(250.0, 280.0)),
                 ..Default::default()
             },
-            LockpickComponent{
-                is_moving: false,
-                current_tumbler: 1,
-            },
+            LockpickComponent::default(),
             Transform {
                 translation: Vec3::new(0.0,0.0,0.0),
                 //scale: Vec3::new(0.3,0.3,1.0),
@@ -65,14 +68,18 @@ pub fn move_to_focused_tumbler(
 
 //Handle Pick Event
 pub fn handle_lockpick_message(
+    check_set: Query<(), With<SetTumblerComponent>>, //Call all set elements
+    lock_query: Query<&LockComponent>,
+    tumblers: Query<(Entity, &TumblerComponent), Without<FocusedTumblerComponent>>,
     mut actions: MessageReader<LockpickAction>,
     mut commands: Commands,
-    tumblers: Query<(Entity, &TumblerComponent), Without<FocusedTumblerComponent>>,
-    focused_tumbler_component: Query<(Entity,&TumblerComponent), With<FocusedTumblerComponent>>,
     mut lockpick_query: Query<&mut LockpickComponent>,
-    lock_query: Query<&LockComponent>,
-) {
-    let Ok((focused_entity ,focused_tumbler)) = focused_tumbler_component.single() else {
+    mut random: ResMut<RandomSeed>,
+    mut focused_tumbler_query: Query<(Entity, &mut TumblerComponent), With<FocusedTumblerComponent>>,
+
+){
+    //let Ok((tumbler_entity, mut tumbler)) = focused_tumbler_query.single_mut() else {return};
+    let Ok((focused_entity ,mut focused_tumbler)) = focused_tumbler_query.single_mut() else {
         println!("bail on focused");
         return};
     let Ok(mut lockpick) = lockpick_query.single_mut() else {
@@ -82,35 +89,61 @@ pub fn handle_lockpick_message(
         println!("bail on lock");
         return};
 
-    for action in actions.read(){
-        match action {
-            LockpickAction::Left => {
-                if focused_tumbler.position > 1 {
-                    for (tumbler_entity, tumbler_component) in &tumblers{
-                        if tumbler_component.position == lockpick.current_tumbler - 1 {
-                            commands.entity(focused_entity).remove::<FocusedTumblerComponent>();
-                            commands.entity(tumbler_entity).insert(FocusedTumblerComponent);
-                            lockpick.current_tumbler -= 1;
-                            break;
+    if  !lockpick.is_moving{
+        for action in actions.read(){
+            match action {
+                LockpickAction::Left => {
+                        if focused_tumbler.position > 1 {
+                            for (tumbler_entity, tumbler_component) in &tumblers{
+                                if tumbler_component.position == lockpick.current_tumbler - 1 {
+                                    commands.entity(focused_entity).remove::<FocusedTumblerComponent>();
+                                    commands.entity(tumbler_entity).insert(FocusedTumblerComponent);
+                                    lockpick.current_tumbler -= 1;
+                                    break;
+                                }
+                            }
                         }
                     }
-                }
-            }
-            LockpickAction::Right => {
-                if focused_tumbler.position < lock.num_of_tumblers {
-                    for (tumbler_entity, tumbler_component) in &tumblers{
-                        if tumbler_component.position == lockpick.current_tumbler + 1 {
-                            commands.entity(focused_entity).remove::<FocusedTumblerComponent>();
-                            commands.entity(tumbler_entity).insert(FocusedTumblerComponent);
-                            lockpick.current_tumbler += 1;
-                            break;
+                LockpickAction::Right => {
+                        if focused_tumbler.position < lock.num_of_tumblers {
+                            for (tumbler_entity, tumbler_component) in &tumblers{
+                                if tumbler_component.position == lockpick.current_tumbler + 1 {
+                                    commands.entity(focused_entity).remove::<FocusedTumblerComponent>();
+                                    commands.entity(tumbler_entity).insert(FocusedTumblerComponent);
+                                    lockpick.current_tumbler += 1;
+                                    break;
+                                }
+                            }
                         }
                     }
+                LockpickAction::Pick => {
+                    if !check_set.contains(focused_entity) {
+                        println!("Picking!");
+                        let rand = random.RandomNumberGenerator.random_range(0..=2); //Random speed selection
+                        focused_tumbler.velocity.y = 150.0 + (100.0 * rand as f32);
+                        lockpick.is_moving = true;
+                        lockpick.velocity.y += 800.0;
+                    }
                 }
-            }
-            _ => {
             }
         }
     }
 
+}
+
+pub fn lockpick_movement(
+    time: Res<Time>,
+    mut lockpick_query: Query<(&mut Transform, &mut LockpickComponent)>
+) {
+    let Ok((mut lockpick_transform, mut lockpick)) = lockpick_query.single_mut() else {return};
+
+    if lockpick_transform.translation.y > LOCKPICK_MAX_HEIGHT {
+        lockpick_transform.translation.y = LOCKPICK_MAX_HEIGHT;
+        lockpick.velocity.y *= -1.0;
+    } else if lockpick_transform.translation.y < 0.0 {
+        lockpick.velocity.y = 0.0;
+        lockpick_transform.translation.y = 0.0;
+        lockpick.is_moving = false;
+    }
+    lockpick_transform.translation += lockpick.velocity * time.delta_secs();
 }
