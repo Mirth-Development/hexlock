@@ -1,2 +1,3 @@
 pub mod systems;
-mod component;
+pub mod component;
+pub mod events;
