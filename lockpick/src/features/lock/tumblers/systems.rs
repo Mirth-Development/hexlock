@@ -15,8 +15,11 @@ pub fn tumbler_movement(
     let bottom = (TOP_OF_CHAMBER-(HEIGHT_OF_TUMBLER_SPRITE /2.0)-(HEIGHT_OF_SPRING_SPRITE/2.0));
 
     for (mut transform, mut tumbler) in &mut tumblers {
-        if transform.translation.y + (HEIGHT_OF_TUMBLER_SPRITE/2.0) >= top{
-            tumbler.velocity.y *= -1.0;
+        if transform.translation.y + (HEIGHT_OF_TUMBLER_SPRITE/2.0) > top{
+            //Prevent tumbler from getting caught in an inversion of itself
+            if tumbler.velocity.y > 0.0 {
+                tumbler.velocity.y *= -1.0;
+            }
         } else if transform.translation.y + (HEIGHT_OF_TUMBLER_SPRITE/2.0) < bottom{
             tumbler.velocity.y = 0.0;
             transform.translation.y = bottom - (HEIGHT_OF_TUMBLER_SPRITE /2.0);

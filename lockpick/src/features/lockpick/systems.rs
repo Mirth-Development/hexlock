@@ -63,7 +63,6 @@ pub fn handle_lockpick_message(
     mut actions: MessageReader<LockpickAction>,
     mut commands: Commands,
     mut lockpick_query: Query<&mut LockpickComponent>,
-    mut random: ResMut<RandomSeed>,
     mut focused_tumbler_query: Query<(Entity, &mut TumblerComponent), With<FocusedTumblerComponent>>,
 
 ){
@@ -131,8 +130,8 @@ pub fn lockpick_movement(
         lockpick.velocity.y *= -1.0;
     }
     else if lockpick_transform.translation.y < LOCKPICK_LOWER_BOUND {
-        lockpick.velocity.y = 0.0;
         lockpick_transform.translation.y = LOCKPICK_LOWER_BOUND;
+        lockpick.velocity.y = 0.0;
         lockpick.is_moving = false;
     }
 
