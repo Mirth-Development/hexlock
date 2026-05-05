@@ -289,7 +289,32 @@ pub fn handle_ui_button_interactions(
 
                 (_, Buttons::Play) => {
                     button_chain.clear();
-                    next_state.set(InterfaceStates::Game);
+                    next_state.set(InterfaceStates::Level1);
+                },
+
+                (_, Buttons::GoToLevel1) => {
+                    button_chain.clear();
+                    next_state.set(InterfaceStates::Level1);
+                },
+
+                (_, Buttons::GoToLevel2) => {
+                    button_chain.clear();
+                    next_state.set(InterfaceStates::Level2);
+                },
+
+                (_, Buttons::GoToLevel3) => {
+                    button_chain.clear();
+                    next_state.set(InterfaceStates::Level3);
+                },
+
+                (_, Buttons::GoToLevel4) => {
+                    button_chain.clear();
+                    next_state.set(InterfaceStates::Level4);
+                },
+
+                (_, Buttons::GoToLevel5) => {
+                    button_chain.clear();
+                    next_state.set(InterfaceStates::Level5);
                 },
 
                 _ => { button_chain.clear(); }

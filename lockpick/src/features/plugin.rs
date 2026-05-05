@@ -14,15 +14,10 @@ use super::interface::plugin::UserInterface;
 pub struct LockpickFeaturesPlugin;
 impl Plugin for LockpickFeaturesPlugin {
     fn build(&self, app: &mut App) {
-        app
-        .add_systems(Startup, spawn_camera)
-        .add_systems(Startup, spawn_lockpick)
-        .add_plugins(UserInterface{})
-        .add_message::<LockpickAction>()
-        .add_message::<CatchTumbler>()
-        .add_message::<QuitGame>()
-        .add_systems(Startup, (load_lock_resources, load_sprite_resources, load_random_seed, spawn_lock).chain())
-        .add_systems(Update, (move_to_focused_tumbler, tumbler_movement, lockpick_movement, user_control_system, stretch_to_tumbler))
-        .add_systems(Update, (handle_lockpick_message, handle_catching_tumblers));
+        app.add_systems(Startup, (spawn_camera, load_sprite_resources, load_random_seed).chain());
+        app.add_plugins(UserInterface{});
+        app.add_message::<LockpickAction>();
+        app.add_message::<CatchTumbler>();
+        app.add_message::<QuitGame>();
     }
 }

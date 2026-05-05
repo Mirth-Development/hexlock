@@ -37,7 +37,11 @@ impl Plugin for Definitions {
 pub enum InterfaceStates {
     #[default]
     StartMenu,
-    Game,
+    Level1,
+    Level2,
+    Level3,
+    Level4,
+    Level5,
 }
 // ---------------------------------------------------------------------------------------------- //
 
@@ -52,12 +56,17 @@ pub enum Containers {
     Confirmation,
 }
 
-#[derive(Component, Reflect, PartialEq, Clone)]
+#[derive(Component, Debug, Reflect, PartialEq, Clone)]
 #[reflect(Component)]
 pub enum Buttons {
     Play,
     ExitGame,
     StartMenu,
+    GoToLevel1,
+    GoToLevel2,
+    GoToLevel3,
+    GoToLevel4,
+    GoToLevel5,
     Yes,
     No,
 }
@@ -67,6 +76,7 @@ pub enum Buttons {
 pub enum Labels {
     Title,
     Confirmation,
+    Level
 }
 
 // This component is always built into other elements - or at least it should be, using it
