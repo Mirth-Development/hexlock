@@ -6,7 +6,4 @@ use bevy::prelude::*;
 pub enum HitWrongTumbler{ReduceTime}
 
 #[derive(Message)]
-pub enum TumblerTimerMessage{
-    Stun,
-    Finished
-}
+pub struct TumblerTimerMessage(pub Entity); //Position

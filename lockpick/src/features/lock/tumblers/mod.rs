@@ -1,4 +1,4 @@
 pub mod systems;
 pub mod components;
-mod messages;
+pub mod messages;
 mod resources;

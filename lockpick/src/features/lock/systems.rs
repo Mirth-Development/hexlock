@@ -1,10 +1,8 @@
 use bevy::prelude::*;
-use rand::{make_rng, rng};
-use rand::seq::IteratorRandom;
 use crate::features::lock::messages::CatchTumbler;
 use crate::features::lock::spring::systems::HEIGHT_OF_SPRING_SPRITE;
-use crate::features::lock::tumblers::systems::HEIGHT_OF_TUMBLER_SPRITE;
-use crate::features::rand::resources::RandomSeed;
+use crate::features::lock::tumblers::messages::TumblerTimerMessage;
+use crate::features::lock::tumblers::systems::{HEIGHT_OF_TUMBLER_SPRITE, TUMBLER_DEFAULT_SET_TIME};
 use super::components::{LockComponent, TumblerChamberComponent};
 use super::resource::{LockSpriteHandles, TumblerSpringPairings};
 use super::tumblers::components::{FocusedTumblerComponent, SetTumblerComponent, TumblerComponent};
@@ -65,7 +63,7 @@ pub fn spawn_lock(
     println!("Building Locks");
     let mut offset: f32 = 0.0;
     //
-    let mut tumbler_set_timer = Timer::from_seconds(10.0, TimerMode::Once);
+    let mut tumbler_set_timer = Timer::from_seconds(TUMBLER_DEFAULT_SET_TIME, TimerMode::Once);
     //Pause timer after creation
     tumbler_set_timer.pause();
 
@@ -160,6 +158,7 @@ pub fn spawn_lock(
 pub fn handle_catching_tumblers (
     mut commands: Commands,
     mut actions: MessageReader<CatchTumbler>,
+    mut writer: MessageWriter<TumblerTimerMessage>,
     mut tumbler_query: Query<(Entity, &mut Transform, &mut TumblerComponent), With<FocusedTumblerComponent>>,
 ) {
 
@@ -169,13 +168,9 @@ pub fn handle_catching_tumblers (
         match action {
             CatchTumbler::Catch => {
                 if focused_tumbler_transform.translation.y + (HEIGHT_OF_TUMBLER_SPRITE / 2.0) >= (TOP_OF_CHAMBER - TUMBLER_SET_THRESHOLD){
-                    focused_tumbler.velocity = Vec3::splat(0.0);
-                    focused_tumbler_transform.translation.y = TOP_OF_CHAMBER - (HEIGHT_OF_TUMBLER_SPRITE / 2.0);
-                    focused_tumbler.timer.reset();
-                    commands.entity(focused_entity).insert(SetTumblerComponent);
+                    writer.write(TumblerTimerMessage(focused_entity));
                 } else {
                     //Add time/score reducing code here!
-
                     if focused_tumbler.velocity.y != (TOP_OF_CHAMBER - (HEIGHT_OF_TUMBLER_SPRITE / 2.0) - (HEIGHT_OF_SPRING_SPRITE / 2.0)){
                         focused_tumbler.velocity.y = -600.0;
                     }

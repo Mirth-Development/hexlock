@@ -20,7 +20,7 @@ impl Default for TumblerComponent {
         Self {
             position: 0,
             velocity: Vec3::splat(0.0),
-            timer: Timer::from_seconds(10.0, TimerMode::Once),
+            timer: Timer::from_seconds(1.0, TimerMode::Once),
             //set: false //Handle this with a component
         }
     }

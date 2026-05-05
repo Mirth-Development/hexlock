@@ -7,6 +7,8 @@ use super::messages::TumblerTimerMessage;
 pub const HEIGHT_OF_TUMBLER_SPRITE: f32= 150.0;
 pub const TUMBLER_SET_RELEASE_VELOCITY: f32= -150.0;
 
+pub const TUMBLER_DEFAULT_SET_TIME: f32= 20.0;
+
 pub fn tumbler_movement(
     time: Res<Time>,
     mut tumblers: Query<(&mut Transform, &mut TumblerComponent)>,
@@ -30,24 +32,45 @@ pub fn tumbler_movement(
 }
 
 
-pub fn tumbler_timer_finished (
+pub fn timer_tumbler_finished (
+    time: Res<Time>,
     mut commands: Commands,
     mut tumbler_query: Query<(Entity ,&mut TumblerComponent), With<SetTumblerComponent>>,
 ) {
 
     for (tumbler_entity, mut tumbler) in &mut tumbler_query{
+        println!("Time:{}, Tumbler pos:{}", tumbler.timer.remaining_secs(), tumbler.position);
         if tumbler.timer.is_finished(){
+            println!("Timer at {} Finished!", tumbler.position);
             tumbler.timer.reset();
             tumbler.timer.pause();
             tumbler.velocity.y = TUMBLER_SET_RELEASE_VELOCITY;
             commands.entity(tumbler_entity).remove::<SetTumblerComponent>();
 
+        } else {
+            tumbler.timer.tick(time.delta());
         }
     }
 }
 
-// pub fn handle_tumbler_set (
-//     mut actions: MessageReader<TumblerTimerMessage>
-// ){
-//
-// }
+ pub fn handle_tumbler_set (
+     mut commands: Commands,
+     mut actions: MessageReader<TumblerTimerMessage>,
+     mut tumblers: Query<(&mut Transform, &mut TumblerComponent)>
+ ){
+
+     for action in actions.read(){
+         let Ok((mut focused_transform, mut focused_tumbler)) = tumblers.get_mut(action.0) else {
+             println!("FAILED TO HANDLE SETTING TUMBLER!");
+             return
+         };
+         println!("Setting tumbler {}", focused_tumbler.position);
+         focused_tumbler.velocity = Vec3::splat(0.0);
+         focused_transform.translation.y = TOP_OF_CHAMBER - (HEIGHT_OF_TUMBLER_SPRITE / 2.0);
+         focused_tumbler.timer.reset();
+         focused_tumbler.timer.unpause();
+         commands.entity(action.0).insert(SetTumblerComponent);
+
+     }
+
+ }
