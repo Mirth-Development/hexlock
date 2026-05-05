@@ -15,25 +15,6 @@ use super::interface::plugin::UserInterface;
 pub struct LockpickFeaturesPlugin;
 impl Plugin for LockpickFeaturesPlugin {
     fn build(&self, app: &mut App) {
-// <<<<<<< HEAD
-//         app
-//             .add_systems(Startup, spawn_camera)
-//             .add_systems(Startup, spawn_lockpick)
-//             //Messages
-//             .add_message::<LockpickAction>()
-//             .add_message::<CatchTumbler>()
-//             .add_message::<QuitGame>()
-//             .add_message::<TumblerTimerMessage>()
-//
-//             //movement
-//             .add_systems(Update, (move_to_focused_tumbler, tumbler_movement, lockpick_movement, stretch_to_tumbler))
-//             //User controls
-//             .add_systems(Update, user_control_system)
-//             //Message systems
-//             .add_systems(Update, timer_tumbler_finished)
-//             //Timer Systems
-//             .add_systems(Update, (handle_lockpick_message, handle_catching_tumblers, handle_tumbler_set));
-// =======
         app.add_systems(Startup, (spawn_camera, load_sprite_resources, load_random_seed).chain());
         app.add_plugins(UserInterface{});
         app.add_message::<LockpickAction>();

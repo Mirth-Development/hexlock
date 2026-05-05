@@ -34,10 +34,14 @@ impl Plugin for Interfaces {
 
         app.add_systems(Update, (
             move_to_focused_tumbler,
-            tumbler_movement, lockpick_movement,
-            user_control_system, stretch_to_tumbler,
+            tumbler_movement,
+            lockpick_movement,
+            user_control_system,
+            timer_tumbler_finished,
+            stretch_to_tumbler,
             handle_lockpick_message,
-            handle_catching_tumblers)
+            handle_catching_tumblers,
+            handle_tumbler_set)
             .chain()
             .run_if(in_level_state)
         );
