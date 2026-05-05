@@ -1,8 +1,11 @@
 use bevy::prelude::*;
+use crate::features::game_controller::tumbler_randomizer::systems::get_random_tumbler;
 use crate::features::lock::messages::CatchTumbler;
 use crate::features::lock::spring::systems::HEIGHT_OF_SPRING_SPRITE;
 use crate::features::lock::tumblers::messages::TumblerTimerMessage;
-use crate::features::lock::tumblers::systems::{HEIGHT_OF_TUMBLER_SPRITE, TUMBLER_DEFAULT_SET_TIME};
+use crate::features::lock::tumblers::resources::TumblerSize;
+use crate::features::lock::tumblers::systems::{HEIGHT_OF_LARGE_TUMBLER_SPRITE, HEIGHT_OF_MEDIUM_TUMBLER_SPRITE, HEIGHT_OF_SMALL_TUMBLER_SPRITE, TUMBLER_DEFAULT_SET_TIME};
+use crate::features::rand::resources::RandomSeed;
 use super::components::{LockComponent, TumblerChamberComponent};
 use super::resource::{LockSpriteHandles, TumblerSpringPairings};
 use super::tumblers::components::{FocusedTumblerComponent, SetTumblerComponent, TumblerComponent};
@@ -29,14 +32,19 @@ pub fn load_sprite_resources(
     let tumbler_section_handle: Handle<Image> = asset_server.load("images/Lock_Tumbler.png");
     let end_handle: Handle<Image> = asset_server.load("images/Lock_End.png");
     let spring_handle: Handle<Image> = asset_server.load("images/Spring.png");
-    let tumbler_handle: Handle<Image> = asset_server.load("images/Head_Medium.png");
+    let tumbler_small_handle: Handle<Image> = asset_server.load("images/Head_Small.png");
+    let tumbler_medium_handle: Handle<Image> = asset_server.load("images/Head_Medium.png");
+    let tumbler_large_handle: Handle<Image> = asset_server.load("images/Head_Large.png");
 
     commands.insert_resource(LockSpriteHandles {
         start_sprite: start_handle,
         tumbler_chamber_sprite: tumbler_section_handle,
         end_sprite: end_handle,
         spring_sprite: spring_handle,
-        tumbler_sprite: tumbler_handle
+        tumbler_small_sprite: tumbler_small_handle,
+        tumbler_medium_sprite: tumbler_medium_handle,
+        tumbler_large_sprite: tumbler_large_handle,
+
     });
 }
 
@@ -56,6 +64,7 @@ pub fn load_lock_resources(
 //Spawn and Build Lock
 pub fn spawn_lock(
     lock_sprite_handles: Res<LockSpriteHandles>,
+    mut rng: ResMut<RandomSeed>,
     mut commands: Commands,
     mut tumbler_spring_pairings: ResMut<TumblerSpringPairings>
 ) {
@@ -101,24 +110,14 @@ pub fn spawn_lock(
             let tumbler;
             if x == 1 {
                 tumbler = parent_node.spawn((
-                    Sprite::from_image(lock_sprite_handles.tumbler_sprite.clone()),
-                    TumblerComponent {
-                        position: x,
-                        timer: tumbler_set_timer.clone(),
-                        ..default()
-                    },
+                    get_random_tumbler(x,tumbler_set_timer.clone(),&mut rng.RandomNumberGenerator,&lock_sprite_handles,),
                     FocusedTumblerComponent,
-                    Transform::from_xyz(offset, TOP_OF_CHAMBER-(HEIGHT_OF_TUMBLER_SPRITE /2.0)-(HEIGHT_OF_SPRING_SPRITE), 0.0),
+                    Transform::from_xyz(offset, TOP_OF_CHAMBER-(HEIGHT_OF_MEDIUM_TUMBLER_SPRITE /2.0)-(HEIGHT_OF_SPRING_SPRITE), 0.0),
                 )).id();
             } else {
                 tumbler = parent_node.spawn((
-                    Sprite::from_image(lock_sprite_handles.tumbler_sprite.clone()),
-                    TumblerComponent {
-                        position: x,
-                        timer: tumbler_set_timer.clone(),
-                        ..default()
-                    },
-                    Transform::from_xyz(offset, TOP_OF_CHAMBER - (HEIGHT_OF_TUMBLER_SPRITE / 2.0) - (HEIGHT_OF_SPRING_SPRITE), 0.0),
+                    get_random_tumbler(x,tumbler_set_timer.clone(),&mut rng.RandomNumberGenerator,&lock_sprite_handles,),
+                    Transform::from_xyz(offset, TOP_OF_CHAMBER - (HEIGHT_OF_MEDIUM_TUMBLER_SPRITE / 2.0) - (HEIGHT_OF_SPRING_SPRITE), 0.0),
                 )).id();
             }
 
@@ -163,15 +162,26 @@ pub fn handle_catching_tumblers (
 ) {
 
     let Ok((focused_entity, mut focused_tumbler_transform, mut focused_tumbler)) = tumbler_query.single_mut() else {return};
-
+    //You will see the following match function in a few different functions, I could have put the const in the Component.... but I didnt want to go undo everything :)
+    let height = match focused_tumbler.size {
+        TumblerSize::Small =>{
+            HEIGHT_OF_SMALL_TUMBLER_SPRITE
+        },
+        TumblerSize::Medium =>{
+            HEIGHT_OF_MEDIUM_TUMBLER_SPRITE
+        },
+        TumblerSize::Large =>{
+            HEIGHT_OF_LARGE_TUMBLER_SPRITE
+        }
+    };
     for action in actions.read(){
         match action {
             CatchTumbler::Catch => {
-                if focused_tumbler_transform.translation.y + (HEIGHT_OF_TUMBLER_SPRITE / 2.0) >= (TOP_OF_CHAMBER - TUMBLER_SET_THRESHOLD){
+                if focused_tumbler_transform.translation.y + (height / 2.0) >= (TOP_OF_CHAMBER - TUMBLER_SET_THRESHOLD){
                     writer.write(TumblerTimerMessage(focused_entity));
                 } else {
                     //Add time/score reducing code here!
-                    if focused_tumbler.velocity.y != (TOP_OF_CHAMBER - (HEIGHT_OF_TUMBLER_SPRITE / 2.0) - (HEIGHT_OF_SPRING_SPRITE / 2.0)){
+                    if focused_tumbler.velocity.y != (TOP_OF_CHAMBER - (height / 2.0) - (HEIGHT_OF_SPRING_SPRITE / 2.0)){
                         focused_tumbler.velocity.y = -600.0;
                     }
                 }
