@@ -26,6 +26,16 @@ pub fn user_control_system(
         println!("Right Sent!");
     }
 
+    if keyboard_input.just_pressed(KeyCode::KeyQ){
+        pick_event.write(LockpickAction::SwitchLast);
+        println!("Right Sent!");
+    }
+
+    if keyboard_input.just_pressed(KeyCode::KeyE){
+        pick_event.write(LockpickAction::SwitchNext);
+        println!("Right Sent!");
+    }
+
     if keyboard_input.just_pressed(KeyCode::Space){
         println!("Space Sent!");
         tumbler_event.write(CatchTumbler::Catch);

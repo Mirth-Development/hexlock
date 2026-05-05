@@ -1,12 +1,15 @@
 use bevy::prelude::*;
 use rand::RngExt;
 use crate::features::lock::components::LockComponent;
+use crate::features::lock::spring::components::SpringComponent;
 use crate::features::lock::spring::systems::HEIGHT_OF_SPRING_SPRITE;
 use crate::features::lock::systems::TOP_OF_CHAMBER;
 use crate::features::lock::tumblers::components::{FocusedTumblerComponent, SetTumblerComponent, TumblerComponent};
+use crate::features::lock::tumblers::resources::TumblerSize;
 use crate::features::lock::tumblers::systems::HEIGHT_OF_MEDIUM_TUMBLER_SPRITE;
 use crate::features::lockpick::component::LockpickComponent;
 use crate::features::lockpick::messages::LockpickAction;
+use crate::features::lockpick::resources::LockpickType;
 use crate::features::rand::resources::RandomSeed;
 
 const LOCKPICK_HEAD_OFFSET: f32 = 1041.0;
@@ -60,9 +63,10 @@ pub fn handle_lockpick_message(
     check_set: Query<(), With<SetTumblerComponent>>, //Call all set elements
     lock_query: Query<&LockComponent>,
     tumblers: Query<(Entity, &TumblerComponent), Without<FocusedTumblerComponent>>,
+    springs: Query<&SpringComponent>,
     mut actions: MessageReader<LockpickAction>,
     mut commands: Commands,
-    mut lockpick_query: Query<&mut LockpickComponent>,
+    mut lockpick_query: Query<(&mut Sprite, &mut LockpickComponent)>,
     mut focused_tumbler_query: Query<(Entity, &mut TumblerComponent), With<FocusedTumblerComponent>>,
 
 ){
@@ -70,7 +74,7 @@ pub fn handle_lockpick_message(
     let Ok((focused_entity, mut focused_tumbler)) = focused_tumbler_query.single_mut() else {
         return
     };
-    let Ok(mut lockpick) = lockpick_query.single_mut() else {
+    let Ok((mut lockpick_sprite, mut lockpick)) = lockpick_query.single_mut() else {
         return
     };
     let Ok(lock) = lock_query.single() else {
@@ -107,11 +111,69 @@ pub fn handle_lockpick_message(
                 LockpickAction::Pick => {
                     if !check_set.contains(focused_entity) {
                         println!("Picking!");
-                        focused_tumbler.velocity.y = 250.0;
+                        let tumbler_speed = match focused_tumbler.size {
+                            TumblerSize::Small => {80.0}
+                            TumblerSize::Medium => {0.0}
+                            TumblerSize::Large => {-80.0}
+                        };
+
+                        let spring_speed = match focused_tumbler.size {
+                            TumblerSize::Small => {40.0}
+                            TumblerSize::Medium => {0.0}
+                            TumblerSize::Large => {-40.0}
+                        };
+
+                        focused_tumbler.velocity.y = 400.0 + spring_speed + tumbler_speed;
                         lockpick.is_moving = true;
                         lockpick.velocity.y += 800.0;
                     }
-                }
+                },
+                // let tumbler_color: Color = match random_type {
+                //     TumblerType::Normal=> {
+                //     Color::default()
+                //     },
+                //     TumblerType::Magic => {
+                //     Color::srgb(1.0, 0.0, 1.0)
+                //     },
+                //     TumblerType::Electric => {
+                //     Color::srgb(1.0, 1.0, 0.0)
+                //     }
+                LockpickAction::SwitchNext => {
+                    lockpick.lockpick_type = match lockpick.lockpick_type {
+                        LockpickType::Magic => {
+                            lockpick_sprite.color = Color::default();
+                            LockpickType::Normal
+
+                        },
+                        LockpickType::Normal => {
+                            lockpick_sprite.color = Color::srgb(1.0, 1.0, 0.0);
+                            LockpickType::Electric
+                        },
+                        LockpickType::Electric => {
+                            lockpick_sprite.color = Color::srgb(1.0, 0.0, 1.0);
+                            //     },
+                            LockpickType::Magic
+                        }
+
+                    };
+                },
+                LockpickAction::SwitchLast => {
+                    lockpick.lockpick_type = match lockpick.lockpick_type {
+                        LockpickType::Magic => {
+                            lockpick_sprite.color = Color::srgb(1.0, 1.0, 0.0);
+                            LockpickType::Electric
+                        },
+                        LockpickType::Normal => {
+                            lockpick_sprite.color = Color::srgb(1.0, 0.0, 1.0);
+                            LockpickType::Magic
+                        },
+                        LockpickType::Electric => {
+                            lockpick_sprite.color = Color::default();
+                            LockpickType::Normal
+                        }
+
+                    };
+                },
             }
         }
     }

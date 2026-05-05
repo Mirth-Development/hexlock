@@ -1,7 +1,7 @@
 use bevy::prelude::*;
-use crate::features::game_controller::tumbler_randomizer::systems::get_random_tumbler;
+use crate::features::game_controller::tumbler_randomizer::systems::gen_random_tumbler;
 use crate::features::lock::messages::CatchTumbler;
-use crate::features::lock::spring::systems::HEIGHT_OF_SPRING_SPRITE;
+use crate::features::lock::spring::systems::{gen_random_spring, HEIGHT_OF_SPRING_SPRITE};
 use crate::features::lock::tumblers::messages::TumblerTimerMessage;
 use crate::features::lock::tumblers::resources::TumblerSize;
 use crate::features::lock::tumblers::systems::{HEIGHT_OF_LARGE_TUMBLER_SPRITE, HEIGHT_OF_MEDIUM_TUMBLER_SPRITE, HEIGHT_OF_SMALL_TUMBLER_SPRITE, TUMBLER_DEFAULT_SET_TIME};
@@ -110,23 +110,20 @@ pub fn spawn_lock(
             let tumbler;
             if x == 1 {
                 tumbler = parent_node.spawn((
-                    get_random_tumbler(x,tumbler_set_timer.clone(),&mut rng.RandomNumberGenerator,&lock_sprite_handles,),
+                    gen_random_tumbler(x, tumbler_set_timer.clone(), &mut rng.RandomNumberGenerator, &lock_sprite_handles,),
                     FocusedTumblerComponent,
                     Transform::from_xyz(offset, TOP_OF_CHAMBER-(HEIGHT_OF_MEDIUM_TUMBLER_SPRITE /2.0)-(HEIGHT_OF_SPRING_SPRITE), 0.0),
                 )).id();
             } else {
                 tumbler = parent_node.spawn((
-                    get_random_tumbler(x,tumbler_set_timer.clone(),&mut rng.RandomNumberGenerator,&lock_sprite_handles,),
+                    gen_random_tumbler(x, tumbler_set_timer.clone(), &mut rng.RandomNumberGenerator, &lock_sprite_handles,),
                     Transform::from_xyz(offset, TOP_OF_CHAMBER - (HEIGHT_OF_MEDIUM_TUMBLER_SPRITE / 2.0) - (HEIGHT_OF_SPRING_SPRITE), 0.0),
                 )).id();
             }
 
             //Spawn_Spring
             let spring = parent_node.spawn((
-                Sprite::from_image(lock_sprite_handles.spring_sprite.clone()),
-                SpringComponent{
-                    position: x
-                },
+                gen_random_spring(x, &mut rng.RandomNumberGenerator, &lock_sprite_handles),
                 Transform::from_xyz(offset, TOP_OF_CHAMBER - (HEIGHT_OF_SPRING_SPRITE / 2.0), 0.0),
             )).id();
 

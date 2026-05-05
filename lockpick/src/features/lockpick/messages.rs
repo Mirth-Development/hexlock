@@ -4,5 +4,7 @@ use bevy::prelude::*;
 pub enum LockpickAction {
     Pick,
     Left,
-    Right
+    Right,
+    SwitchNext,
+    SwitchLast,
 }
