@@ -9,6 +9,7 @@ use super::lockpick::systems::{handle_lockpick_message, lockpick_movement, move_
 use super::camera::systems::spawn_camera;
 use super::lock::systems::{spawn_lock, load_sprite_resources, load_lock_resources, handle_catching_tumblers};
 use super::controls::systems::user_control_system;
+use super::interface::plugin::UserInterface;
 
 pub struct LockpickFeaturesPlugin;
 impl Plugin for LockpickFeaturesPlugin {
@@ -16,6 +17,7 @@ impl Plugin for LockpickFeaturesPlugin {
         app
         .add_systems(Startup, spawn_camera)
         .add_systems(Startup, spawn_lockpick)
+        .add_plugins(UserInterface{})
         .add_message::<LockpickAction>()
         .add_message::<CatchTumbler>()
         .add_message::<QuitGame>()

@@ -1,0 +1,157 @@
+
+// Imports
+use bevy::prelude::*;
+
+// Plugin
+pub struct Definitions {}
+impl Plugin for Definitions {
+    fn build(&self, app: &mut App) {
+
+        // States
+        app.init_state::<InterfaceStates>();
+        app.register_type::<InterfaceStates>();
+
+        // Resources
+        app.init_resource::<ButtonChain>();
+        app.init_resource::<StateHistory>();
+        app.register_type::<ButtonChain>();
+        app.register_type::<StateHistory>();
+
+        // Components
+        app.register_type::<ButtonChain>();
+        app.register_type::<StateHistory>();
+        app.register_type::<Containers>();
+        app.register_type::<Buttons>();
+        app.register_type::<Labels>();
+        app.register_type::<TextSpawn>();
+        app.register_type::<Sizer>();
+    }
+}
+
+
+
+// ---------------------------------------------------------------------------------------------- //
+// STATES
+
+#[derive(Reflect, Clone, Copy, PartialEq, Eq, Hash, Debug, Default, States)]
+pub enum InterfaceStates {
+    #[default]
+    StartMenu,
+    Game,
+}
+// ---------------------------------------------------------------------------------------------- //
+
+
+
+// ---------------------------------------------------------------------------------------------- //
+// COMPONENTS
+
+#[derive(Component, Reflect, PartialEq)]
+#[reflect(Component)]
+pub enum Containers {
+    Confirmation,
+}
+
+#[derive(Component, Reflect, PartialEq, Clone)]
+#[reflect(Component)]
+pub enum Buttons {
+    Play,
+    ExitGame,
+    StartMenu,
+    Yes,
+    No,
+}
+
+#[derive(Component, Reflect, PartialEq)]
+#[reflect(Component)]
+pub enum Labels {
+    Title,
+    Confirmation,
+}
+
+// This component is always built into other elements - or at least it should be, using it
+// on its own will make cleanup features not work appropriately.  Text made from this element
+// will be deleted when its corresponding parent is deleted.
+#[derive(Component, Reflect)]
+#[reflect(Component)]
+pub struct TextSpawn {
+    pub content: &'static str,      // content is always known at compile time, hence static lifetime.
+    pub font_path: &'static str,    // font_path is always known at compile time, hence static lifetime.
+    pub font_size_scale: f32,       // font_size_scale uses the window width as it's factor (use values below 1.0).
+    pub color: Color,
+}
+
+// This is the component that is configured when the window size is changed (or if some function
+// wants to use it to change the size of UI elements at runtime).  Position is part of this since
+// the pixel position of something is changed when the window gets messed with.
+#[derive(Component, Reflect)]
+#[reflect(Component)]
+pub struct Sizer {
+    pub position: Vec3,
+    pub size_of_element: f32,
+    pub aspect_ratio: Option<f32>,
+}
+// ---------------------------------------------------------------------------------------------- //
+
+
+
+// ---------------------------------------------------------------------------------------------- //
+// RESOURCES
+
+#[derive(Resource, Reflect, Default)]
+#[reflect(Resource)]
+pub struct ButtonChain {
+    chain: Vec<Buttons>,
+}
+
+#[derive(Resource, Reflect, Default)]
+#[reflect(Resource)]
+pub struct StateHistory {
+    stack: Vec<InterfaceStates>,
+}
+
+impl ButtonChain {
+
+    // Add button to the chain.
+    pub fn push(&mut self, button: Buttons) {
+        self.chain.push(button);
+    }
+
+    // Clear the entire chain.
+    pub fn clear(&mut self) {
+        self.chain.clear();
+    }
+
+    // Return the chain as a slice so that it can be utilized in match statements.
+    pub fn as_slice(&self) -> &[Buttons] {
+        self.chain.as_slice()
+    }
+}
+
+impl StateHistory {
+
+    const HISTORY_CAP: usize = 10;
+
+    // Adding to history.  Will remove oldest state in history when cap has been reached to allow
+    // for new additions to the state history.
+    pub fn push(&mut self, state: InterfaceStates) {
+        if self.stack.len() >= Self::HISTORY_CAP {
+            self.stack.remove(0);
+        }
+        self.stack.push(state);
+    }
+
+    // Removing/getting latest history.
+    // Because we're working with a stack we must return an option for the scenario that the stack
+    // could be empty.  Realistically speaking, I don't think this would ever happen since players
+    // start on the main menu and always move into another UI.
+    pub fn pop(&mut self) -> Option<InterfaceStates> {
+        self.stack.pop()
+    }
+
+    // Wiping the full UI state history.
+    pub fn clear(&mut self) {
+        self.stack.clear();
+    }
+}
+// ---------------------------------------------------------------------------------------------- //

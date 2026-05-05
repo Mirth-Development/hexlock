@@ -2,6 +2,7 @@ pub mod plugin;
 pub mod lock;
 pub mod lockpick;
 pub mod rand;
+pub mod interface;
 mod controls;
 mod camera;
 mod game_controller;
