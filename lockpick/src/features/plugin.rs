@@ -10,27 +10,35 @@ use super::lockpick::systems::{handle_lockpick_message, lockpick_movement, move_
 use super::camera::systems::spawn_camera;
 use super::lock::systems::{spawn_lock, load_sprite_resources, load_lock_resources, handle_catching_tumblers};
 use super::controls::systems::user_control_system;
+use super::interface::plugin::UserInterface;
 
 pub struct LockpickFeaturesPlugin;
 impl Plugin for LockpickFeaturesPlugin {
     fn build(&self, app: &mut App) {
-        app
-            .add_systems(Startup, spawn_camera)
-            .add_systems(Startup, spawn_lockpick)
-            //Messages
-            .add_message::<LockpickAction>()
-            .add_message::<CatchTumbler>()
-            .add_message::<QuitGame>()
-            .add_message::<TumblerTimerMessage>()
-
-            .add_systems(Startup, (load_lock_resources, load_sprite_resources, load_random_seed, spawn_lock).chain())
-            //movement
-            .add_systems(Update, (move_to_focused_tumbler, tumbler_movement, lockpick_movement, stretch_to_tumbler))
-            //User controls
-            .add_systems(Update, user_control_system)
-            //Message systems
-            .add_systems(Update, timer_tumbler_finished)
-            //Timer Systems
-            .add_systems(Update, (handle_lockpick_message, handle_catching_tumblers, handle_tumbler_set));
+// <<<<<<< HEAD
+//         app
+//             .add_systems(Startup, spawn_camera)
+//             .add_systems(Startup, spawn_lockpick)
+//             //Messages
+//             .add_message::<LockpickAction>()
+//             .add_message::<CatchTumbler>()
+//             .add_message::<QuitGame>()
+//             .add_message::<TumblerTimerMessage>()
+//
+//             //movement
+//             .add_systems(Update, (move_to_focused_tumbler, tumbler_movement, lockpick_movement, stretch_to_tumbler))
+//             //User controls
+//             .add_systems(Update, user_control_system)
+//             //Message systems
+//             .add_systems(Update, timer_tumbler_finished)
+//             //Timer Systems
+//             .add_systems(Update, (handle_lockpick_message, handle_catching_tumblers, handle_tumbler_set));
+// =======
+        app.add_systems(Startup, (spawn_camera, load_sprite_resources, load_random_seed).chain());
+        app.add_plugins(UserInterface{});
+        app.add_message::<LockpickAction>();
+        app.add_message::<CatchTumbler>();
+        app.add_message::<QuitGame>();
+        app.add_message::<TumblerTimerMessage>();
     }
 }
