@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use crate::features::controls::messages::QuitGame;
 use crate::features::lock::messages::CatchTumbler;
 use crate::features::lockpick::messages::LockpickAction;
 use super::super::lock::components::LockComponent;
@@ -8,6 +9,7 @@ pub fn user_control_system(
     keyboard_input: Res<ButtonInput<KeyCode>>,
     mut pick_event: MessageWriter<LockpickAction>,
     mut tumbler_event: MessageWriter<CatchTumbler>,
+    mut quit_event: MessageWriter<QuitGame>,
     mut exit: MessageWriter<AppExit>
 ) {
 
@@ -42,6 +44,6 @@ pub fn user_control_system(
     }
 
     if keyboard_input.just_pressed(KeyCode::Escape){
-        exit.write(AppExit::Success);
+        quit_event.write(QuitGame::Quit);
     }
 }

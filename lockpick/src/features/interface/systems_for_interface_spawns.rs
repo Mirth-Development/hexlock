@@ -1,6 +1,7 @@
 
 use bevy::prelude::*;
 use bevy::window::WindowResized;
+use crate::features::controls::messages::QuitGame;
 use crate::features::interface::definitions::*;
 
 pub struct Spawns {}
@@ -323,4 +324,25 @@ pub fn handle_ui_button_interactions(
     }
 
     Ok(())
+}
+
+
+//Please double check this code
+pub fn handle_escape_message(
+    mut next_state: ResMut<NextState<InterfaceStates>>,
+    mut state_history: ResMut<StateHistory>,
+    mut actions : MessageReader<QuitGame>,
+    //container_query: Query<(Entity, &Containers)>,
+
+){
+    for action in actions.read(){
+        match action {
+            QuitGame::Quit => {
+                //despawn_container(&mut commands, Containers::Confirmation, &container_query);
+                state_history.clear();
+                next_state.set(InterfaceStates::StartMenu);
+            }
+        }
+    }
+
 }
