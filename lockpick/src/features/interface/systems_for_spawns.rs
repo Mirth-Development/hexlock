@@ -1,11 +1,10 @@
 
 use bevy::prelude::*;
 use bevy::window::WindowResized;
-use crate::features::controls::messages::QuitGame;
 use crate::features::interface::definitions::*;
 
-pub struct SpawnsForUserInterface {}
-impl Plugin for SpawnsForUserInterface {
+pub struct SystemsForUserInterfaceSpawns {}
+impl Plugin for SystemsForUserInterfaceSpawns {
     fn build(&self, app: &mut App) {
         app.add_systems(Update, (resize, handle_button_interactions).chain());
     }

@@ -9,7 +9,6 @@ pub fn user_control_system(
     keyboard_input: Res<ButtonInput<KeyCode>>,
     mut pick_event: MessageWriter<LockpickAction>,
     mut tumbler_event: MessageWriter<CatchTumbler>,
-    mut quit_event: MessageWriter<QuitGame>,
     mut next_state: ResMut<NextState<Interfaces>>,
     mut state_history: ResMut<StateHistory>,
 ) {

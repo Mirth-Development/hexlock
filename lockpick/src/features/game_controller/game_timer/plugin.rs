@@ -8,7 +8,7 @@ use crate::features::game_controller::game_timer::systems::*;
 pub struct GameTimer {}
 impl Plugin for GameTimer {
     fn build(&self, app: &mut App) {
-        app.add_plugins(Definitions{});
-        app.add_plugins(Systems{});
+        app.add_plugins(DefinitionsForGameTimer{});
+        app.add_plugins(SystemsForGameTimer{});
     }
 }

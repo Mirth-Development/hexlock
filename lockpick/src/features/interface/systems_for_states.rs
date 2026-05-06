@@ -10,8 +10,8 @@ use crate::features::lock::tumblers::systems::*;
 use crate::features::lock::spring::systems::*;
 use crate::features::controls::systems::*;
 
-pub struct StatesForUserInterface {}
-impl Plugin for StatesForUserInterface {
+pub struct SystemsForUserInterfaceStates {}
+impl Plugin for SystemsForUserInterfaceStates {
     fn build(&self, app: &mut App) {
 
         app.add_systems(OnEnter(Interfaces::StartMenu), setup_start_menu);
@@ -42,7 +42,6 @@ impl Plugin for StatesForUserInterface {
             handle_lockpick_message,
             handle_catching_tumblers,
             handle_tumbler_set,
-            handle_escape_message
         )
             .chain()
             .run_if(in_level_state)

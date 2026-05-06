@@ -3,8 +3,8 @@
 use bevy::prelude::*;
 
 // Plugin
-pub struct Definitions {}
-impl Plugin for Definitions {
+pub struct DefinitionsForGameTimer {}
+impl Plugin for DefinitionsForGameTimer {
     fn build(&self, app: &mut App) {
         app.register_type::<Ticker>();
     }
