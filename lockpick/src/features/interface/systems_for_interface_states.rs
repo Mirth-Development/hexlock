@@ -41,7 +41,9 @@ impl Plugin for Interfaces {
             stretch_to_tumbler,
             handle_lockpick_message,
             handle_catching_tumblers,
-            handle_tumbler_set)
+            handle_tumbler_set,
+            handle_escape_message
+        )
             .chain()
             .run_if(in_level_state)
         );
