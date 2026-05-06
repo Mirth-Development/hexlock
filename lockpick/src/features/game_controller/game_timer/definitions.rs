@@ -52,12 +52,16 @@ impl Ticker {
         }
     }
 
-    /// Will return the current value of number stored in Ticker.
-    pub fn value(&self) -> String {
+    /// Will return the current value of the number stored in Ticker.
+    pub fn get_number(&self) -> u32 {
+        self.number.unwrap_or(0)
+    }
+
+    /// Will return the current value of the number stored in Ticker as a string.
+    pub fn get_string(&self) -> String {
         format!("{}", self.number.unwrap_or(0))
     }
 }
-
 // #################################################################################################### //
 
 
@@ -82,23 +86,23 @@ impl Ticker {
 /// if you'd like you can give a default Ticker custom timers to do countdown effects more intuitively.
 #[derive(Component, Reflect, Debug)]
 pub struct Chronolog {
-    pub ticker_for_hundred: Option<Ticker>,
-    pub ticker_for_ten: Option<Ticker>,
-    pub ticker_for_one: Option<Ticker>,
-    pub ticker_for_tenth: Option<Ticker>,
-    pub ticker_for_hundredth: Option<Ticker>,
-    pub ticker_for_thousandth: Option<Ticker>,
+    pub ticker_for_hundreds: Option<Ticker>,
+    pub ticker_for_tens: Option<Ticker>,
+    pub ticker_for_ones: Option<Ticker>,
+    pub ticker_for_tenths: Option<Ticker>,
+    pub ticker_for_hundredths: Option<Ticker>,
+    pub ticker_for_thousandths: Option<Ticker>,
 }
 
 impl Default for Chronolog {
     fn default() -> Self {
         Self {
-            ticker_for_hundred: Some(Ticker::default()),
-            ticker_for_ten: Some(Ticker::default()),
-            ticker_for_one: Some(Ticker::default()),
-            ticker_for_tenth: Some(Ticker::default()),
-            ticker_for_hundredth: Some(Ticker::default()),
-            ticker_for_thousandth: Some(Ticker::default()),
+            ticker_for_hundreds: Some(Ticker::default()),
+            ticker_for_tens: Some(Ticker::default()),
+            ticker_for_ones: Some(Ticker::default()),
+            ticker_for_tenths: Some(Ticker::default()),
+            ticker_for_hundredths: Some(Ticker::default()),
+            ticker_for_thousandths: Some(Ticker::default()),
         }
     }
 }
@@ -106,51 +110,192 @@ impl Default for Chronolog {
 impl Chronolog {
     pub fn new() -> Self {
         Self {
-            ticker_for_hundred: Some(Ticker{
+            ticker_for_hundreds: Some(Ticker{
                 number: Some(0),
                 timer: Some(Timer::from_seconds(100.0, TimerMode::Repeating)),
             }),
 
-            ticker_for_ten: Some(Ticker{
+            ticker_for_tens: Some(Ticker{
                 number: Some(0),
                 timer: Some(Timer::from_seconds(10.0, TimerMode::Repeating)),
             }),
 
-            ticker_for_one: Some(Ticker{
+            ticker_for_ones: Some(Ticker{
                 number: Some(0),
                 timer: Some(Timer::from_seconds(1.0, TimerMode::Repeating)),
             }),
 
-            ticker_for_tenth: Some(Ticker{
+            ticker_for_tenths: Some(Ticker{
                 number: Some(0),
                 timer: Some(Timer::from_seconds(0.1, TimerMode::Repeating)),
             }),
 
-            ticker_for_hundredth: Some(Ticker{
+            ticker_for_hundredths: Some(Ticker{
                 number: Some(0),
                 timer: Some(Timer::from_seconds(0.01, TimerMode::Repeating)),
             }),
 
-            ticker_for_thousandth: Some(Ticker{
+            ticker_for_thousandths: Some(Ticker{
                 number: Some(0),
                 timer: Some(Timer::from_seconds(0.001, TimerMode::Repeating)),
             }),
         }
     }
 
-    /// Will return the current value of the Chronolog in 6 digits.  Any unused digits will be labeled as 0.
-    pub fn value(&self) -> String {
+    /// Returns the number that's in the hundreds' ticker.  Will return 0 if there is no ticker.
+    ///
+    /// Something to keep in mind is that a ticker could exist for the hundreds place and also have
+    /// a value of 0 for its number.  This means that 0 doesn't ALWAYS mean that a ticker doesn't exist for
+    /// the given digit.
+    pub fn digit_for_hundreds(&self) -> u32 {
+        self.ticker_for_hundreds.as_ref().and_then(|ticker| ticker.number).unwrap_or(0)
+    }
+
+    /// Returns the number that's in the tens' ticker.  Will return 0 if there is no ticker.
+    ///
+    /// Something to keep in mind is that a ticker could exist for the tens place and also have
+    /// a value of 0 for its number.  This means that 0 doesn't ALWAYS mean that a ticker doesn't exist for
+    /// the given digit.
+    pub fn digit_for_tens(&self) -> u32 {
+        self.ticker_for_tens.as_ref().and_then(|ticker| ticker.number).unwrap_or(0)
+    }
+
+    /// Returns the number that's in the ones' ticker.  Will return 0 if there is no ticker.
+    ///
+    /// Something to keep in mind is that a ticker could exist for the ones place and also have
+    /// a value of 0 for its number.  This means that 0 doesn't ALWAYS mean that a ticker doesn't exist for
+    /// the given digit.
+    pub fn digit_for_ones(&self) -> u32 {
+        self.ticker_for_ones.as_ref().and_then(|ticker| ticker.number).unwrap_or(0)
+    }
+
+    /// Returns the number that's in the tenths' ticker.  Will return 0 if there is no ticker.
+    ///
+    /// Something to keep in mind is that a ticker could exist for the tenths place and also have
+    /// a value of 0 for its number.  This means that 0 doesn't ALWAYS mean that a ticker doesn't exist for
+    /// the given digit.
+    pub fn digit_for_tenths(&self) -> u32 {
+        self.ticker_for_tenths.as_ref().and_then(|ticker| ticker.number).unwrap_or(0)
+    }
+
+    /// Returns the number that's in the hundredths' ticker.  Will return 0 if there is no ticker.
+    ///
+    /// Something to keep in mind is that a ticker could exist for the hundredths place and also have
+    /// a value of 0 for its number.  This means that 0 doesn't ALWAYS mean that a ticker doesn't exist for
+    /// the given digit.
+    pub fn digit_for_hundredths(&self) -> u32 {
+        self.ticker_for_hundredths.as_ref().and_then(|ticker| ticker.number).unwrap_or(0)
+    }
+
+    /// Returns the number that's in the thousandths' ticker.  Will return 0 if there is no ticker.
+    ///
+    /// Something to keep in mind is that a ticker could exist for the thousandths place and also have
+    /// a value of 0 for its number.  This means that 0 doesn't ALWAYS mean that a ticker doesn't exist for
+    /// the given digit.
+    pub fn digit_for_thousandths(&self) -> u32 {
+        self.ticker_for_thousandths.as_ref().and_then(|ticker| ticker.number).unwrap_or(0)
+    }
+
+    /// Returns the number that's in the hundreds' ticker as a string.  Will return 0 as a string if there is no ticker.
+    ///
+    /// Something to keep in mind is that a ticker could exist for the hundreds place and also have
+    /// a value of 0 for its number.  This means that 0 doesn't ALWAYS mean that a ticker doesn't exist for
+    /// the given digit.
+    pub fn string_for_hundreds(&self) -> String {
+        let hundreds = self.ticker_for_hundreds.as_ref().and_then(|ticker| ticker.number).unwrap_or(0);
+        format!("{}", hundreds)
+    }
+
+    /// Returns the number that's in the tens' ticker as a string.  Will return 0 as a string if there is no ticker.
+    ///
+    /// Something to keep in mind is that a ticker could exist for the tens place and also have
+    /// a value of 0 for its number.  This means that 0 doesn't ALWAYS mean that a ticker doesn't exist for
+    /// the given digit.
+    pub fn string_for_tens(&self) -> String {
+        let tens = self.ticker_for_tens.as_ref().and_then(|ticker| ticker.number).unwrap_or(0);
+        format!("{}", tens)
+    }
+
+    /// Returns the number that's in the ones' ticker as a string.  Will return 0 as a string if there is no ticker.
+    ///
+    /// Something to keep in mind is that a ticker could exist for the ones place and also have
+    /// a value of 0 for its number.  This means that 0 doesn't ALWAYS mean that a ticker doesn't exist for
+    /// the given digit.
+    pub fn string_for_ones(&self) -> String {
+        let ones = self.ticker_for_ones.as_ref().and_then(|ticker| ticker.number).unwrap_or(0);
+        format!("{}", ones)
+    }
+
+    /// Returns the number that's in the tenths' ticker as a string.  Will return 0 as a string if there is no ticker.
+    ///
+    /// Something to keep in mind is that a ticker could exist for the tenths place and also have
+    /// a value of 0 for its number.  This means that 0 doesn't ALWAYS mean that a ticker doesn't exist for
+    /// the given digit.
+    pub fn string_for_tenths(&self) -> String {
+        let tenths = self.ticker_for_tenths.as_ref().and_then(|ticker| ticker.number).unwrap_or(0);
+        format!("{}", tenths)
+    }
+
+    /// Returns the number that's in the hundredths' ticker as a string.  Will return 0 as a string if there is no ticker.
+    ///
+    /// Something to keep in mind is that a ticker could exist for the hundredths place and also have
+    /// a value of 0 for its number.  This means that 0 doesn't ALWAYS mean that a ticker doesn't exist for
+    /// the given digit.
+    pub fn string_for_hundredths(&self) -> String {
+        let hundredths = self.ticker_for_hundredths.as_ref().and_then(|ticker| ticker.number).unwrap_or(0);
+        format!("{}", hundredths)
+    }
+
+    /// Returns the number that's in the thousandths' ticker as a string.  Will return 0 as a string if there is no ticker.
+    ///
+    /// Something to keep in mind is that a ticker could exist for the thousandths place and also have
+    /// a value of 0 for its number.  This means that 0 doesn't ALWAYS mean that a ticker doesn't exist for
+    /// the given digit.
+    pub fn string_for_thousandths(&self) -> String {
+        let thousandths = self.ticker_for_thousandths.as_ref().and_then(|ticker| ticker.number).unwrap_or(0);
+        format!("{}", thousandths)
+    }
+
+    /// Will return the current value of the Chronolog.  Any unused digits will be labeled as 0.
+    pub fn get_number(&self) -> f32 {
+
+        let mut total_time: f32 = 0.0;
 
         // WHY I LOVE AND HATE RUST
         // 1. Borrow by using as_ref().
         // 2. Get rid of double Option results using and_then(#Anonymous).
         // 3. Get what's in number or set to 0 if nothing is there using unwrap_or(0).
-        let hundreds    = self.ticker_for_hundred.as_ref().and_then(|ticker| ticker.number).unwrap_or(0);
-        let tens        = self.ticker_for_ten.as_ref().and_then(|ticker| ticker.number).unwrap_or(0);
-        let ones        = self.ticker_for_one.as_ref().and_then(|ticker| ticker.number).unwrap_or(0);
-        let tenths      = self.ticker_for_tenth.as_ref().and_then(|ticker| ticker.number).unwrap_or(0);
-        let hundredths  = self.ticker_for_hundredth.as_ref().and_then(|ticker| ticker.number).unwrap_or(0);
-        let thousandths = self.ticker_for_thousandth.as_ref().and_then(|ticker| ticker.number).unwrap_or(0);
+        // 4. Typecast to f32 since tickers store u32 and the end result we're going for is a decimal.
+        let hundreds    = (self.ticker_for_hundreds      .as_ref().and_then(|ticker| ticker.number).unwrap_or(0)) as f32 * 100.0;
+        let tens        = (self.ticker_for_tens          .as_ref().and_then(|ticker| ticker.number).unwrap_or(0)) as f32 * 10.0;
+        let ones        = (self.ticker_for_ones          .as_ref().and_then(|ticker| ticker.number).unwrap_or(0)) as f32 * 1.0;
+        let tenths      = (self.ticker_for_tenths        .as_ref().and_then(|ticker| ticker.number).unwrap_or(0)) as f32 * 0.1;
+        let hundredths  = (self.ticker_for_hundredths    .as_ref().and_then(|ticker| ticker.number).unwrap_or(0)) as f32 * 0.01;
+        let thousandths = (self.ticker_for_thousandths   .as_ref().and_then(|ticker| ticker.number).unwrap_or(0)) as f32 * 0.001;
+
+        total_time += hundreds;
+        total_time += tens;
+        total_time += ones;
+        total_time += tenths;
+        total_time += hundredths;
+        total_time += thousandths;
+
+        total_time
+    }
+
+    /// Will return the current value of the Chronolog as a string.  Any unused digits will be labeled as 0.
+    pub fn get_string(&self) -> String {
+
+        // WHY I LOVE AND HATE RUST
+        // 1. Borrow by using as_ref().
+        // 2. Get rid of double Option results using and_then(#Anonymous).
+        // 3. Get what's in number or set to 0 if nothing is there using unwrap_or(0).
+        let hundreds    = self.ticker_for_hundreds      .as_ref().and_then(|ticker| ticker.number).unwrap_or(0);
+        let tens        = self.ticker_for_tens          .as_ref().and_then(|ticker| ticker.number).unwrap_or(0);
+        let ones        = self.ticker_for_ones          .as_ref().and_then(|ticker| ticker.number).unwrap_or(0);
+        let tenths      = self.ticker_for_tenths        .as_ref().and_then(|ticker| ticker.number).unwrap_or(0);
+        let hundredths  = self.ticker_for_hundredths    .as_ref().and_then(|ticker| ticker.number).unwrap_or(0);
+        let thousandths = self.ticker_for_thousandths   .as_ref().and_then(|ticker| ticker.number).unwrap_or(0);
 
         format!("{}{}{}.{}{}{}", hundreds, tens, ones, tenths, hundredths, thousandths)
     }

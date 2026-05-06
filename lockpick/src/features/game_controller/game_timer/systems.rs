@@ -19,14 +19,14 @@ pub fn chronolog_ticking(
     let delta = time.delta();
 
     for mut log in &mut logs {
-        if let Some(ticker) = &mut log.ticker_for_hundred    { ticker.tick_tock(delta); }
-        if let Some(ticker) = &mut log.ticker_for_ten        { ticker.tick_tock(delta); }
-        if let Some(ticker) = &mut log.ticker_for_one        { ticker.tick_tock(delta); }
-        if let Some(ticker) = &mut log.ticker_for_tenth      { ticker.tick_tock(delta); }
-        if let Some(ticker) = &mut log.ticker_for_hundredth  { ticker.tick_tock(delta); }
-        if let Some(ticker) = &mut log.ticker_for_thousandth { ticker.tick_tock(delta); }
+        if let Some(ticker) = &mut log.ticker_for_hundreds    { ticker.tick_tock(delta); }
+        if let Some(ticker) = &mut log.ticker_for_tens        { ticker.tick_tock(delta); }
+        if let Some(ticker) = &mut log.ticker_for_ones        { ticker.tick_tock(delta); }
+        if let Some(ticker) = &mut log.ticker_for_tenths      { ticker.tick_tock(delta); }
+        if let Some(ticker) = &mut log.ticker_for_hundredths  { ticker.tick_tock(delta); }
+        if let Some(ticker) = &mut log.ticker_for_thousandths { ticker.tick_tock(delta); }
 
-        println!("{}", log.value());
+        println!("{}", log.get_number());
     }
 }
 
@@ -41,6 +41,6 @@ pub fn ticker_ticking(
 
     for mut ticker in &mut tickers {
         ticker.tick_tock(delta);
-        println!("{}", ticker.value());
+        println!("{}", ticker.get_number());
     }
 }
