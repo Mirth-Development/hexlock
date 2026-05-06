@@ -21,21 +21,21 @@ pub fn tumbler_movement(
 
     for (mut transform, mut tumbler) in &mut tumblers {
 
-        let top = (TOP_OF_CHAMBER);
+        let top = TOP_OF_CHAMBER;
 
 
         let bottom: f32;
         let height = match tumbler.size {
             TumblerSize::Small =>{
-                bottom = (TOP_OF_CHAMBER-(HEIGHT_OF_SMALL_TUMBLER_SPRITE /2.0)-(HEIGHT_OF_SPRING_SPRITE/2.0)) - 105.0; //Add offset to get each equal to medium
+                bottom = TOP_OF_CHAMBER - (HEIGHT_OF_SMALL_TUMBLER_SPRITE / 2.0) - (HEIGHT_OF_SPRING_SPRITE / 2.0) - 105.0; //Add offset to get each equal to medium
                 HEIGHT_OF_SMALL_TUMBLER_SPRITE
             },
             TumblerSize::Medium =>{
-                bottom = (TOP_OF_CHAMBER-(HEIGHT_OF_MEDIUM_TUMBLER_SPRITE /2.0)-(HEIGHT_OF_SPRING_SPRITE/2.0));
+                bottom = TOP_OF_CHAMBER - (HEIGHT_OF_MEDIUM_TUMBLER_SPRITE / 2.0) - (HEIGHT_OF_SPRING_SPRITE / 2.0);
                 HEIGHT_OF_MEDIUM_TUMBLER_SPRITE
             },
             TumblerSize::Large =>{
-                bottom = (TOP_OF_CHAMBER-(HEIGHT_OF_LARGE_TUMBLER_SPRITE /2.0)-(HEIGHT_OF_SPRING_SPRITE/2.0)) + 105.0; //Add offset to get each equal to medium
+                bottom = TOP_OF_CHAMBER - (HEIGHT_OF_LARGE_TUMBLER_SPRITE / 2.0) - (HEIGHT_OF_SPRING_SPRITE / 2.0) + 105.0; //Add offset to get each equal to medium
                 HEIGHT_OF_LARGE_TUMBLER_SPRITE
             }
         };
@@ -62,7 +62,7 @@ pub fn timer_tumbler_finished (
     mut tumbler_query: Query<(Entity ,&mut Transform, &mut TumblerComponent), With<SetTumblerComponent>>,
 ) {
 
-    for (tumbler_entity, mut tumbler_transform, mut tumbler) in &mut tumbler_query{
+    for (tumbler_entity, _tumbler_transform, mut tumbler) in &mut tumbler_query{
         println!("Time:{}, Tumbler pos:{}", tumbler.timer.remaining_secs(), tumbler.position);
         if tumbler.timer.is_finished(){
             println!("Timer at {} Finished!", tumbler.position);
@@ -109,5 +109,3 @@ pub fn timer_tumbler_finished (
      }
 
  }
-
-

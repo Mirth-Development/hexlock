@@ -4,10 +4,10 @@ use bevy::window::WindowResized;
 use crate::features::controls::messages::QuitGame;
 use crate::features::interface::definitions::*;
 
-pub struct Spawns {}
-impl Plugin for Spawns {
+pub struct SpawnsForUserInterface {}
+impl Plugin for SpawnsForUserInterface {
     fn build(&self, app: &mut App) {
-        app.add_systems(Update, (resize, handle_ui_button_interactions).chain());
+        app.add_systems(Update, (resize, handle_button_interactions).chain());
     }
 }
 
@@ -238,16 +238,16 @@ pub fn resize(
     Ok(())
 }
 
-// INTERACTION EVENTS FOR UI BUTTONS
+// INTERACTION EVENTS FOR BUTTONS
 // Buttons are programmed out based on enum type and will direct state transitions and trigger confirmation dialogs where appropriate.
-pub fn handle_ui_button_interactions(
+pub fn handle_button_interactions(
     asset_server: Res<AssetServer>,
     window_query: Query<&Window>,
     container_query: Query<(Entity, &Containers)>,
     interaction_query: Query<(&Interaction, &Buttons), Changed<Interaction>>,
     mut commands: Commands,
     mut button_chain: ResMut<ButtonChain>,
-    mut next_state: ResMut<NextState<InterfaceStates>>,
+    mut next_state: ResMut<NextState<Interfaces>>,
     mut state_history: ResMut<StateHistory>,
     mut app_exit: MessageWriter<AppExit>,
 ) -> Result<()>
@@ -260,9 +260,9 @@ pub fn handle_ui_button_interactions(
 
                 ([Buttons::StartMenu], Buttons::Yes) => {
                     button_chain.clear();
-                    despawn_container(&mut commands, Containers::Confirmation, &container_query);
                     state_history.clear();
-                    next_state.set(InterfaceStates::StartMenu);
+                    despawn_container(&mut commands, Containers::Confirmation, &container_query);
+                    next_state.set(Interfaces::StartMenu);
                 },
 
                 ([Buttons::ExitGame], Buttons::Yes) => {
@@ -290,32 +290,32 @@ pub fn handle_ui_button_interactions(
 
                 (_, Buttons::Play) => {
                     button_chain.clear();
-                    next_state.set(InterfaceStates::Level1);
+                    next_state.set(Interfaces::Level1);
                 },
 
                 (_, Buttons::GoToLevel1) => {
                     button_chain.clear();
-                    next_state.set(InterfaceStates::Level1);
+                    next_state.set(Interfaces::Level1);
                 },
 
                 (_, Buttons::GoToLevel2) => {
                     button_chain.clear();
-                    next_state.set(InterfaceStates::Level2);
+                    next_state.set(Interfaces::Level2);
                 },
 
                 (_, Buttons::GoToLevel3) => {
                     button_chain.clear();
-                    next_state.set(InterfaceStates::Level3);
+                    next_state.set(Interfaces::Level3);
                 },
 
                 (_, Buttons::GoToLevel4) => {
                     button_chain.clear();
-                    next_state.set(InterfaceStates::Level4);
+                    next_state.set(Interfaces::Level4);
                 },
 
                 (_, Buttons::GoToLevel5) => {
                     button_chain.clear();
-                    next_state.set(InterfaceStates::Level5);
+                    next_state.set(Interfaces::Level5);
                 },
 
                 _ => { button_chain.clear(); }
@@ -324,25 +324,4 @@ pub fn handle_ui_button_interactions(
     }
 
     Ok(())
-}
-
-
-//Please double check this code
-pub fn handle_escape_message(
-    mut next_state: ResMut<NextState<InterfaceStates>>,
-    mut state_history: ResMut<StateHistory>,
-    mut actions : MessageReader<QuitGame>,
-    //container_query: Query<(Entity, &Containers)>,
-
-){
-    for action in actions.read(){
-        match action {
-            QuitGame::Quit => {
-                //despawn_container(&mut commands, Containers::Confirmation, &container_query);
-                state_history.clear();
-                next_state.set(InterfaceStates::StartMenu);
-            }
-        }
-    }
-
 }

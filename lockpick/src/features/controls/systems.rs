@@ -2,7 +2,7 @@ use bevy::prelude::*;
 use crate::features::controls::messages::QuitGame;
 use crate::features::lock::messages::CatchTumbler;
 use crate::features::lockpick::messages::LockpickAction;
-use super::super::lock::components::LockComponent;
+use crate::features::interface::definitions::*;
 
 //Move chamber focus
 pub fn user_control_system(
@@ -10,7 +10,8 @@ pub fn user_control_system(
     mut pick_event: MessageWriter<LockpickAction>,
     mut tumbler_event: MessageWriter<CatchTumbler>,
     mut quit_event: MessageWriter<QuitGame>,
-    mut exit: MessageWriter<AppExit>
+    mut next_state: ResMut<NextState<Interfaces>>,
+    mut state_history: ResMut<StateHistory>,
 ) {
 
     if keyboard_input.just_pressed(KeyCode::KeyW) {
@@ -44,6 +45,7 @@ pub fn user_control_system(
     }
 
     if keyboard_input.just_pressed(KeyCode::Escape){
-        quit_event.write(QuitGame::Quit);
+        state_history.clear();
+        next_state.set(Interfaces::StartMenu);
     }
 }

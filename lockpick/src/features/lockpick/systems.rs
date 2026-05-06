@@ -1,7 +1,5 @@
 use bevy::prelude::*;
-use rand::RngExt;
 use crate::features::lock::components::LockComponent;
-use crate::features::lock::spring::components::SpringComponent;
 use crate::features::lock::spring::systems::HEIGHT_OF_SPRING_SPRITE;
 use crate::features::lock::systems::TOP_OF_CHAMBER;
 use crate::features::lock::tumblers::components::{FocusedTumblerComponent, SetTumblerComponent, TumblerComponent};
@@ -10,10 +8,9 @@ use crate::features::lock::tumblers::systems::HEIGHT_OF_MEDIUM_TUMBLER_SPRITE;
 use crate::features::lockpick::component::LockpickComponent;
 use crate::features::lockpick::messages::LockpickAction;
 use crate::features::lockpick::resources::LockpickType;
-use crate::features::rand::resources::RandomSeed;
 
 const LOCKPICK_HEAD_OFFSET: f32 = 1041.0;
-const LOCKPICK_MAX_HEIGHT: f32 = (TOP_OF_CHAMBER - (HEIGHT_OF_MEDIUM_TUMBLER_SPRITE / 2.0 + HEIGHT_OF_SPRING_SPRITE));
+const LOCKPICK_MAX_HEIGHT: f32 = TOP_OF_CHAMBER - (HEIGHT_OF_MEDIUM_TUMBLER_SPRITE / 2.0 + HEIGHT_OF_SPRING_SPRITE);
 const LOCKPICK_LOWER_BOUND: f32 = -200.0;
 
 //Spawn Systems
@@ -38,7 +35,6 @@ pub fn spawn_lockpick (
 
 ///Automatically Moves pick to focused chamber
 pub fn move_to_focused_tumbler(
-    time: Res<Time>,
     mut lockpick_query: Query<(&mut Transform, &LockpickComponent)>,
     tumbler_query: Query<(&GlobalTransform, &TumblerComponent)>,
 ) {
@@ -63,7 +59,6 @@ pub fn handle_lockpick_message(
     check_set: Query<(), With<SetTumblerComponent>>, //Call all set elements
     lock_query: Query<&LockComponent>,
     tumblers: Query<(Entity, &TumblerComponent), Without<FocusedTumblerComponent>>,
-    springs: Query<&SpringComponent>,
     mut actions: MessageReader<LockpickAction>,
     mut commands: Commands,
     mut lockpick_query: Query<(&mut Sprite, &mut LockpickComponent)>,

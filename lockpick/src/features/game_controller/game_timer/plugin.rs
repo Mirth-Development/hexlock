@@ -1,8 +1,8 @@
 
 // Imports
 use bevy::prelude::*;
-use crate::features::game_timer::definitions::Definitions;
-use crate::features::game_timer::systems::Systems;
+use crate::features::game_controller::game_timer::definitions::*;
+use crate::features::game_controller::game_timer::systems::*;
 
 // Plugin
 pub struct GameTimer {}

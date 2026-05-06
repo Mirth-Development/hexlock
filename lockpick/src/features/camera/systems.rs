@@ -1,6 +1,5 @@
 use bevy::prelude::*;
 use bevy::camera::*;
-use bevy::camera::ScalingMode::WindowSize;
 
 pub fn spawn_camera(
     mut commands: Commands,

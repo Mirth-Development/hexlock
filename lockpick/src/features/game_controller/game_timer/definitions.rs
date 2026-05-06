@@ -6,20 +6,11 @@ use bevy::prelude::*;
 pub struct Definitions {}
 impl Plugin for Definitions {
     fn build(&self, app: &mut App) {
-
-        // States
-
-
-        // Resources
-
-
-        // Components
         app.register_type::<Ticker>();
-
     }
 }
 
-#[derive(Component, Debug)]
+#[derive(Component, Reflect, Debug)]
 pub struct Ticker {
     digit_for_hundred: Option<u8>,
     timer_for_hundred: Option<Timer>,

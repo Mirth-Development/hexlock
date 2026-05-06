@@ -8,8 +8,8 @@ impl Plugin for Definitions {
     fn build(&self, app: &mut App) {
 
         // States
-        app.init_state::<InterfaceStates>();
-        app.register_type::<InterfaceStates>();
+        app.init_state::<Interfaces>();
+        app.register_type::<Interfaces>();
 
         // Resources
         app.init_resource::<ButtonChain>();
@@ -34,7 +34,7 @@ impl Plugin for Definitions {
 // STATES
 
 #[derive(Reflect, Clone, Copy, PartialEq, Eq, Hash, Debug, Default, States)]
-pub enum InterfaceStates {
+pub enum Interfaces {
     #[default]
     StartMenu,
     Level1,
@@ -117,7 +117,7 @@ pub struct ButtonChain {
 #[derive(Resource, Reflect, Default)]
 #[reflect(Resource)]
 pub struct StateHistory {
-    stack: Vec<InterfaceStates>,
+    stack: Vec<Interfaces>,
 }
 
 impl ButtonChain {
@@ -144,7 +144,7 @@ impl StateHistory {
 
     // Adding to history.  Will remove oldest state in history when cap has been reached to allow
     // for new additions to the state history.
-    pub fn push(&mut self, state: InterfaceStates) {
+    pub fn push(&mut self, state: Interfaces) {
         if self.stack.len() >= Self::HISTORY_CAP {
             self.stack.remove(0);
         }
@@ -155,7 +155,7 @@ impl StateHistory {
     // Because we're working with a stack we must return an option for the scenario that the stack
     // could be empty.  Realistically speaking, I don't think this would ever happen since players
     // start on the main menu and always move into another UI.
-    pub fn pop(&mut self) -> Option<InterfaceStates> {
+    pub fn pop(&mut self) -> Option<Interfaces> {
         self.stack.pop()
     }
 

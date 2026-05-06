@@ -1,7 +1,7 @@
 
 // Imports
 use bevy::prelude::*;
-use std::time::Duration;
+use crate::features::game_controller::game_timer::definitions::*;
 
 pub struct Systems {}
 impl Plugin for Systems {
@@ -13,10 +13,10 @@ impl Plugin for Systems {
 // Timer
 fn tick(
     time: Res<Time>,
-    mut timers: Query<&mut Timer>
+    mut tickers: Query<&mut Ticker>
 )
 {
-    for mut ticker in &mut timers {
+    for mut ticker in &mut tickers {
         ticker.timer.tick(time.delta());
         println!("{:?}", ticker.timer)
     }

@@ -1,6 +1,4 @@
 use bevy::prelude::*;
-use crate::features::lock::components::LockComponent;
-use crate::features::lock::tumblers::components::TumblerComponent;
 
 #[derive(Resource)]
 pub struct LockSpriteHandles {

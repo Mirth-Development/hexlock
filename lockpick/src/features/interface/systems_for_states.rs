@@ -1,7 +1,7 @@
 
 use bevy::prelude::*;
 use crate::features::interface::definitions::*;
-use crate::features::interface::systems_for_interface_spawns::*;
+use crate::features::interface::systems_for_spawns::*;
 use crate::features::lockpick::systems::*;
 use crate::features::lockpick::component::*;
 use crate::features::lock::components::*;
@@ -10,27 +10,27 @@ use crate::features::lock::tumblers::systems::*;
 use crate::features::lock::spring::systems::*;
 use crate::features::controls::systems::*;
 
-pub struct Interfaces {}
-impl Plugin for Interfaces {
+pub struct StatesForUserInterface {}
+impl Plugin for StatesForUserInterface {
     fn build(&self, app: &mut App) {
 
-        app.add_systems(OnEnter(InterfaceStates::StartMenu), setup_start_menu);
-        app.add_systems(OnExit(InterfaceStates::StartMenu), (record_start_menu_exit, cleanup_entities).chain());
+        app.add_systems(OnEnter(Interfaces::StartMenu), setup_start_menu);
+        app.add_systems(OnExit(Interfaces::StartMenu), (record_start_menu_exit, cleanup_entities).chain());
 
-        app.add_systems(OnEnter(InterfaceStates::Level1), (setup_level_1, spawn_lockpick, load_lock_resources, spawn_lock).chain());
-        app.add_systems(OnExit(InterfaceStates::Level1), (record_level_1_exit, cleanup_entities).chain());
+        app.add_systems(OnEnter(Interfaces::Level1), (setup_level_1, spawn_lockpick, load_lock_resources, spawn_lock).chain());
+        app.add_systems(OnExit(Interfaces::Level1), (record_level_1_exit, cleanup_entities).chain());
 
-        app.add_systems(OnEnter(InterfaceStates::Level2), (setup_level_2, spawn_lockpick, load_lock_resources, spawn_lock).chain());
-        app.add_systems(OnExit(InterfaceStates::Level2), (record_level_2_exit, cleanup_entities).chain());
+        app.add_systems(OnEnter(Interfaces::Level2), (setup_level_2, spawn_lockpick, load_lock_resources, spawn_lock).chain());
+        app.add_systems(OnExit(Interfaces::Level2), (record_level_2_exit, cleanup_entities).chain());
 
-        app.add_systems(OnEnter(InterfaceStates::Level3), (setup_level_3, spawn_lockpick, load_lock_resources, spawn_lock).chain());
-        app.add_systems(OnExit(InterfaceStates::Level3), (record_level_3_exit, cleanup_entities).chain());
+        app.add_systems(OnEnter(Interfaces::Level3), (setup_level_3, spawn_lockpick, load_lock_resources, spawn_lock).chain());
+        app.add_systems(OnExit(Interfaces::Level3), (record_level_3_exit, cleanup_entities).chain());
 
-        app.add_systems(OnEnter(InterfaceStates::Level4), (setup_level_4, spawn_lockpick, load_lock_resources, spawn_lock).chain());
-        app.add_systems(OnExit(InterfaceStates::Level4), (record_level_4_exit, cleanup_entities).chain());
+        app.add_systems(OnEnter(Interfaces::Level4), (setup_level_4, spawn_lockpick, load_lock_resources, spawn_lock).chain());
+        app.add_systems(OnExit(Interfaces::Level4), (record_level_4_exit, cleanup_entities).chain());
 
-        app.add_systems(OnEnter(InterfaceStates::Level5), (setup_level_5, spawn_lockpick, load_lock_resources, spawn_lock).chain());
-        app.add_systems(OnExit(InterfaceStates::Level5), (record_level_5_exit, cleanup_entities).chain());
+        app.add_systems(OnEnter(Interfaces::Level5), (setup_level_5, spawn_lockpick, load_lock_resources, spawn_lock).chain());
+        app.add_systems(OnExit(Interfaces::Level5), (record_level_5_exit, cleanup_entities).chain());
 
         app.add_systems(Update, (
             move_to_focused_tumbler,
@@ -420,12 +420,12 @@ fn setup_level_5(
 }
 
 // UI STATE RECORDERS
-fn record_start_menu_exit(mut history: ResMut<StateHistory>) { history.push(InterfaceStates::StartMenu); }
-fn record_level_1_exit(mut history: ResMut<StateHistory>) { history.push(InterfaceStates::Level1); }
-fn record_level_2_exit(mut history: ResMut<StateHistory>) { history.push(InterfaceStates::Level2); }
-fn record_level_3_exit(mut history: ResMut<StateHistory>) { history.push(InterfaceStates::Level3); }
-fn record_level_4_exit(mut history: ResMut<StateHistory>) { history.push(InterfaceStates::Level4); }
-fn record_level_5_exit(mut history: ResMut<StateHistory>) { history.push(InterfaceStates::Level5); }
+fn record_start_menu_exit(mut history: ResMut<StateHistory>) { history.push(Interfaces::StartMenu); }
+fn record_level_1_exit(mut history: ResMut<StateHistory>) { history.push(Interfaces::Level1); }
+fn record_level_2_exit(mut history: ResMut<StateHistory>) { history.push(Interfaces::Level2); }
+fn record_level_3_exit(mut history: ResMut<StateHistory>) { history.push(Interfaces::Level3); }
+fn record_level_4_exit(mut history: ResMut<StateHistory>) { history.push(Interfaces::Level4); }
+fn record_level_5_exit(mut history: ResMut<StateHistory>) { history.push(Interfaces::Level5); }
 
 // TRASH COLLECTOR
 fn cleanup_entities(
@@ -446,15 +446,15 @@ fn cleanup_entities(
 
 // CHECKING IF IN-LEVEL
 fn in_level_state(
-    state: Res<State<InterfaceStates>>
+    state: Res<State<Interfaces>>
 ) -> bool
 {
     matches!(
         state.get(),
-        InterfaceStates::Level1 |
-        InterfaceStates::Level2 |
-        InterfaceStates::Level3 |
-        InterfaceStates::Level4 |
-        InterfaceStates::Level5
+        Interfaces::Level1 |
+        Interfaces::Level2 |
+        Interfaces::Level3 |
+        Interfaces::Level4 |
+        Interfaces::Level5
     )
 }
