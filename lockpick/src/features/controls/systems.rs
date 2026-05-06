@@ -1,5 +1,4 @@
 use bevy::prelude::*;
-use crate::features::controls::messages::QuitGame;
 use crate::features::lock::messages::CatchTumbler;
 use crate::features::lockpick::messages::LockpickAction;
 use crate::features::interface::definitions::*;

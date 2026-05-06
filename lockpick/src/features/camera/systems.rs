@@ -1,5 +1,6 @@
 use bevy::prelude::*;
 use bevy::camera::*;
+use crate::features::game_controller::game_timer::definitions::*;
 
 pub fn spawn_camera(
     mut commands: Commands,
@@ -26,4 +27,41 @@ pub fn spawn_camera(
             Transform::from_translation(Vec3::new(0.0, 0.0, 0.0)),
         ));
     }
+
+    // ####################################################################################################### //
+    // CLOCK TESTS
+
+    // Default Clock
+    // commands.spawn(Chronolog::new());
+
+    // Tracking Specific Places Example
+    // commands.spawn(Chronolog {
+    //     ticker_for_one: Some(Ticker {
+    //         number: Some(0),
+    //         timer: Some(Timer::from_seconds(1.0, TimerMode::Repeating)),
+    //     }),
+    //     ticker_for_tenth: Some(Ticker {
+    //         number: Some(0),
+    //         timer: Some(Timer::from_seconds(0.1, TimerMode::Repeating)),
+    //     }),
+    //     ..Default::default()
+    // });
+
+    // Standalone Ticker Example
+    // commands.spawn(Ticker {
+    //     number: Some(0),
+    //     timer: Some(Timer::from_seconds(1.0, TimerMode::Repeating)),
+    // });
+
+    // Preset Clock Example
+    // commands.spawn(Chronolog {
+    //     ticker_for_hundred: Some(Ticker { number: Some(1), timer: Some(Timer::from_seconds(100.0, TimerMode::Repeating)) }),
+    //     ticker_for_ten:     Some(Ticker { number: Some(2), timer: Some(Timer::from_seconds(10.0,  TimerMode::Repeating)) }),
+    //     ticker_for_one:     Some(Ticker { number: Some(5), timer: Some(Timer::from_seconds(1.0,   TimerMode::Repeating)) }),
+    //     ticker_for_tenth:   Some(Ticker { number: Some(5), timer: Some(Timer::from_seconds(0.1,   TimerMode::Repeating)) }),
+    //     ..Default::default()
+    // });
+
+    // ####################################################################################################### //
+
 }
