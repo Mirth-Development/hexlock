@@ -32,7 +32,7 @@ pub fn spawn_camera(
     // CLOCK TESTS
 
     // Default Clock
-    // commands.spawn(Chronolog::new());
+    commands.spawn(Chronolog::new());
 
     // Tracking Specific Places Example
     // commands.spawn(Chronolog {

@@ -51,6 +51,11 @@ impl Ticker {
             }
         }
     }
+
+    /// Will return the current value of number stored in Ticker.
+    pub fn value(&self) -> String {
+        format!("{}", self.number.unwrap_or(0))
+    }
 }
 
 // #################################################################################################### //
@@ -133,7 +138,8 @@ impl Chronolog {
         }
     }
 
-    pub fn display(&self) -> String {
+    /// Will return the current value of the Chronolog in 6 digits.  Any unused digits will be labeled as 0.
+    pub fn value(&self) -> String {
 
         // WHY I LOVE AND HATE RUST
         // 1. Borrow by using as_ref().

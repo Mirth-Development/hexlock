@@ -26,7 +26,7 @@ pub fn chronolog_ticking(
         if let Some(ticker) = &mut log.ticker_for_hundredth  { ticker.tick_tock(delta); }
         if let Some(ticker) = &mut log.ticker_for_thousandth { ticker.tick_tock(delta); }
 
-        println!("{}", log.display());
+        println!("{}", log.value());
     }
 }
 
@@ -41,6 +41,6 @@ pub fn ticker_ticking(
 
     for mut ticker in &mut tickers {
         ticker.tick_tock(delta);
-        println!("{}", ticker.number.unwrap_or(0));
+        println!("{}", ticker.value());
     }
 }
