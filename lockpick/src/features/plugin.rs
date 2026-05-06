@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use crate::features::animation::plugin::AnimationFeaturesPlugin;
 use crate::features::controls::messages::QuitGame;
 use crate::features::game_controller::messages::GameStateMessage;
 use crate::features::lock::messages::CatchTumbler;
@@ -19,5 +20,6 @@ impl Plugin for LockpickFeaturesPlugin {
         app.add_message::<QuitGame>();
         app.add_message::<TumblerTimerMessage>();
         app.add_message::<GameStateMessage>();
+        app.add_plugins(AnimationFeaturesPlugin);
     }
 }

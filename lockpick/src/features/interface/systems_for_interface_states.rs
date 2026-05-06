@@ -1,5 +1,7 @@
-
+use bevy::ecs::component::Mutable;
 use bevy::prelude::*;
+use crate::features::animation::components::AnimationShake;
+use crate::features::animation::systems::animation_controller;
 use crate::features::interface::definitions::*;
 use crate::features::interface::systems_for_interface_spawns::*;
 use crate::features::lockpick::systems::*;
@@ -51,7 +53,7 @@ impl Plugin for Interfaces {
             handle_tumbler_set,
             handle_escape_message,
             check_game_state,
-            handle_game_state
+            handle_game_state,
         )
             .chain()
             .run_if(in_level_state)

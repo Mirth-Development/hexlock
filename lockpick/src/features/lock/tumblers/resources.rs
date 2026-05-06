@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-#[derive(Resource, Copy, Clone)]
+#[derive(Resource, Copy, Clone, PartialEq)]
 pub enum TumblerType{
     Normal,
     Electric,

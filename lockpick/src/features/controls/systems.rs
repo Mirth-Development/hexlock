@@ -10,7 +10,6 @@ pub fn user_control_system(
     mut pick_event: MessageWriter<LockpickAction>,
     mut tumbler_event: MessageWriter<CatchTumbler>,
     mut quit_event: MessageWriter<QuitGame>,
-    mut exit: MessageWriter<AppExit>
 ) {
 
     if keyboard_input.just_pressed(KeyCode::KeyW) {
