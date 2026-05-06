@@ -9,6 +9,7 @@ use crate::features::lock::systems::*;
 use crate::features::lock::tumblers::systems::*;
 use crate::features::lock::spring::systems::*;
 use crate::features::controls::systems::*;
+use crate::features::game_controller::systems::{check_game_state, handle_game_state};
 
 pub struct Interfaces {}
 impl Plugin for Interfaces {
@@ -32,6 +33,12 @@ impl Plugin for Interfaces {
         app.add_systems(OnEnter(InterfaceStates::Level5), (setup_level_5, spawn_lockpick, load_lock_resources, spawn_lock).chain());
         app.add_systems(OnExit(InterfaceStates::Level5), (record_level_5_exit, cleanup_entities).chain());
 
+        app.add_systems(OnEnter(InterfaceStates::WinScreen), (setup_win_screen).chain());
+        app.add_systems(OnExit(InterfaceStates::WinScreen), (record_lose_screen_exit, cleanup_entities).chain());
+
+        app.add_systems(OnEnter(InterfaceStates::LoseScreen), (setup_lose_screen).chain());
+        app.add_systems(OnExit(InterfaceStates::LoseScreen), (record_win_screen_exit, cleanup_entities).chain());
+
         app.add_systems(Update, (
             move_to_focused_tumbler,
             tumbler_movement,
@@ -42,7 +49,9 @@ impl Plugin for Interfaces {
             handle_lockpick_message,
             handle_catching_tumblers,
             handle_tumbler_set,
-            handle_escape_message
+            handle_escape_message,
+            check_game_state,
+            handle_game_state
         )
             .chain()
             .run_if(in_level_state)
@@ -419,6 +428,67 @@ fn setup_level_5(
     Ok(())
 }
 
+fn setup_win_screen(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+    window_query: Query<&Window>
+) -> Result<()> {
+
+    let window = window_query.single()?;
+
+    // Label for Level #
+    spawn_ui_element(
+        &mut commands, &asset_server, window,
+        None,
+        None,
+        Some(Labels::Level),
+        None,
+        Vec3::new(10.0, 5.0, 1.0),
+        10.0,
+        None,
+        Some(TextSpawn {
+            content: "WIN",
+            font_path: "fonts/Cinzel_Decorative.ttf",
+            font_size_scale: 0.01,
+            color: Color::WHITE,
+        })
+    );
+
+    Ok(())
+}
+
+fn setup_lose_screen(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+    window_query: Query<&Window>
+) -> Result<()> {
+
+    let window = window_query.single()?;
+
+    // Label for Level #
+    spawn_ui_element(
+        &mut commands, &asset_server, window,
+        None,
+        None,
+        Some(Labels::Level),
+        None,
+        Vec3::new(10.0, 5.0, 1.0),
+        10.0,
+        None,
+        Some(TextSpawn {
+            content: "WIN",
+            font_path: "fonts/Cinzel_Decorative.ttf",
+            font_size_scale: 0.01,
+            color: Color::WHITE,
+        })
+    );
+
+    Ok(())
+}
+
+
+
+
 // UI STATE RECORDERS
 fn record_start_menu_exit(mut history: ResMut<StateHistory>) { history.push(InterfaceStates::StartMenu); }
 fn record_level_1_exit(mut history: ResMut<StateHistory>) { history.push(InterfaceStates::Level1); }
@@ -426,6 +496,9 @@ fn record_level_2_exit(mut history: ResMut<StateHistory>) { history.push(Interfa
 fn record_level_3_exit(mut history: ResMut<StateHistory>) { history.push(InterfaceStates::Level3); }
 fn record_level_4_exit(mut history: ResMut<StateHistory>) { history.push(InterfaceStates::Level4); }
 fn record_level_5_exit(mut history: ResMut<StateHistory>) { history.push(InterfaceStates::Level5); }
+
+fn record_lose_screen_exit(mut history: ResMut<StateHistory>) { history.push(InterfaceStates::LoseScreen); } //Are these required?
+fn record_win_screen_exit(mut history: ResMut<StateHistory>) { history.push(InterfaceStates::WinScreen); }
 
 // TRASH COLLECTOR
 fn cleanup_entities(
@@ -458,3 +531,4 @@ fn in_level_state(
         InterfaceStates::Level5
     )
 }
+
