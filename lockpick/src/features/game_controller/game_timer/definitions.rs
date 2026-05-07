@@ -72,17 +72,19 @@ impl Default for Ticker {
 }
 
 impl Ticker {
-    pub fn tick_tock(&mut self, delta: std::time::Duration) {
+    pub fn tick(&mut self, delta: std::time::Duration) {
         if let (Some(timer), Some(number)) = (&mut self.timer, &mut self.number) {
 
             // Advance timer by the difference in time between frames.
+            // This .tick is Bevy's tick method for their timers, this isn't a recursive action.
             timer.tick(delta);
 
-            // This and the if-condition is handling frame spiking.
+            // Handling frame spiking.
             let ticks = timer.times_finished_this_tick();
             if ticks > 0 {
                 // Don't get rid of my modulo!  It's what's allowing digits to be processed correctly
-                // inside chronologs.  Tickers a
+                // inside chronologs.  The "number" property only goes up to 9 intentionally to properly
+                // maintain digits inside chronologs.
                 *number = (*number + ticks) % 10;
             }
         }
@@ -96,6 +98,22 @@ impl Ticker {
     /// Will return the current value of the number stored in Ticker as a string.
     pub fn get_string(&self) -> String {
         format!("{}", self.number.unwrap_or(0))
+    }
+
+    /// Pauses a timer within the ticker.
+    pub fn pause(&mut self) {
+        if let Some(timer) = &mut self.timer {
+            // This .pause is Bevy's pause method for their timers, this isn't a recursive action.
+            timer.pause();
+        }
+    }
+
+    /// Unpauses a timer within a ticker.
+    pub fn unpause(&mut self) {
+        if let Some(timer) = &mut self.timer {
+            // This .unpause is Bevy's unpause method for their timers, this isn't a recursive action.
+            timer.unpause();
+        }
     }
 }
 // #################################################################################################### //
@@ -122,6 +140,7 @@ impl Ticker {
 /// if you'd like you can give a default Ticker custom timers to do countdown effects more intuitively.
 #[derive(Component, Reflect, Debug)]
 pub struct Chronolog {
+    pub start_value: Option<f32>,
     pub ticker_for_hundreds: Option<Ticker>,
     pub ticker_for_tens: Option<Ticker>,
     pub ticker_for_ones: Option<Ticker>,
@@ -133,6 +152,7 @@ pub struct Chronolog {
 impl Default for Chronolog {
     fn default() -> Self {
         Self {
+            start_value: Some(0.0),
             ticker_for_hundreds: Some(Ticker::default()),
             ticker_for_tens: Some(Ticker::default()),
             ticker_for_ones: Some(Ticker::default()),
@@ -146,6 +166,8 @@ impl Default for Chronolog {
 impl Chronolog {
     pub fn new() -> Self {
         Self {
+            start_value: Some(0.0),
+
             ticker_for_hundreds: Some(Ticker{
                 number: Some(0),
                 timer: Some(Timer::from_seconds(100.0, TimerMode::Repeating)),
