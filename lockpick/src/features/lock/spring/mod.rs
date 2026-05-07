@@ -1,3 +1,3 @@
 pub mod components;
 pub mod systems;
-mod resources;
+pub mod resources;

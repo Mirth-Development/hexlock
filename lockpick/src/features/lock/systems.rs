@@ -25,7 +25,7 @@ const LOCK_START_OFFSET: f32 = -170.0;
 const LOCK_END_OFFSET: f32 = -80.0;
 
 //Load Resources
-pub fn load_sprite_resources(mut commands: Commands, asset_server: Res<AssetServer>) {
+pub fn load_lock_sprite_resources(mut commands: Commands, asset_server: Res<AssetServer>) {
     //Sanity code
     println!("Loading LockSprites!");
 
@@ -189,6 +189,7 @@ pub fn spawn_lock(
 }
 
 pub fn handle_catching_tumblers(
+    check_set: Query<(), With<SetTumblerComponent>>, //Call all set elements
     mut commands: Commands,
     mut actions: MessageReader<CatchTumbler>,
     mut writer: MessageWriter<TumblerTimerMessage>,
@@ -209,9 +210,7 @@ pub fn handle_catching_tumblers(
     for action in actions.read() {
         match action {
             CatchTumbler::Catch => {
-                if focused_tumbler_transform.translation.y + (height / 2.0)
-                    >= (TOP_OF_CHAMBER - TUMBLER_SET_THRESHOLD)
-                {
+                if (focused_tumbler_transform.translation.y + (height / 2.0) >= (TOP_OF_CHAMBER - TUMBLER_SET_THRESHOLD)){
                     writer.write(TumblerTimerMessage(focused_entity));
                 } else {
                     //Add time/score reducing code here!
@@ -221,7 +220,7 @@ pub fn handle_catching_tumblers(
                             commands.entity(child).insert(AnimationShake::new(0.5, Vec3::splat(0.0)));
                         }
                     }
-                    if focused_tumbler.velocity.y != (TOP_OF_CHAMBER - (height / 2.0) - (HEIGHT_OF_SPRING_SPRITE / 2.0))
+                    if (focused_tumbler.velocity.y != (TOP_OF_CHAMBER - (height / 2.0) - (HEIGHT_OF_SPRING_SPRITE / 2.0))) && !check_set.contains(focused_entity)
                     {
                         focused_tumbler.velocity.y = -600.0;
                     }

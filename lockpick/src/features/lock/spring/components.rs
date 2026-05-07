@@ -5,14 +5,14 @@ use crate::features::lock::spring::resources::SpringSize;
 #[derive(Component)]
 pub struct SpringComponent{
     pub position: u32,
-    pub spring_size: SpringSize
+    pub size: SpringSize
 }
 
 impl Default for SpringComponent{
     fn default() -> Self {
         Self {
             position: 0,
-            spring_size: SpringSize::Regular
+            size: SpringSize::Regular
         }
     }
 }
