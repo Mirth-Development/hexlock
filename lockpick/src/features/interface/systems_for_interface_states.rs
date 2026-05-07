@@ -12,7 +12,7 @@ use crate::features::lock::tumblers::systems::*;
 use crate::features::lock::spring::systems::*;
 use crate::features::controls::systems::*;
 use crate::features::game_controller::game_effects::systems::handle_lifetime_timers;
-use crate::features::game_controller::systems::{check_game_state, handle_game_state};
+use crate::features::game_controller::systems::{charge_chargebar, check_game_state, handle_game_state, spawn_charge_bar};
 
 pub struct Interfaces {}
 impl Plugin for Interfaces {
@@ -21,19 +21,19 @@ impl Plugin for Interfaces {
         app.add_systems(OnEnter(InterfaceStates::StartMenu), setup_start_menu);
         app.add_systems(OnExit(InterfaceStates::StartMenu), (record_start_menu_exit, cleanup_entities).chain());
 
-        app.add_systems(OnEnter(InterfaceStates::Level1), (setup_level_1, spawn_lockpick, load_lock_resources, spawn_lock).chain());
+        app.add_systems(OnEnter(InterfaceStates::Level1), (setup_level_1, spawn_lockpick, load_lock_resources, spawn_lock, spawn_charge_bar).chain());
         app.add_systems(OnExit(InterfaceStates::Level1), (record_level_1_exit, cleanup_entities).chain());
 
-        app.add_systems(OnEnter(InterfaceStates::Level2), (setup_level_2, spawn_lockpick, load_lock_resources, spawn_lock).chain());
+        app.add_systems(OnEnter(InterfaceStates::Level2), (setup_level_2, spawn_lockpick, load_lock_resources, spawn_lock, spawn_charge_bar).chain());
         app.add_systems(OnExit(InterfaceStates::Level2), (record_level_2_exit, cleanup_entities).chain());
 
-        app.add_systems(OnEnter(InterfaceStates::Level3), (setup_level_3, spawn_lockpick, load_lock_resources, spawn_lock).chain());
+        app.add_systems(OnEnter(InterfaceStates::Level3), (setup_level_3, spawn_lockpick, load_lock_resources, spawn_lock, spawn_charge_bar).chain());
         app.add_systems(OnExit(InterfaceStates::Level3), (record_level_3_exit, cleanup_entities).chain());
 
-        app.add_systems(OnEnter(InterfaceStates::Level4), (setup_level_4, spawn_lockpick, load_lock_resources, spawn_lock).chain());
+        app.add_systems(OnEnter(InterfaceStates::Level4), (setup_level_4, spawn_lockpick, load_lock_resources, spawn_lock, spawn_charge_bar).chain());
         app.add_systems(OnExit(InterfaceStates::Level4), (record_level_4_exit, cleanup_entities).chain());
 
-        app.add_systems(OnEnter(InterfaceStates::Level5), (setup_level_5, spawn_lockpick, load_lock_resources, spawn_lock).chain());
+        app.add_systems(OnEnter(InterfaceStates::Level5), (setup_level_5, spawn_lockpick, load_lock_resources, spawn_lock, spawn_charge_bar).chain());
         app.add_systems(OnExit(InterfaceStates::Level5), (record_level_5_exit, cleanup_entities).chain());
 
         app.add_systems(OnEnter(InterfaceStates::WinScreen), (setup_win_screen).chain());
@@ -49,6 +49,7 @@ impl Plugin for Interfaces {
             user_control_system,
             timer_tumbler_finished,
             stretch_to_tumbler,
+            charge_chargebar,
             handle_lockpick_message,
             handle_catching_tumblers,
             handle_tumbler_set,
@@ -56,7 +57,8 @@ impl Plugin for Interfaces {
             check_game_state,
             handle_game_state,
             handle_lockpick_charge,
-            handle_lifetime_timers
+            handle_lifetime_timers,
+
         )
             .chain()
             .run_if(in_level_state)

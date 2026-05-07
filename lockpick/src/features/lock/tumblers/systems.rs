@@ -5,7 +5,8 @@ use crate::features::lock::spring::components::SpringComponent;
 use crate::features::lock::spring::resources::SpringSize;
 use crate::features::lock::spring::systems::HEIGHT_OF_SPRING_SPRITE;
 use crate::features::lock::systems::TOP_OF_CHAMBER;
-use crate::features::lock::tumblers::components::{SetTumblerComponent, TumblerComponent};
+use crate::features::lock::tumblers::components::{SetTumblerComponent, TumblerComponent, TumblerRustComponent};
+use crate::features::lock::tumblers::event::BreakRust;
 use crate::features::lock::tumblers::resources::TumblerSize;
 use super::messages::TumblerTimerMessage;
 
@@ -20,8 +21,8 @@ pub const TUMBLER_DEFAULT_SET_TIME: f32= 20.0;
 
 pub fn tumbler_movement(
     time: Res<Time>,
-    tumbler_spring_pairings: Res<TumblerSpringPairings>,
-    springs: Query<(&SpringComponent)>,
+    // tumbler_spring_pairings: Res<TumblerSpringPairings>,
+    // springs: Query<(&SpringComponent)>,
     mut tumblers: Query<(Entity, &mut Transform, &mut TumblerComponent)>,
 ) {
 
@@ -133,4 +134,21 @@ pub fn timer_tumbler_finished (
 
  }
 
+//events
+pub fn on_break_rust(
+    rust_trigger_entity: On<BreakRust>,
+    mut commands: Commands,
+    mut tumbler_rust_component: Query<(Entity,&mut TumblerRustComponent)>
+){
+    for (rust_component_entity,mut rust_component) in tumbler_rust_component.iter_mut() {
+        if rust_trigger_entity.id == rust_component_entity{
+            if rust_component.hits <= 1 {
+                commands.entity(rust_component_entity).despawn()
+            } else {
+                rust_component.hits -= 1;
+            }
+        }
+    }
+
+}
 

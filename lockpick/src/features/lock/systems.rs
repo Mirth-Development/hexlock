@@ -1,19 +1,21 @@
 use super::components::{LockComponent, TumblerChamberComponent};
 use super::resource::{LockSpriteHandles, TumblerSpringPairings};
 use super::spring::components::SpringComponent;
+use super::super::game_controller::rust_randomizer::systems::chance_to_add_rust;
 use super::tumblers::components::{FocusedTumblerComponent, SetTumblerComponent, TumblerComponent};
 use crate::features::animation::components::{Animatable, Animated, AnimationShake};
 use crate::features::game_controller::tumbler_randomizer::systems::gen_random_tumbler;
 use crate::features::lock::messages::CatchTumbler;
 use crate::features::lock::spring::systems::{HEIGHT_OF_SPRING_SPRITE, gen_random_spring};
 use crate::features::lock::tumblers::messages::TumblerTimerMessage;
-use crate::features::lock::tumblers::resources::TumblerSize;
+use crate::features::lock::tumblers::resources::{TumblerSize, TumblerType};
 use crate::features::lock::tumblers::systems::{
     HEIGHT_OF_LARGE_TUMBLER_SPRITE, HEIGHT_OF_MEDIUM_TUMBLER_SPRITE,
     HEIGHT_OF_SMALL_TUMBLER_SPRITE, TUMBLER_DEFAULT_SET_TIME,
 };
 use crate::features::rand::resources::RandomSeed;
 use bevy::prelude::*;
+use crate::features::game_controller::game_effects::resources::EffectsSpriteHandles;
 
 //Hardcoded Sprite Sizes so that they don't have to be sought dynamically, async loading is a pain in the ass
 pub const TOP_OF_CHAMBER: f32 = 399.0;
@@ -59,9 +61,11 @@ pub fn load_lock_resources(mut commands: Commands, asset_server: Res<AssetServer
 //Spawn and Build Lock
 pub fn spawn_lock(
     lock_sprite_handles: Res<LockSpriteHandles>,
+    effects_sprite_handles: Res<EffectsSpriteHandles>,
     mut rng: ResMut<RandomSeed>,
     mut commands: Commands,
     mut tumbler_spring_pairings: ResMut<TumblerSpringPairings>,
+
 ) {
     //Sanity code
     println!("Building Locks");
@@ -72,7 +76,7 @@ pub fn spawn_lock(
     tumbler_set_timer.pause();
 
     //Sprites are spawned centered on their spawn coords, so the offset calculates where to place them
-    offset += (LOCK_START_SPRITE_WIDTH / 2.0);
+    offset += (LOCK_START_SPRITE_WIDTH / 2.0) + 10.0; //Extra pixel gap
 
     let mut lock = LockComponent {
         num_of_tumblers: 8, //Max amount for our purposes
@@ -91,7 +95,7 @@ pub fn spawn_lock(
                 Sprite::from_image(lock_sprite_handles.start_sprite.clone()),
                 Transform::from_xyz(offset, LOCK_START_OFFSET, 0.0),
             ));
-            offset += (LOCK_START_SPRITE_WIDTH / 2.0) + (TUMBLER_CHAMBER_SPRITE_WIDTH / 2.0);
+            offset += (LOCK_START_SPRITE_WIDTH / 2.0) + (TUMBLER_CHAMBER_SPRITE_WIDTH / 2.0) + 10.0; //Extra pixel gap
 
             for x in 1..=lock.num_of_tumblers {
                 //Spawn Tumbler Chamber
@@ -102,7 +106,8 @@ pub fn spawn_lock(
                 ));
 
                 //Spawn Tumbler
-                let tumbler_entity_commands;
+                let mut tumbler_entity_commands: EntityCommands;
+                let tumbler_entity_id: Entity;
                 //Generate random tumbler attributes
                 let (tumbler, sprites) = gen_random_tumbler(
                     x,
@@ -110,6 +115,7 @@ pub fn spawn_lock(
                     &mut rng.RandomNumberGenerator,
                     &lock_sprite_handles,
                 );
+
                 //get translation
                 let tumbler_translation = vec3(
                     offset,
@@ -124,32 +130,52 @@ pub fn spawn_lock(
                             // gen_random_tumbler(tumbler_translation,x, tumbler_set_timer.clone(), &mut rng.RandomNumberGenerator, &lock_sprite_handles,),
                             //Spawn sprite as a child with its own transform
                             children![(spawn_animatable_sprite_child(
-                                sprites.0, //image
+                                sprites.0.clone(), //image
                                 sprites.1, //color
                             ),)],
-                            tumbler,
+                            tumbler.clone(),
                             FocusedTumblerComponent,
                             Transform {
                                 translation: tumbler_translation,
                                 ..default()
                             },
-                        ))
-                        .id();
+                        ));
+                    tumbler_entity_id = tumbler_entity_commands.id();
                 } else {
                     tumbler_entity_commands = parent_node
                         .spawn((
                             //Spawn sprite as a child with its own transform
                             children![(spawn_animatable_sprite_child(
-                                sprites.0,
+                                sprites.0.clone(),
                                 sprites.1,
                             ),)],
-                            tumbler,
+                            tumbler.clone(),
                             Transform {
                                 translation: tumbler_translation,
                                 ..default()
                             },
-                        ))
-                        .id();
+                        ));
+
+                    tumbler_entity_id = tumbler_entity_commands.id();
+                }
+
+                //Randomly generate rust on regular components
+                if tumbler.tumbler_type == TumblerType::Normal {
+                    let height = match tumbler.size {
+                        TumblerSize::Small => HEIGHT_OF_SMALL_TUMBLER_SPRITE,
+                        TumblerSize::Medium => HEIGHT_OF_MEDIUM_TUMBLER_SPRITE,
+                        TumblerSize::Large => HEIGHT_OF_LARGE_TUMBLER_SPRITE,
+                    };
+
+                    chance_to_add_rust(
+                        &mut rng.RandomNumberGenerator,
+                        &mut tumbler_entity_commands,
+                        &effects_sprite_handles,
+                        height
+
+
+
+                    )
                 }
 
                 //Spawn_Spring
@@ -166,12 +192,12 @@ pub fn spawn_lock(
 
                 tumbler_spring_pairings
                     .array
-                    .push((tumbler_entity_commands, spring));
+                    .push((tumbler_entity_id, spring));
                 if x != lock.num_of_tumblers {
-                    offset += TUMBLER_CHAMBER_SPRITE_WIDTH;
+                    offset += TUMBLER_CHAMBER_SPRITE_WIDTH + 10.0; //Extra pixel gap
                 }
             }
-            offset += (TUMBLER_CHAMBER_SPRITE_WIDTH / 2.0) + (LOCK_END_SPRITE_WIDTH / 2.0);
+            offset += (TUMBLER_CHAMBER_SPRITE_WIDTH / 2.0) + (LOCK_END_SPRITE_WIDTH / 2.0) + 10.0; //Extra pixel gap
 
             //Spawn End of Lock
             parent_node.spawn((
@@ -182,7 +208,7 @@ pub fn spawn_lock(
                     ..Default::default()
                 },
             ));
-            offset += LOCK_END_SPRITE_WIDTH / 2.0;
+            offset += LOCK_END_SPRITE_WIDTH / 2.0 + 10.0; //Extra pixel gap
         })
         //Add the offset back into the entity by replacing the Transform of the parent
         .insert(Transform::from_xyz(-offset / 2.0, 0.0, 0.0));

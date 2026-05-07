@@ -6,3 +6,5 @@ pub mod systems;
 pub mod resources;
 pub mod messages;
 pub mod game_effects;
+pub mod rust_randomizer;
+pub mod components;

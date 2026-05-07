@@ -92,9 +92,7 @@ pub fn on_lightning_effect(
 
 }
 
-pub fn on_rust_effect(){
-    
-}
+
 
 //Tick Lifettime timers
 

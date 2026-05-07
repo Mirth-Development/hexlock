@@ -1,4 +1,4 @@
 pub mod systems;
-mod resources;
+pub mod resources;
 pub mod events;
 mod components;

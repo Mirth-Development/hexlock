@@ -2,7 +2,7 @@ use bevy::prelude::*;
 use crate::features::lock::tumblers::resources::{TumblerSize, TumblerType};
 
 //Naming Component
-#[derive(Component)]
+#[derive(Component, Clone)]
 pub struct TumblerComponent{
     pub position: u32,
     pub velocity: Vec3,
@@ -17,6 +17,10 @@ pub struct FocusedTumblerComponent;
 #[derive(Component)]
 pub struct SetTumblerComponent;
 
+#[derive(Component)]
+pub struct TumblerRustComponent{
+    pub hits: u32,
+}
 
 impl Default for TumblerComponent {
     fn default() -> Self {
