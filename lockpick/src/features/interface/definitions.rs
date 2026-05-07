@@ -58,6 +58,7 @@ pub enum Interfaces {
 pub enum Containers {
     Confirmation,
     Card,
+    Timer,
 }
 
 #[derive(Component, Debug, Reflect, PartialEq, Clone)]
@@ -83,7 +84,7 @@ pub enum Labels {
     Title,
     Confirmation,
     Card,
-    Level
+    Level,
 }
 
 // This component is always built into other elements - or at least it should be, using it

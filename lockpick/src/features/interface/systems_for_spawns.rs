@@ -2,11 +2,14 @@
 use bevy::prelude::*;
 use bevy::window::WindowResized;
 use crate::features::interface::definitions::*;
+use crate::features::game_controller::game_timer::definitions::*;
+use crate::features::interface::systems_for_states::*;
 
 pub struct SystemsForUserInterfaceSpawns {}
 impl Plugin for SystemsForUserInterfaceSpawns {
     fn build(&self, app: &mut App) {
         app.add_systems(Update, (resize, handle_button_interactions).chain());
+        app.add_systems(Update, (despawn_chronodigits, spawn_chronodigits).chain().run_if(in_level_state));
     }
 }
 
@@ -181,6 +184,129 @@ pub fn spawn_confirmation(
     );
 }
 
+pub fn spawn_timer_constants(
+    commands: &mut Commands,
+    asset_server: &AssetServer,
+    window: &Window,
+)
+{
+    // Background
+    spawn_ui_element(
+        commands,
+        asset_server,
+        window,
+        None,
+        Some(Containers::Timer),
+        None,
+        Some("images/Background_Timer.png"),
+        Vec3::new(89.0, 10.0, 3.0),
+        20.0,
+        Some(500.0 / 230.0),
+        None
+    );
+
+    // Label
+    spawn_ui_element(
+        commands,
+        asset_server,
+        window,
+        None,
+        Some(Containers::Timer),
+        None,
+        None,
+        Vec3::new(89.0, 6.0, 4.0),
+        15.0,
+        Some(100.0 / 20.0),
+        Some(TextSpawn {
+            content: "Time Until You Lose",
+            font_path: "fonts/Cinzel_Decorative.ttf",
+            font_size_scale: 0.01,
+            color: Color::WHITE,
+        })
+    );
+}
+
+pub fn spawn_chronodigits(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+    window_query: Query<&Window>,
+    the_timer: Res<TheTimer>,
+) -> Result<()>
+{
+    let window = window_query.single()?;
+
+    let digit_images: [&str; 10] = [
+        "images/0.png",
+        "images/1.png",
+        "images/2.png",
+        "images/3.png",
+        "images/4.png",
+        "images/5.png",
+        "images/6.png",
+        "images/7.png",
+        "images/8.png",
+        "images/9.png",
+    ];
+
+    // Obtaining current digit values.  Have to cast to usize because Rust arrays can't take u32?
+    // Did not know that.  Doesn't usize account for u32?  ME DON'T UNDERSTAND!
+    let hundreds = the_timer.chronolog.digit_for_hundreds() as usize;
+    let tens = the_timer.chronolog.digit_for_tens() as usize;
+    let ones = the_timer.chronolog.digit_for_ones() as usize;
+
+    // Digit for Hundreds Place
+    let digit_hundreds = spawn_ui_element(
+        &mut commands,
+        &asset_server,
+        window,
+        None,
+        None,
+        None,
+        Some(digit_images[hundreds]),
+        Vec3::new(86.0, 12.0, 4.0),
+        2.5,
+        Some(85.0 / 135.0),
+        None
+    );
+
+    // Digit for Tens Place
+    let digit_tens = spawn_ui_element(
+        &mut commands,
+        &asset_server,
+        window,
+        None,
+        None,
+        None,
+        Some(digit_images[tens]),
+        Vec3::new(89.0, 12.0, 4.0),
+        2.5,
+        Some(85.0 / 135.0),
+        None
+    );
+
+    // Digit for Ones Place
+    let digit_ones = spawn_ui_element(
+        &mut commands,
+        &asset_server,
+        window,
+        None,
+        None,
+        None,
+        Some(digit_images[ones]),
+        Vec3::new(92.0, 12.0, 4.0),
+        2.5,
+        Some(85.0 / 135.0),
+        None
+    );
+
+    // Marking digit entities to delete them each frame.
+    commands.entity(digit_hundreds).insert(Chronodigit);
+    commands.entity(digit_tens).insert(Chronodigit);
+    commands.entity(digit_ones).insert(Chronodigit);
+
+    Ok(())
+}
+
 /// Spawns timer cards that players can select to get a buff before moving onto the next level.
 pub fn spawn_cards(
     commands: &mut Commands,
@@ -305,6 +431,17 @@ pub fn spawn_cards(
     }
 }
 
+
+/// Used to annihilate the infinite number of asset spawns that are occurring each frame.
+pub fn despawn_chronodigits(
+    mut commands: Commands,
+    digit_query: Query<Entity, With<Chronodigit>>,
+) {
+    for digit in digit_query.iter() {
+        commands.entity(digit).despawn();
+    }
+}
+
 /// Used to close UI panels that have all of their elements associated with a specified container.
 /// If a UI component has a specific container type attached to it then you can delete it by using
 /// this function.
@@ -369,6 +506,7 @@ pub fn handle_button_interactions(
     mut next_state: ResMut<NextState<Interfaces>>,
     mut state_history: ResMut<StateHistory>,
     mut app_exit: MessageWriter<AppExit>,
+    mut the_timer: ResMut<TheTimer>,
 ) -> Result<()>
 {
     for (interaction, button) in interaction_query.iter() {
@@ -409,7 +547,8 @@ pub fn handle_button_interactions(
 
                 (_, Buttons::Play) => {
                     button_chain.clear();
-                    next_state.set(Interfaces::Cards);
+                    next_state.set(Interfaces::Level1);
+                    the_timer.chronolog.reset();
                 },
 
                 (_, Buttons::GoToLevel1) => {

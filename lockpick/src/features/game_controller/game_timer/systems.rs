@@ -6,8 +6,29 @@ use crate::features::game_controller::game_timer::definitions::*;
 pub struct SystemsForGameTimer {}
 impl Plugin for SystemsForGameTimer {
     fn build(&self, app: &mut App) {
-        app.add_systems(Update, (chronolog_ticking, ticker_ticking));
+        app.add_systems(Update, (the_timer_ticking, chronolog_ticking, ticker_ticking));
     }
+}
+
+/// Resources can't be queried, which is basically the only reason why this exists (and because I can't think
+/// of another way).  Would have preferred to have just used my chronolog_ticking for ALL chronologs...
+pub fn the_timer_ticking(
+    time: Res<Time>,
+    mut the_timer: ResMut<TheTimer>,
+) {
+
+    let delta = time.delta();
+    let log = &mut the_timer.chronolog;
+
+    if let Some(ticker) = &mut log.ticker_for_hundreds    { ticker.tick_tock(delta); }
+    if let Some(ticker) = &mut log.ticker_for_tens        { ticker.tick_tock(delta); }
+    if let Some(ticker) = &mut log.ticker_for_ones        { ticker.tick_tock(delta); }
+    if let Some(ticker) = &mut log.ticker_for_tenths      { ticker.tick_tock(delta); }
+    if let Some(ticker) = &mut log.ticker_for_hundredths  { ticker.tick_tock(delta); }
+    if let Some(ticker) = &mut log.ticker_for_thousandths { ticker.tick_tock(delta); }
+
+    println!("{}", log.get_number());
+
 }
 
 /// Will loop through queried chronologs to see if they have tickers within them that need to be tick-tocked.

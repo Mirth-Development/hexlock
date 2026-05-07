@@ -17,19 +17,19 @@ impl Plugin for SystemsForUserInterfaceStates {
         app.add_systems(OnEnter(Interfaces::StartMenu), setup_start_menu);
         app.add_systems(OnExit(Interfaces::StartMenu), (record_start_menu_exit, cleanup_entities).chain());
 
-        app.add_systems(OnEnter(Interfaces::Level1), (setup_level_1, spawn_lockpick, load_lock_resources, spawn_lock).chain());
+        app.add_systems(OnEnter(Interfaces::Level1), (setup_level_1, load_lock_resources, spawn_lockpick, spawn_lock).chain());
         app.add_systems(OnExit(Interfaces::Level1), (record_level_1_exit, cleanup_entities).chain());
 
-        app.add_systems(OnEnter(Interfaces::Level2), (setup_level_2, spawn_lockpick, load_lock_resources, spawn_lock).chain());
+        app.add_systems(OnEnter(Interfaces::Level2), (setup_level_2, load_lock_resources, spawn_lockpick, spawn_lock).chain());
         app.add_systems(OnExit(Interfaces::Level2), (record_level_2_exit, cleanup_entities).chain());
 
-        app.add_systems(OnEnter(Interfaces::Level3), (setup_level_3, spawn_lockpick, load_lock_resources, spawn_lock).chain());
+        app.add_systems(OnEnter(Interfaces::Level3), (setup_level_3, load_lock_resources, spawn_lockpick, spawn_lock).chain());
         app.add_systems(OnExit(Interfaces::Level3), (record_level_3_exit, cleanup_entities).chain());
 
-        app.add_systems(OnEnter(Interfaces::Level4), (setup_level_4, spawn_lockpick, load_lock_resources, spawn_lock).chain());
+        app.add_systems(OnEnter(Interfaces::Level4), (setup_level_4, load_lock_resources, spawn_lockpick, spawn_lock).chain());
         app.add_systems(OnExit(Interfaces::Level4), (record_level_4_exit, cleanup_entities).chain());
 
-        app.add_systems(OnEnter(Interfaces::Level5), (setup_level_5, spawn_lockpick, load_lock_resources, spawn_lock).chain());
+        app.add_systems(OnEnter(Interfaces::Level5), (setup_level_5, load_lock_resources, spawn_lockpick, spawn_lock).chain());
         app.add_systems(OnExit(Interfaces::Level5), (record_level_5_exit, cleanup_entities).chain());
 
         app.add_systems(OnEnter(Interfaces::Cards), setup_cards);
@@ -140,6 +140,9 @@ fn setup_level_1(
 
     let window = window_query.single()?;
 
+    // Spawning timer related visuals.
+    spawn_timer_constants(&mut commands, &asset_server, window);
+
     // Label for Level #
     spawn_ui_element(
         &mut commands, &asset_server, window,
@@ -186,6 +189,9 @@ fn setup_level_2(
 ) -> Result<()> {
 
     let window = window_query.single()?;
+
+    // Spawning timer related visuals.
+    spawn_timer_constants(&mut commands, &asset_server, window);
 
     // Label for Level #
     spawn_ui_element(
@@ -252,6 +258,9 @@ fn setup_level_3(
 
     let window = window_query.single()?;
 
+    // Spawning timer related visuals.
+    spawn_timer_constants(&mut commands, &asset_server, window);
+
     // Label for Level #
     spawn_ui_element(
         &mut commands, &asset_server, window,
@@ -317,6 +326,9 @@ fn setup_level_4(
 
     let window = window_query.single()?;
 
+    // Spawning timer related visuals.
+    spawn_timer_constants(&mut commands, &asset_server, window);
+
     // Label for Level #
     spawn_ui_element(
         &mut commands, &asset_server, window,
@@ -381,6 +393,9 @@ fn setup_level_5(
 ) -> Result<()> {
 
     let window = window_query.single()?;
+
+    // Spawning timer related visuals.
+    spawn_timer_constants(&mut commands, &asset_server, window);
 
     // Label for Level #
     spawn_ui_element(
@@ -462,7 +477,7 @@ fn cleanup_entities(
 }
 
 // CHECKING IF IN-LEVEL
-fn in_level_state(
+pub fn in_level_state(
     state: Res<State<Interfaces>>
 ) -> bool
 {

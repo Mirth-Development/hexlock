@@ -6,10 +6,46 @@ use bevy::prelude::*;
 pub struct DefinitionsForGameTimer {}
 impl Plugin for DefinitionsForGameTimer {
     fn build(&self, app: &mut App) {
+
+        // Components
         app.register_type::<Ticker>();
         app.register_type::<Chronolog>();
+        app.register_type::<Chronodigit>();
+
+        // Resources
+        app.init_resource::<TheTimer>();
     }
 }
+
+
+
+// #################################################################################################### //
+// CHRONODIGIT DEFINITION
+
+/// Using this as a way to mark digit spawns so that they can be deleted later.
+#[derive(Component, Reflect)]
+pub struct Chronodigit;
+// #################################################################################################### //
+
+
+
+// #################################################################################################### //
+// GAME TIMER DEFINITION
+#[derive(Resource)]
+pub struct TheTimer {
+    pub chronolog: Chronolog,
+}
+
+impl Default for TheTimer {
+    fn default() -> Self {
+        Self {
+            chronolog: Chronolog::new(),
+        }
+    }
+}
+// #################################################################################################### //
+
+
 
 // #################################################################################################### //
 // TICKER DEFINITION
@@ -140,6 +176,18 @@ impl Chronolog {
                 timer: Some(Timer::from_seconds(0.001, TimerMode::Repeating)),
             }),
         }
+    }
+
+    /// This type of reset will cause for the Chronolog to continue ticking immediately after reset
+    /// in the same way that a Chronolog will tick when created using the "new" method.
+    pub fn reset(&mut self) {
+        *self = Chronolog::new();
+    }
+
+    /// Will wipe out all the tickers in the Chronolog.  Can be used to create a blank slate to add new
+    /// tickers onto a Chronolog if you want to.
+    pub fn blank(&mut self) {
+        *self = Chronolog::default();
     }
 
     /// Returns the number that's in the hundreds' ticker.  Will return 0 if there is no ticker.
