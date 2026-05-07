@@ -96,9 +96,8 @@ pub fn spawn_ui_element(
     entity.id()
 }
 
-// SPAWN CONFIRMATION
-// Used to create confirmation dialogs that can have different text within them based on what's
-// passed into dialog_text.
+/// Used to create confirmation dialogs that can have different text within them based on what's
+/// passed into dialog_text.
 pub fn spawn_confirmation(
     commands: &mut Commands,
     asset_server: &AssetServer,
@@ -114,7 +113,7 @@ pub fn spawn_confirmation(
         None,
         Some(Containers::Confirmation),
         None,
-        Some("images/Confirmation_Background.png"),
+        Some("images/Background_Confirmation.png"),
         Vec3::new(50.0, 40.0, 3.0),
         35.0,
         Some(100.0 / 50.0),
@@ -182,10 +181,133 @@ pub fn spawn_confirmation(
     );
 }
 
-// DESPAWN_CONTAINER
-// Used to close UI panels that have all of their elements associated with a specified container.
-// If a UI component has a specific container type attached to it then you can delete it by using
-// this function.
+/// Spawns timer cards that players can select to get a buff before moving onto the next level.
+pub fn spawn_cards(
+    commands: &mut Commands,
+    asset_server: &AssetServer,
+    window: &Window,
+)
+{
+    // Card for Timer Increase
+    {
+        // Container
+        spawn_ui_element(
+            commands,
+            asset_server,
+            window,
+            Some(Buttons::CardTimerIncrease),
+            Some(Containers::Card),
+            None,
+            Some("images/Card_IT.png"),
+            Vec3::new(35.0, 50.0, 3.0),
+            25.0,
+            Some(560.0 / 920.0),
+            None
+        );
+
+        // Label for Title
+        spawn_ui_element(
+            commands,
+            asset_server,
+            window,
+            Some(Buttons::CardTimerIncrease),
+            Some(Containers::Card),
+            Some(Labels::Card),
+            None,
+            Vec3::new(35.25, 50.0, 4.0),
+            20.0,
+            Some(100.0 / 20.0),
+            Some(TextSpawn {
+                content: "Increase Timer",
+                font_path: "fonts/Cinzel_Decorative.ttf",
+                font_size_scale: 0.015,
+                color: Color::WHITE,
+            })
+        );
+
+        // Label for Description
+        spawn_ui_element(
+            commands,
+            asset_server,
+            window,
+            Some(Buttons::CardTimerIncrease),
+            Some(Containers::Card),
+            Some(Labels::Card),
+            None,
+            Vec3::new(35.25, 57.0, 4.0),
+            20.0,
+            Some(100.0 / 20.0),
+            Some(TextSpawn {
+                content: "Clicking this card will add X amount of seconds to your timer.",
+                font_path: "fonts/Spectral.ttf",
+                font_size_scale: 0.01,
+                color: Color::WHITE,
+            })
+        );
+    }
+
+    // Card for Set Timer Increase
+    {
+        // Container
+        spawn_ui_element(
+            commands,
+            asset_server,
+            window,
+            Some(Buttons::CardSetTimeIncrease),
+            Some(Containers::Card),
+            None,
+            Some("images/Card_IST.png"),
+            Vec3::new(65.0, 50.0, 3.0),
+            25.0,
+            Some(560.0 / 920.0),
+            None
+        );
+
+        // Label for Title
+        spawn_ui_element(
+            commands,
+            asset_server,
+            window,
+            Some(Buttons::CardSetTimeIncrease),
+            Some(Containers::Card),
+            Some(Labels::Card),
+            None,
+            Vec3::new(65.25, 50.0, 4.0),
+            20.0,
+            Some(100.0 / 20.0),
+            Some(TextSpawn {
+                content: "Increase Set Duration",
+                font_path: "fonts/Cinzel_Decorative.ttf",
+                font_size_scale: 0.015,
+                color: Color::WHITE,
+            })
+        );
+
+        // Label for Description
+        spawn_ui_element(
+            commands,
+            asset_server,
+            window,
+            Some(Buttons::CardSetTimeIncrease),
+            Some(Containers::Card),
+            Some(Labels::Card),
+            None,
+            Vec3::new(65.25, 59.0, 4.0),
+            20.0,
+            Some(100.0 / 20.0),
+            Some(TextSpawn {
+                content: "Clicking this card will add X amount of seconds to how long your tumblers stay in the set position.",
+                font_path: "fonts/Spectral.ttf",
+                font_size_scale: 0.01,
+                color: Color::WHITE,
+            })
+        );
+    }
+}
+
+/// Used to close UI panels that have all of their elements associated with a specified container.
+/// If a UI component has a specific container type attached to it then you can delete it by using
+/// this function.
 pub fn despawn_container(
     commands: &mut Commands,
     container: Containers,
@@ -199,11 +321,10 @@ pub fn despawn_container(
     }
 }
 
-// RESIZE
-// This will resize text to always be relative to a text's set scaling factor and the
-// window's current width.  I say "current" since this system is running every frame but its
-// code will only trigger when the window gets resized.  This will also resize UI elements
-// according to the window width and the aspect ratio of the element's Sizer component.
+/// This will resize text to always be relative to a text's set scaling factor and the
+/// window's current width.  I say "current" since this system is running every frame but its
+/// code will only trigger when the window gets resized.  This will also resize UI elements
+/// according to the window width and the aspect ratio of the element's Sizer component.
 pub fn resize(
     window_query: Query<&Window>,
     mut text_query: Query<(&mut TextFont, &TextSpawn)>,
@@ -237,8 +358,7 @@ pub fn resize(
     Ok(())
 }
 
-// INTERACTION EVENTS FOR BUTTONS
-// Buttons are programmed out based on enum type and will direct state transitions and trigger confirmation dialogs where appropriate.
+/// Buttons are programmed out based on enum type and will direct state transitions and trigger confirmation dialogs where appropriate.
 pub fn handle_button_interactions(
     asset_server: Res<AssetServer>,
     window_query: Query<&Window>,
@@ -289,7 +409,7 @@ pub fn handle_button_interactions(
 
                 (_, Buttons::Play) => {
                     button_chain.clear();
-                    next_state.set(Interfaces::Level1);
+                    next_state.set(Interfaces::Cards);
                 },
 
                 (_, Buttons::GoToLevel1) => {

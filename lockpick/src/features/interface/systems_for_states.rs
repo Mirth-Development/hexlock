@@ -32,6 +32,9 @@ impl Plugin for SystemsForUserInterfaceStates {
         app.add_systems(OnEnter(Interfaces::Level5), (setup_level_5, spawn_lockpick, load_lock_resources, spawn_lock).chain());
         app.add_systems(OnExit(Interfaces::Level5), (record_level_5_exit, cleanup_entities).chain());
 
+        app.add_systems(OnEnter(Interfaces::Cards), setup_cards);
+        app.add_systems(OnExit(Interfaces::Cards), (record_cards_exit, cleanup_entities).chain());
+
         app.add_systems(Update, (
             move_to_focused_tumbler,
             tumbler_movement,
@@ -418,6 +421,19 @@ fn setup_level_5(
     Ok(())
 }
 
+fn setup_cards(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+    window_query: Query<&Window>
+) -> Result<()> {
+
+    let window = window_query.single()?;
+
+    spawn_cards(&mut commands, &asset_server, window);
+
+    Ok(())
+}
+
 // UI STATE RECORDERS
 fn record_start_menu_exit(mut history: ResMut<StateHistory>) { history.push(Interfaces::StartMenu); }
 fn record_level_1_exit(mut history: ResMut<StateHistory>) { history.push(Interfaces::Level1); }
@@ -425,6 +441,8 @@ fn record_level_2_exit(mut history: ResMut<StateHistory>) { history.push(Interfa
 fn record_level_3_exit(mut history: ResMut<StateHistory>) { history.push(Interfaces::Level3); }
 fn record_level_4_exit(mut history: ResMut<StateHistory>) { history.push(Interfaces::Level4); }
 fn record_level_5_exit(mut history: ResMut<StateHistory>) { history.push(Interfaces::Level5); }
+fn record_cards_exit(mut history: ResMut<StateHistory>) { history.push(Interfaces::Cards); }
+
 
 // TRASH COLLECTOR
 fn cleanup_entities(

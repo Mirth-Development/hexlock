@@ -42,6 +42,9 @@ pub enum Interfaces {
     Level3,
     Level4,
     Level5,
+    Cards,
+    Won,
+    Lost
 }
 // ---------------------------------------------------------------------------------------------- //
 
@@ -54,6 +57,7 @@ pub enum Interfaces {
 #[reflect(Component)]
 pub enum Containers {
     Confirmation,
+    Card,
 }
 
 #[derive(Component, Debug, Reflect, PartialEq, Clone)]
@@ -67,6 +71,8 @@ pub enum Buttons {
     GoToLevel3,
     GoToLevel4,
     GoToLevel5,
+    CardTimerIncrease,
+    CardSetTimeIncrease,
     Yes,
     No,
 }
@@ -76,6 +82,7 @@ pub enum Buttons {
 pub enum Labels {
     Title,
     Confirmation,
+    Card,
     Level
 }
 
