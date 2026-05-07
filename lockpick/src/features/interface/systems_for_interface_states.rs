@@ -11,6 +11,7 @@ use crate::features::lock::systems::*;
 use crate::features::lock::tumblers::systems::*;
 use crate::features::lock::spring::systems::*;
 use crate::features::controls::systems::*;
+use crate::features::game_controller::game_effects::systems::handle_lifetime_timers;
 use crate::features::game_controller::systems::{check_game_state, handle_game_state};
 
 pub struct Interfaces {}
@@ -54,6 +55,8 @@ impl Plugin for Interfaces {
             handle_escape_message,
             check_game_state,
             handle_game_state,
+            handle_lockpick_charge,
+            handle_lifetime_timers
         )
             .chain()
             .run_if(in_level_state)

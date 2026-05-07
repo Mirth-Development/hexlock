@@ -21,11 +21,9 @@ pub struct AnimationShake{
 
 #[derive(Component)]
 #[require(Animated)]
-pub struct AnimationPullBack{
+pub struct AnimationFlip{
     pub original_translation: Vec3,
     pub animation_timer: Timer,
-    pub animation_velocity: Vec3,
-
 }
 
 pub trait Animatable {

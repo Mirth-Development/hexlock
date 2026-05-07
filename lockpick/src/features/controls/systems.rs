@@ -1,21 +1,43 @@
 use bevy::prelude::*;
 use crate::features::controls::messages::QuitGame;
+use crate::features::controls::systems_for_control_schemas::{electric_pick_schema, normal_pick_schema};
 use crate::features::lock::messages::CatchTumbler;
-use crate::features::lockpick::messages::LockpickAction;
-use super::super::lock::components::LockComponent;
+use crate::features::lockpick::component::LockpickComponent;
+use crate::features::lockpick::messages::{LockpickAction};
+use crate::features::lockpick::resources::LockpickType;
 
 //Move chamber focus
 pub fn user_control_system(
+    lockpick_query: Query<&LockpickComponent>,
     keyboard_input: Res<ButtonInput<KeyCode>>,
+    // mut charge_event: MessageWriter<ChargeLockpick>,
     mut pick_event: MessageWriter<LockpickAction>,
     mut tumbler_event: MessageWriter<CatchTumbler>,
     mut quit_event: MessageWriter<QuitGame>,
 ) {
 
-    if keyboard_input.just_pressed(KeyCode::KeyW) {
-        pick_event.write(LockpickAction::Pick);
-        println!("Pick Sent!");
+    if let Ok(lockpick) = lockpick_query.single() {
+        match lockpick.lockpick_type {
+            LockpickType::Normal => {
+                normal_pick_schema(
+                    &keyboard_input,
+                    &mut pick_event
+                );
+            },
+            LockpickType::Electric => {
+                electric_pick_schema(
+                    &keyboard_input,
+                    &mut pick_event
+                );
+            },
+            LockpickType::Magic => {
+
+            }
+        }
+
     }
+        //Let controls still run if there is no lockpick
+
 
     if keyboard_input.just_pressed(KeyCode::KeyA){
         pick_event.write(LockpickAction::Left);
@@ -46,3 +68,5 @@ pub fn user_control_system(
         quit_event.write(QuitGame::Quit);
     }
 }
+
+

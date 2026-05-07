@@ -1,23 +1,39 @@
 use bevy::math::NormedVectorSpace;
 use bevy::prelude::*;
-use bevy::ui::debug::print_ui_layout_tree;
-use rand::RngExt;
-use crate::features::animation::components::{Animated, AnimationShake};
+use crate::features::animation::components::{Animated,};
+use crate::features::game_controller::game_effects::events::Zap;
 use crate::features::lock::components::LockComponent;
+use crate::features::lock::messages::CatchTumbler;
+use crate::features::lock::resource::{TumblerSpringPairings};
 use crate::features::lock::spring::components::SpringComponent;
+use crate::features::lock::spring::resources::SpringSize;
 use crate::features::lock::spring::systems::HEIGHT_OF_SPRING_SPRITE;
 use crate::features::lock::systems::TOP_OF_CHAMBER;
-        use crate::features::lock::tumblers::components::{FocusedTumblerComponent, SetTumblerComponent, TumblerComponent};
+use crate::features::lock::tumblers::components::{FocusedTumblerComponent, SetTumblerComponent, TumblerComponent};
 use crate::features::lock::tumblers::resources::{TumblerSize, TumblerType};
 use crate::features::lock::tumblers::systems::HEIGHT_OF_MEDIUM_TUMBLER_SPRITE;
 use crate::features::lockpick::component::LockpickComponent;
-use crate::features::lockpick::messages::LockpickAction;
-use crate::features::lockpick::resources::LockpickType;
-use crate::features::rand::resources::RandomSeed;
+use crate::features::lockpick::messages::{ChargeLockpick, LockpickAction};
+use crate::features::lockpick::resources::{LockpickElectricCharge, LockpickType};
 
 const LOCKPICK_HEAD_OFFSET: f32 = 1041.0;
 const LOCKPICK_MAX_HEIGHT: f32 = (TOP_OF_CHAMBER - (HEIGHT_OF_MEDIUM_TUMBLER_SPRITE / 2.0 + HEIGHT_OF_SPRING_SPRITE));
 const LOCKPICK_LOWER_BOUND: f32 = -200.0;
+
+
+pub fn load_lockpick_resources(
+    mut commands: Commands,)
+{
+        //Sanity code
+        println!("Loading Lockpick Resources!");
+
+        commands.insert_resource(LockpickElectricCharge {
+            is_charging: false,
+            max_charge: 2.0,
+            charge_per_tick: 1.5, //ratio
+            current_charge: 0.0,
+        });
+}
 
 //Spawn Systems
 pub fn spawn_lockpick (
@@ -78,20 +94,27 @@ pub fn move_to_focused_tumbler(
 pub fn handle_lockpick_message(
     check_set: Query<(), With<SetTumblerComponent>>, //Call all set elements
     lock_query: Query<&LockComponent>,
+    springs: Query<&SpringComponent>,
     tumblers: Query<(Entity, &TumblerComponent), Without<FocusedTumblerComponent>>,
+    tumbler_spring_pairings: Res<TumblerSpringPairings>,
+
     mut actions: MessageReader<LockpickAction>,
+    mut lockpick_electric_charge: ResMut<LockpickElectricCharge>,
+    mut charge_lockpick_writer: MessageWriter<ChargeLockpick>,
+    //mut catch_tumbler_action: MessageWriter<CatchTumbler>,
     mut commands: Commands,
-    mut lockpick_query: Query<(&mut Children, &mut LockpickComponent)>,
+    mut lockpick_query: Query<(&mut Children, &GlobalTransform, &mut LockpickComponent)>,
     mut animated_sprite_query: Query<&mut Sprite, With<Animated>>,
-    mut focused_tumbler_query: Query<(Entity, &mut TumblerComponent), With<FocusedTumblerComponent>>,
+    mut focused_tumbler_query: Query<(Entity,&GlobalTransform, &mut TumblerComponent), With<FocusedTumblerComponent>>,
 
 ){
+
     //let Ok((tumbler_entity, mut tumbler)) = focused_tumbler_query.single_mut() else {return};
-    let Ok((focused_entity, mut focused_tumbler)) = focused_tumbler_query.single_mut() else {
+    let Ok((focused_tumbler_entity, focused_tumbler_transform, mut focused_tumbler)) = focused_tumbler_query.single_mut() else {
         println!("Tumbler check!");
         return
     };
-    let Ok((mut lockpick_children, mut lockpick)) = lockpick_query.single_mut() else {
+    let Ok((mut lockpick_children, lockpick_transform, mut lockpick)) = lockpick_query.single_mut() else {
         println!("Lockpick check!");
         return
     };
@@ -101,27 +124,46 @@ pub fn handle_lockpick_message(
         return
     };
 
+
+
     if !lockpick.is_moving {
-        let tumbler_speed = match focused_tumbler.size {
-            TumblerSize::Small => {80.0}
-            TumblerSize::Medium => {0.0}
-            TumblerSize::Large => {-80.0}
+        let mut spring = None;
+        for (tumbler_index, spring_index) in tumbler_spring_pairings.array.iter(){
+            if (focused_tumbler_entity == *tumbler_index){
+                let Ok(paired_spring) = springs.get(*spring_index) else {
+                    panic!("Tumbler has no spring!")
+                };
+                spring = Some(paired_spring);
+                break;
+            }
+        }
+        let Some(spring)  = spring else {
+            panic!("No pairing!")
         };
 
-        let spring_speed = match focused_tumbler.size {
-            TumblerSize::Small => {40.0}
-            TumblerSize::Medium => {0.0}
-            TumblerSize::Large => {-40.0}
-        };
+
         //println!("Lockpick isnt moving!");
         for action in actions.read(){
             println!("Lockpick received Message");
+            let tumbler_speed = match focused_tumbler.size {
+                TumblerSize::Small => {80.0}
+                TumblerSize::Medium => {0.0}
+                TumblerSize::Large => {-80.0}
+            };
+
+            let spring_speed = match spring.size {
+                SpringSize::Thin => {40.0}
+                SpringSize::Regular => {0.0}
+                SpringSize::Thick => {-40.0}
+            };
+
+            let variant_tumbler_spring_speed = spring_speed + tumbler_speed;
             match action {
                 LockpickAction::Left => {
                     if focused_tumbler.position > 1 {
                         for (tumbler_entity, tumbler_component) in &tumblers {
                             if tumbler_component.position == lockpick.current_tumbler - 1 {
-                                commands.entity(focused_entity).remove::<FocusedTumblerComponent>();
+                                commands.entity(focused_tumbler_entity).remove::<FocusedTumblerComponent>();
                                 commands.entity(tumbler_entity).insert(FocusedTumblerComponent);
                                 lockpick.current_tumbler -= 1;
                                 break;
@@ -133,7 +175,7 @@ pub fn handle_lockpick_message(
                     if focused_tumbler.position < lock.num_of_tumblers {
                         for (tumbler_entity, tumbler_component) in &tumblers {
                             if tumbler_component.position == lockpick.current_tumbler + 1 {
-                                commands.entity(focused_entity).remove::<FocusedTumblerComponent>();
+                                commands.entity(focused_tumbler_entity).remove::<FocusedTumblerComponent>();
                                 commands.entity(tumbler_entity).insert(FocusedTumblerComponent);
                                 lockpick.current_tumbler += 1;
                                 break;
@@ -141,15 +183,59 @@ pub fn handle_lockpick_message(
                         }
                     }
                 }
+
+                LockpickAction::Charge => {
+                    lockpick.is_moving = true;
+                    charge_lockpick_writer.write(ChargeLockpick::Charge);
+                    println!("Charging Pick!")
+
+
+                }
+                LockpickAction::Release => {
+                    lockpick.is_moving = false;
+                    if !check_set.contains(focused_tumbler_entity) {
+                        if focused_tumbler.tumbler_type == TumblerType::Electric {
+                            commands.trigger(Zap{life_timer: Timer::from_seconds(0.4, TimerMode::Once),
+                                top: focused_tumbler_transform.translation().y,
+                                bottom: lockpick_transform.translation().y});
+                            println!("Zapping! power:{}", lockpick_electric_charge.current_charge);
+                            focused_tumbler.velocity.y = (200.0 + variant_tumbler_spring_speed)*lockpick_electric_charge.current_charge;
+                        } else {
+
+                            //NOT RIGHT TUMBLER TYPE, LOSE TIME!
+
+                        }
+
+                    } else {
+                        //This may be improper handling of this component but who cares
+                        if lockpick_electric_charge.current_charge > lockpick_electric_charge.max_charge /4.0 {
+                            commands.trigger(Zap{life_timer: Timer::from_seconds(0.4, TimerMode::Once),
+                                top: focused_tumbler_transform.translation().y,
+                                bottom: lockpick_transform.translation().y});
+                            focused_tumbler.timer.reset();
+                            println!("STUNNING TUMBLER!")
+                        } else {
+                            println!("Not enough force")
+                        }
+
+
+
+                    }
+                    charge_lockpick_writer.write(ChargeLockpick::Release);
+
+
+                }
+                //May be for regular pick only?
                 LockpickAction::Pick => {
+
                     match lockpick.lockpick_type {
                         LockpickType::Normal => {
-                            if !check_set.contains(focused_entity) {
+                            if !check_set.contains(focused_tumbler_entity) {
                                 if focused_tumbler.tumbler_type == TumblerType::Normal {
                                     lockpick.is_moving = true;
                                     lockpick.velocity.y += 800.0;
                                     println!("Picking!");
-                                    focused_tumbler.velocity.y = 400.0 + spring_speed + tumbler_speed;
+                                    focused_tumbler.velocity.y = 400.0 + variant_tumbler_spring_speed;
                                 } else {
                                     //NOT RIGHT TUMBLER TYPE, LOSE TIME!
                                 }
@@ -158,28 +244,28 @@ pub fn handle_lockpick_message(
                             }
                         }
                         LockpickType::Electric => {
-                            if !check_set.contains(focused_entity){
-                                if focused_tumbler.tumbler_type == TumblerType::Electric {
-                                    lockpick.is_moving = true;
-                                    lockpick.velocity.y += 800.0; //REMOVE LATER, MOVEMENT WILL HANDLE DIFFERENT FOR THIS PICK
-                                    println!("Picking!");
-                                    focused_tumbler.velocity.y = 400.0 + spring_speed + tumbler_speed;
-                                } else {
-                                    println!("WRONG TYPE!")
-                                    //NOT RIGHT TUMBLER TYPE, LOSE TIME!
-                                }
-                            } else {
-                                println!("STUN TUMBLER")
-                                //STUN THE SET TUMBLER!
-                            }
+                        //     if !check_set.contains(focused_entity){
+                        //         if focused_tumbler.tumbler_type == TumblerType::Electric {
+                        //             lockpick.is_moving = true;
+                        //             lockpick.velocity.y += 800.0; //REMOVE LATER, MOVEMENT WILL HANDLE DIFFERENT FOR THIS PICK
+                        //             println!("Picking!");
+                        //             focused_tumbler.velocity.y = 400.0 + variant_tumbler_spring_speed;
+                        //         } else {
+                        //             println!("WRONG TYPE!")
+                        //             //NOT RIGHT TUMBLER TYPE, LOSE TIME!
+                        //         }
+                        //     } else {
+                        //         println!("STUN TUMBLER")
+                        //         //STUN THE SET TUMBLER!
+                        //     }
                         }
                         LockpickType::Magic => {
-                            if !check_set.contains(focused_entity){
+                            if !check_set.contains(focused_tumbler_entity){
                                 if focused_tumbler.tumbler_type == TumblerType::Magic {
                                     lockpick.is_moving = true;
                                     lockpick.velocity.y += 800.0; //REMOVE LATER, MOVEMENT WILL HANDLE DIFFERENT FOR THIS PICK
                                     println!("Picking!");
-                                    focused_tumbler.velocity.y = 400.0 + spring_speed + tumbler_speed;
+                                    focused_tumbler.velocity.y = 400.0 + variant_tumbler_spring_speed;
                                 } else {
                                     println!("WRONG TYPE!")
                                     //NOT RIGHT TUMBLER TYPE, LOSE TIME! OR SLOW TUMBLER?
@@ -253,6 +339,7 @@ pub fn handle_lockpick_message(
                         // }
 
                 },
+                &LockpickAction::Hex => todo!(),
             }
         }
     }
@@ -261,20 +348,75 @@ pub fn handle_lockpick_message(
 
 pub fn lockpick_movement( //NORMAL PICK ONLY?
     time: Res<Time>,
+    mut lockpick_electric_charge: MessageReader<LockpickAction>,
     mut lockpick_query: Query<(&mut Transform, &mut LockpickComponent)>
 ) {
 
     let Ok((mut lockpick_transform, mut lockpick)) = lockpick_query.single_mut() else {return};
 
-    if lockpick_transform.translation.y > LOCKPICK_MAX_HEIGHT {
-        lockpick_transform.translation.y = LOCKPICK_MAX_HEIGHT;
-        lockpick.velocity.y *= -1.0;
-    }
-    else if lockpick_transform.translation.y < LOCKPICK_LOWER_BOUND {
-        lockpick_transform.translation.y = LOCKPICK_LOWER_BOUND;
-        lockpick.velocity.y = 0.0;
-        lockpick.is_moving = false;
+    match lockpick.lockpick_type{
+        LockpickType::Normal => {
+            if lockpick_transform.translation.y > LOCKPICK_MAX_HEIGHT {
+                lockpick_transform.translation.y = LOCKPICK_MAX_HEIGHT;
+                lockpick.velocity.y *= -1.0;
+            }
+            else if lockpick_transform.translation.y < LOCKPICK_LOWER_BOUND {
+                lockpick_transform.translation.y = LOCKPICK_LOWER_BOUND;
+                lockpick.velocity.y = 0.0;
+                lockpick.is_moving = false;
+            }
+
+            lockpick_transform.translation += lockpick.velocity * time.delta_secs();
+        }
+        LockpickType::Electric => {
+            for action in lockpick_electric_charge.read(){
+                match action {
+
+                    LockpickAction::Charge => {lockpick.is_moving = true}
+                    LockpickAction::Release => {lockpick.is_moving = false}
+                    _ => {}
+                }
+            }
+        }
+        LockpickType::Magic => {
+
+        }
     }
 
-    lockpick_transform.translation += lockpick.velocity * time.delta_secs();
+}
+
+
+pub fn handle_lockpick_charge(
+
+    time: Res<Time>,
+    mut lockpick_query: Query<&mut LockpickComponent>,
+    mut actions: MessageReader<ChargeLockpick>,
+    mut lockpick_electric_charge: ResMut<LockpickElectricCharge>,
+){
+    let Ok(mut lockpick) = lockpick_query.single_mut() else {return};
+    for action in actions.read() {
+        match action {
+            ChargeLockpick::Charge => {
+                lockpick_electric_charge.is_charging = true;
+                lockpick.charge_timer.unpause()
+            }
+            ChargeLockpick::Release => {
+                lockpick_electric_charge.current_charge = 0.0;
+                lockpick_electric_charge.is_charging = false;
+                lockpick.charge_timer.reset();
+                lockpick.charge_timer.pause()
+            }
+        }
+    }
+    if lockpick_electric_charge.is_charging {
+        //println!("charge amount:{}", lockpick_electric_charge.current_charge);
+        lockpick.charge_timer.tick(time.delta());
+        if lockpick_electric_charge.current_charge > lockpick_electric_charge.max_charge{
+            lockpick_electric_charge.current_charge = lockpick_electric_charge.max_charge
+        } else {
+            lockpick_electric_charge.current_charge += (lockpick.charge_timer.elapsed_secs()*lockpick_electric_charge.charge_per_tick);
+            lockpick.charge_timer.reset();
+        }
+    }
+
 }
