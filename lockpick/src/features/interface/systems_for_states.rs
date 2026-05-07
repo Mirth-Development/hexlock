@@ -1,5 +1,7 @@
-
+use bevy::ecs::component::Mutable;
 use bevy::prelude::*;
+use crate::features::animation::components::AnimationShake;
+use crate::features::animation::systems::animation_controller;
 use crate::features::interface::definitions::*;
 use crate::features::interface::systems_for_spawns::*;
 use crate::features::lockpick::systems::*;
@@ -9,6 +11,8 @@ use crate::features::lock::systems::*;
 use crate::features::lock::tumblers::systems::*;
 use crate::features::lock::spring::systems::*;
 use crate::features::controls::systems::*;
+use crate::features::game_controller::game_effects::systems::handle_lifetime_timers;
+use crate::features::game_controller::systems::{charge_chargebar, check_game_state, handle_game_state, spawn_charge_bar};
 
 pub struct SystemsForUserInterfaceStates {}
 impl Plugin for SystemsForUserInterfaceStates {
@@ -17,23 +21,29 @@ impl Plugin for SystemsForUserInterfaceStates {
         app.add_systems(OnEnter(Interfaces::StartMenu), setup_start_menu);
         app.add_systems(OnExit(Interfaces::StartMenu), (record_start_menu_exit, cleanup_entities).chain());
 
-        app.add_systems(OnEnter(Interfaces::Level1), (setup_level_1, load_lock_resources, spawn_lockpick, spawn_lock).chain());
+        app.add_systems(OnEnter(Interfaces::Level1), (setup_level_1, load_lock_resources, spawn_lockpick, spawn_lock, spawn_charge_bar).chain());
         app.add_systems(OnExit(Interfaces::Level1), (record_level_1_exit, cleanup_entities).chain());
 
-        app.add_systems(OnEnter(Interfaces::Level2), (setup_level_2, load_lock_resources, spawn_lockpick, spawn_lock).chain());
+        app.add_systems(OnEnter(Interfaces::Level2), (setup_level_2, load_lock_resources, spawn_lockpick, spawn_lock, spawn_charge_bar).chain());
         app.add_systems(OnExit(Interfaces::Level2), (record_level_2_exit, cleanup_entities).chain());
 
-        app.add_systems(OnEnter(Interfaces::Level3), (setup_level_3, load_lock_resources, spawn_lockpick, spawn_lock).chain());
+        app.add_systems(OnEnter(Interfaces::Level3), (setup_level_3, load_lock_resources, spawn_lockpick, spawn_lock, spawn_charge_bar).chain());
         app.add_systems(OnExit(Interfaces::Level3), (record_level_3_exit, cleanup_entities).chain());
 
-        app.add_systems(OnEnter(Interfaces::Level4), (setup_level_4, load_lock_resources, spawn_lockpick, spawn_lock).chain());
+        app.add_systems(OnEnter(Interfaces::Level4), (setup_level_4, load_lock_resources, spawn_lockpick, spawn_lock, spawn_charge_bar).chain());
         app.add_systems(OnExit(Interfaces::Level4), (record_level_4_exit, cleanup_entities).chain());
 
-        app.add_systems(OnEnter(Interfaces::Level5), (setup_level_5, load_lock_resources, spawn_lockpick, spawn_lock).chain());
+        app.add_systems(OnEnter(Interfaces::Level5), (setup_level_5, load_lock_resources, spawn_lockpick, spawn_lock, spawn_charge_bar).chain());
         app.add_systems(OnExit(Interfaces::Level5), (record_level_5_exit, cleanup_entities).chain());
 
         app.add_systems(OnEnter(Interfaces::Cards), setup_cards);
         app.add_systems(OnExit(Interfaces::Cards), (record_cards_exit, cleanup_entities).chain());
+
+        app.add_systems(OnEnter(InterfaceStates::Won), (setup_won).chain());
+        app.add_systems(OnExit(InterfaceStates::Won), (record_won_exit, cleanup_entities).chain());
+
+        app.add_systems(OnEnter(InterfaceStates::Lost), (setup_lost).chain());
+        app.add_systems(OnExit(InterfaceStates::Lost), (record_lost_exit, cleanup_entities).chain());
 
         app.add_systems(Update, (
             move_to_focused_tumbler,
@@ -42,9 +52,14 @@ impl Plugin for SystemsForUserInterfaceStates {
             user_control_system,
             timer_tumbler_finished,
             stretch_to_tumbler,
+            charge_chargebar,
             handle_lockpick_message,
             handle_catching_tumblers,
             handle_tumbler_set,
+            check_game_state,
+            handle_game_state,
+            handle_lockpick_charge,
+            handle_lifetime_timers,
         )
             .chain()
             .run_if(in_level_state)
@@ -449,6 +464,64 @@ fn setup_cards(
     Ok(())
 }
 
+fn setup_won(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+    window_query: Query<&Window>
+) -> Result<()> {
+
+    let window = window_query.single()?;
+
+    // Label for Level #
+    spawn_ui_element(
+        &mut commands, &asset_server, window,
+        None,
+        None,
+        Some(Labels::Level),
+        None,
+        Vec3::new(10.0, 5.0, 1.0),
+        10.0,
+        None,
+        Some(TextSpawn {
+            content: "WON",
+            font_path: "fonts/Cinzel_Decorative.ttf",
+            font_size_scale: 0.01,
+            color: Color::WHITE,
+        })
+    );
+
+    Ok(())
+}
+
+fn setup_lost(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+    window_query: Query<&Window>
+) -> Result<()> {
+
+    let window = window_query.single()?;
+
+    // Label for Level #
+    spawn_ui_element(
+        &mut commands, &asset_server, window,
+        None,
+        None,
+        Some(Labels::Level),
+        None,
+        Vec3::new(10.0, 5.0, 1.0),
+        10.0,
+        None,
+        Some(TextSpawn {
+            content: "LOST",
+            font_path: "fonts/Cinzel_Decorative.ttf",
+            font_size_scale: 0.01,
+            color: Color::WHITE,
+        })
+    );
+
+    Ok(())
+}
+
 // UI STATE RECORDERS
 fn record_start_menu_exit(mut history: ResMut<StateHistory>) { history.push(Interfaces::StartMenu); }
 fn record_level_1_exit(mut history: ResMut<StateHistory>) { history.push(Interfaces::Level1); }
@@ -457,7 +530,8 @@ fn record_level_3_exit(mut history: ResMut<StateHistory>) { history.push(Interfa
 fn record_level_4_exit(mut history: ResMut<StateHistory>) { history.push(Interfaces::Level4); }
 fn record_level_5_exit(mut history: ResMut<StateHistory>) { history.push(Interfaces::Level5); }
 fn record_cards_exit(mut history: ResMut<StateHistory>) { history.push(Interfaces::Cards); }
-
+fn record_lost_exit(mut history: ResMut<StateHistory>) { history.push(InterfaceStates::Lost); }
+fn record_won_exit(mut history: ResMut<StateHistory>) { history.push(InterfaceStates::Won); }
 
 // TRASH COLLECTOR
 fn cleanup_entities(
@@ -490,3 +564,4 @@ pub fn in_level_state(
         Interfaces::Level5
     )
 }
+

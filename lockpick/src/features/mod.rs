@@ -6,4 +6,4 @@ pub mod interface;
 mod controls;
 mod camera;
 mod game_controller;
-mod scene_controller;
+pub mod animation;

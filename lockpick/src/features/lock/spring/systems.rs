@@ -18,7 +18,7 @@ pub fn stretch_to_tumbler(
     mut spring_transforms: Query<&mut Transform, With<SpringComponent>>
 
 ) {
-    for (tumbler, spring) in &tumbler_spring_pairings.array {
+    for (tumbler, spring) in tumbler_spring_pairings.array.iter() {
         let Ok(tumbler_transform) = transforms.get(*tumbler) else { panic!() };
         let Ok(tumbler) = tumblers.get(*tumbler) else { panic!() };
         let height = match tumbler.size {
@@ -75,6 +75,6 @@ pub fn gen_random_spring(
     },
         SpringComponent{
             position: pos,
-            spring_size: *random_spring_size
+            size: *random_spring_size
         })
 }

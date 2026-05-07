@@ -1,4 +1,4 @@
-
+use crate::features::animation::components::{AnimationShake, Animated};
 use bevy::prelude::*;
 use rand::prelude::StdRng;
 use rand::seq::IndexedRandom;
@@ -11,7 +11,9 @@ pub fn gen_random_tumbler(
     timer: Timer,
     rng : &mut StdRng,
     sprite_handles : &LockSpriteHandles,
-) -> (Sprite, TumblerComponent)
+
+// ) -> (children![(Sprite, Animated, AnimationShake,Transform)], TumblerComponent)
+) -> (TumblerComponent, (Handle<Image>, Color) )
 {
     let tumbler_types: Vec<TumblerType> = vec![TumblerType::Normal, TumblerType::Magic, TumblerType::Electric];
     let tumbler_sizes: Vec<TumblerSize> = vec![TumblerSize::Small, TumblerSize::Medium, TumblerSize::Large];
@@ -38,29 +40,43 @@ pub fn gen_random_tumbler(
     };
 
     let tumbler_color: Color = match random_type {
-    TumblerType::Normal=> {
-        Color::default()
-    },
-    TumblerType::Magic => {
-        Color::srgb(1.0, 0.0, 1.0)
-    },
-    TumblerType::Electric => {
-        Color::srgb(1.0, 1.0, 0.0)
-    }
-};
+        TumblerType::Normal=> {
+            Color::default()
+        },
+        TumblerType::Magic => {
+            Color::srgb(1.0, 0.0, 1.0)
+        },
+        TumblerType::Electric => {
+            Color::srgb(1.0, 1.0, 0.0)
+        }
+    };
 
-    return (Sprite{
-        image: tumbler_sprite,
-        color: tumbler_color,
-        ..default()
-    },
-    TumblerComponent {
-        position: pos,
-        timer: timer,
-        size: *random_size,
-        tumbler_type: *random_type,
-        ..default()
-    })
+        (TumblerComponent {
+            position: pos,
+            timer: timer,
+            size: *random_size,
+            tumbler_type: *random_type,
+            ..default()
+        }, (tumbler_sprite, tumbler_color))
+
+
+        // children![
+        //     (
+        //         Sprite{
+        //         image: tumbler_sprite,
+        //         color: tumbler_color,
+        //         ..default()
+        //         },
+        //         Animated,
+        //         AnimationShake::new(1.0, transform),
+        //         Transform{
+        //         translation: transform,
+        //         ..default()
+        //     },
+        //         )
+        // ]
+        // ,
+
 
 
 }
