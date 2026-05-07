@@ -1,8 +1,5 @@
 use bevy::prelude::*;
 use crate::features::animation::components::{Animatable, Animated, AnimationShake};
-use crate::features::lock::resource::TumblerSpringPairings;
-use crate::features::lock::spring::components::SpringComponent;
-use crate::features::lock::spring::resources::SpringSize;
 use crate::features::lock::spring::systems::HEIGHT_OF_SPRING_SPRITE;
 use crate::features::lock::systems::TOP_OF_CHAMBER;
 use crate::features::lock::tumblers::components::{SetTumblerComponent, TumblerComponent, TumblerRustComponent};
@@ -26,7 +23,7 @@ pub fn tumbler_movement(
     mut tumblers: Query<(Entity, &mut Transform, &mut TumblerComponent)>,
 ) {
 
-    for (entity, mut transform, mut tumbler) in &mut tumblers {
+    for (_entity, mut transform, mut tumbler) in &mut tumblers {
 
         let top = TOP_OF_CHAMBER;
         let bottom: f32;
@@ -154,4 +151,3 @@ pub fn on_break_rust(
     }
 
 }
-

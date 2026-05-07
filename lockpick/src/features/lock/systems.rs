@@ -2,9 +2,8 @@ use bevy::prelude::*;
 use super::components::{LockComponent, TumblerChamberComponent};
 use super::resource::{LockSpriteHandles, TumblerSpringPairings};
 use super::tumblers::components::{FocusedTumblerComponent, TumblerComponent};
-use super::spring::components::SpringComponent;
 use super::super::game_controller::rust_randomizer::systems::chance_to_add_rust;
-use super::tumblers::components::{FocusedTumblerComponent, SetTumblerComponent, TumblerComponent};
+use super::tumblers::components::{SetTumblerComponent};
 use crate::features::animation::components::{Animatable, Animated, AnimationShake};
 use crate::features::game_controller::tumbler_randomizer::systems::gen_random_tumbler;
 use crate::features::lock::messages::CatchTumbler;
@@ -54,7 +53,6 @@ pub fn load_lock_sprite_resources(mut commands: Commands, asset_server: Res<Asse
 
 pub fn load_lock_resources(
     mut commands: Commands,
-    asset_server: Res<AssetServer>
 ) {
     //Sanity code
     println!("Loading GameResources!");
@@ -83,7 +81,7 @@ pub fn spawn_lock(
     //Sprites are spawned centered on their spawn coords, so the offset calculates where to place them
     offset += (LOCK_START_SPRITE_WIDTH / 2.0) + 10.0; //Extra pixel gap
 
-    let mut lock = LockComponent {
+    let lock = LockComponent {
         num_of_tumblers: 8, //Max amount for our purposes
         ..default()
     };
@@ -117,7 +115,7 @@ pub fn spawn_lock(
                 let (tumbler, sprites) = gen_random_tumbler(
                     x,
                     tumbler_set_timer.clone(),
-                    &mut rng.RandomNumberGenerator,
+                    &mut rng.random_number_generator,
                     &lock_sprite_handles,
                 );
 
@@ -173,7 +171,7 @@ pub fn spawn_lock(
                     };
 
                     chance_to_add_rust(
-                        &mut rng.RandomNumberGenerator,
+                        &mut rng.random_number_generator,
                         &mut tumbler_entity_commands,
                         &effects_sprite_handles,
                         height
@@ -186,7 +184,7 @@ pub fn spawn_lock(
                 //Spawn_Spring
                 let spring = parent_node
                     .spawn((
-                        gen_random_spring(x, &mut rng.RandomNumberGenerator, &lock_sprite_handles),
+                        gen_random_spring(x, &mut rng.random_number_generator, &lock_sprite_handles),
                         Transform::from_xyz(
                             offset,
                             TOP_OF_CHAMBER - (HEIGHT_OF_SPRING_SPRITE / 2.0),
@@ -229,7 +227,7 @@ pub fn handle_catching_tumblers(
     mut animated_sprite_query: Query<&mut Sprite, With<Animated>>,
 ) {
 
-    let Ok((focused_entity, mut focused_tumbler_transform, mut focused_tumbler, focused_tumbler_children)) =
+    let Ok((focused_entity, focused_tumbler_transform, mut focused_tumbler, focused_tumbler_children)) =
         tumbler_query.single_mut()
     else {
         return;
@@ -244,7 +242,7 @@ pub fn handle_catching_tumblers(
     for action in actions.read() {
         match action {
             CatchTumbler::Catch => {
-                if (focused_tumbler_transform.translation.y + (height / 2.0) >= (TOP_OF_CHAMBER - TUMBLER_SET_THRESHOLD)){
+                if focused_tumbler_transform.translation.y + (height / 2.0) >= (TOP_OF_CHAMBER - TUMBLER_SET_THRESHOLD){
                     writer.write(TumblerTimerMessage(focused_entity));
                 } else {
                     //Add time/score reducing code here!

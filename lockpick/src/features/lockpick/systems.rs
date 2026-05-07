@@ -1,9 +1,7 @@
-use bevy::math::NormedVectorSpace;
 use bevy::prelude::*;
 use crate::features::animation::components::{Animatable, Animated, AnimationShake};
 use crate::features::game_controller::game_effects::events::Zap;
 use crate::features::lock::components::LockComponent;
-use crate::features::lock::messages::CatchTumbler;
 use crate::features::lock::resource::{TumblerSpringPairings};
 use crate::features::lock::spring::components::SpringComponent;
 use crate::features::lock::spring::resources::SpringSize;
@@ -21,7 +19,7 @@ use crate::features::lockpick::messages::{ChargeLockpick, LockpickAction};
 use crate::features::lockpick::resources::{LockpickElectricCharge, LockpickType};
 
 pub const LOCKPICK_HEAD_OFFSET: f32 = 1041.0;
-const LOCKPICK_MAX_HEIGHT: f32 = (TOP_OF_CHAMBER - (HEIGHT_OF_MEDIUM_TUMBLER_SPRITE / 2.0 + HEIGHT_OF_SPRING_SPRITE));
+const LOCKPICK_MAX_HEIGHT: f32 = TOP_OF_CHAMBER - (HEIGHT_OF_MEDIUM_TUMBLER_SPRITE / 2.0 + HEIGHT_OF_SPRING_SPRITE);
 const LOCKPICK_LOWER_BOUND: f32 = -200.0;
 
 
@@ -63,7 +61,7 @@ pub fn spawn_lockpick (
                 )
         );
 
-        
+
     });
 }
 
@@ -160,7 +158,7 @@ pub fn handle_lockpick_charge(
         if lockpick_electric_charge.current_charge > lockpick_electric_charge.max_charge{
             lockpick_electric_charge.current_charge = lockpick_electric_charge.max_charge
         } else {
-            lockpick_electric_charge.current_charge += (lockpick.charge_timer.elapsed_secs()*lockpick_electric_charge.charge_per_tick);
+            lockpick_electric_charge.current_charge += lockpick.charge_timer.elapsed_secs() * lockpick_electric_charge.charge_per_tick;
             lockpick.charge_timer.reset();
         }
     }
@@ -177,9 +175,9 @@ pub fn handle_lockpick_message(
     springs: Query<&SpringComponent>,
     tumblers: Query<(Entity, &TumblerComponent), Without<FocusedTumblerComponent>>,
     tumbler_spring_pairings: Res<TumblerSpringPairings>,
-    mut actions: MessageReader<LockpickAction>,
-    mut lockpick_electric_charge: ResMut<LockpickElectricCharge>,
+    lockpick_electric_charge: ResMut<LockpickElectricCharge>,
     mut charge_lockpick_writer: MessageWriter<ChargeLockpick>,
+    mut actions: MessageReader<LockpickAction>,
     //mut catch_tumbler_action: MessageWriter<CatchTumbler>,
     mut commands: Commands,
     mut lockpick_query: Query<(&Children, &GlobalTransform, &mut LockpickComponent)>,
@@ -210,7 +208,7 @@ pub fn handle_lockpick_message(
     if !lockpick.is_moving {
         let mut spring = None;
         for (tumbler_index, spring_index) in tumbler_spring_pairings.array.iter(){
-            if (focused_tumbler_entity == *tumbler_index){
+            if focused_tumbler_entity == *tumbler_index {
                 let Ok(paired_spring) = springs.get(*spring_index) else {
                     panic!("Tumbler has no spring!")
                 };
@@ -402,10 +400,10 @@ pub fn handle_lockpick_message(
                     // }
 
                 },
-                
+
                 LockpickAction::Hex => todo!(),
-                
-                
+
+
                 LockpickAction::SwitchNext => {
                     for child in lockpick_children.iter(){
                         if let Ok(mut lockpick_sprite) = animated_sprite_query.get_mut(child) {

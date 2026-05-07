@@ -1,6 +1,5 @@
 use bevy::prelude::*;
 use crate::features::animation::plugin::AnimationFeaturesPlugin;
-use crate::features::controls::messages::QuitGame;
 use crate::features::game_controller::game_effects::systems::{load_effects_sprite_resources, on_lightning_effect};
 use crate::features::game_controller::messages::GameStateMessage;
 use crate::features::game_controller::systems::load_game_controller_sprites;
@@ -8,7 +7,6 @@ use crate::features::lock::messages::CatchTumbler;
 use crate::features::lock::tumblers::messages::TumblerTimerMessage;
 use crate::features::lock::tumblers::systems::on_break_rust;
 use crate::features::lockpick::messages::{ChargeLockpick, LockpickAction};
-use crate::features::lockpick::resources::LockpickElectricCharge;
 use crate::features::lockpick::systems::load_lockpick_resources;
 use crate::features::rand::systems::load_random_seed;
 use super::camera::systems::spawn_camera;
@@ -31,6 +29,6 @@ impl Plugin for LockpickFeaturesPlugin {
         app.add_message::<TumblerTimerMessage>();
         app.add_message::<GameStateMessage>();
         app.add_message::<ChargeLockpick>();
-        
+
     }
 }

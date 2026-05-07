@@ -14,7 +14,7 @@ pub fn animation_controller<T: Component<Mutability = Mutable> + Animatable>(
     mut animatable: Query<(Entity, &mut T, &mut Transform), With<Animated>>,
 
 ) {
-    for ((sprite_entity, mut animated_sprite, mut sprite_transform)) in &mut animatable {
+    for (sprite_entity, mut animated_sprite, mut sprite_transform) in &mut animatable {
         if !animated_sprite.animation_has_finished() {
             animated_sprite.animate_step(time.delta(), &mut sprite_transform);
         } else {
@@ -39,7 +39,7 @@ impl Animatable for AnimationShake {
         self.animation_timer.tick(delta);
         let left_bound = -5.0;
         let right_bound = 5.0;
-        
+
         if transform.translation.x > right_bound {
             transform.translation.x = right_bound;
             self.animation_velocity.x  *= -1.0;

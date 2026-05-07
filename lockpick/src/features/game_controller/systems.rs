@@ -3,9 +3,8 @@ use bevy::time::TimerMode::Once;
 use crate::features::game_controller::components::{ChargeBarMarker, ChargeLoadingMarker};
 use crate::features::game_controller::messages::GameStateMessage;
 use crate::features::game_controller::resources::{GameResourceHandles};
-use crate::features::interface::definitions::{InterfaceStates, StateHistory};
+use crate::features::interface::definitions::{Interfaces, StateHistory};
 use crate::features::lock::components::LockComponent;
-use crate::features::lock::resource::LockSpriteHandles;
 use crate::features::lock::tumblers::components::SetTumblerComponent;
 use crate::features::lockpick::component::LockpickComponent;
 use crate::features::lockpick::messages::ChargeLockpick;
@@ -40,9 +39,6 @@ pub fn load_game_controller_sprites(
 pub fn spawn_charge_bar (
     mut commands: Commands,
     game_resource_handles: Res<GameResourceHandles>,
-    lockpick_electric_charge: Res<LockpickElectricCharge>,
-
-
 ) {
     //let Ok(lockpick_transform) = lockpick_component.single() else {return};
     //let charge_offset = vec3(LOCKPICK_HEAD_OFFSET - CHARGE_BAR_SPRITE_WIDTH - 30.0, CHARGE_BAR_SPRITE_HEIGHT + 30.0, 0.0);
@@ -70,7 +66,7 @@ pub fn spawn_charge_bar (
 pub fn charge_chargebar(
     //mut commands: Commands,
     mut charge_bar_query: Query<(&mut Visibility, &mut Transform), With<ChargeBarMarker>>,
-    mut charge_loading_bar_query: Query<(&mut Transform), (With<ChargeLoadingMarker>, Without<ChargeBarMarker>, Without<LockpickComponent>)>,
+    mut charge_loading_bar_query: Query<&mut Transform, (With<ChargeLoadingMarker>, Without<ChargeBarMarker>, Without<LockpickComponent>)>,
     mut charge_actions: MessageReader<ChargeLockpick>,
     lockpick_electric_charge: Res<LockpickElectricCharge>,
     lockpick_component: Query<&Transform, (With<LockpickComponent>, Without<ChargeBarMarker>)>
@@ -149,8 +145,8 @@ pub fn check_game_state (
 
 pub fn handle_game_state(
     mut actions: MessageReader<GameStateMessage>,
-    get_state: Res<State<InterfaceStates>>,
-    mut next_state: ResMut<NextState<InterfaceStates>>,
+    get_state: Res<State<Interfaces>>,
+    mut next_state: ResMut<NextState<Interfaces>>,
     mut state_history: ResMut<StateHistory>,
 ) {
     for action in actions.read() {
@@ -161,20 +157,20 @@ pub fn handle_game_state(
                 let current_state = get_state.get();
                 state_history.clear();
                 let state_to_set = match current_state{
-                    InterfaceStates::Level1 => {
-                        InterfaceStates::Level2
+                    Interfaces::Level1 => {
+                        Interfaces::Level2
                     }
-                    InterfaceStates::Level2 => {
-                        InterfaceStates::Level3
+                    Interfaces::Level2 => {
+                        Interfaces::Level3
                     }
-                    InterfaceStates::Level3 => {
-                        InterfaceStates::Level4
+                    Interfaces::Level3 => {
+                        Interfaces::Level4
                     }
-                    InterfaceStates::Level4 => {
-                        InterfaceStates::Level5
+                    Interfaces::Level4 => {
+                        Interfaces::Level5
                     }
-                    InterfaceStates::Level5 => {
-                        InterfaceStates::WinScreen
+                    Interfaces::Level5 => {
+                        Interfaces::Won
                     }
                     _ => {
                         panic!("You shouldnt be winning on this state")
@@ -185,7 +181,7 @@ pub fn handle_game_state(
             }
             GameStateMessage::Lose => {
                 state_history.clear();
-                next_state.set(InterfaceStates::StartMenu);
+                next_state.set(Interfaces::StartMenu);
             }
 
         }

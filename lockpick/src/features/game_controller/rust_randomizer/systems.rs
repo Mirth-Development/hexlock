@@ -1,5 +1,3 @@
-use bevy::ecs::system::entity_command::despawn;
-use bevy::log::tracing::Instrument;
 use bevy::prelude::*;
 use rand::RngExt;
 use rand::rngs::StdRng;
@@ -7,8 +5,6 @@ use crate::features::animation::components::Animated;
 use crate::features::game_controller::game_effects::resources::EffectsSpriteHandles;
 use crate::features::game_controller::game_effects::systems::HEIGHT_OF_RUST_SPRITE;
 use crate::features::lock::tumblers::components::TumblerRustComponent;
-use crate::features::lock::tumblers::resources::TumblerSize;
-use crate::features::rand::resources::RandomSeed;
 
 pub fn chance_to_add_rust(
     random_seed: &mut StdRng,

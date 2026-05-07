@@ -3,9 +3,7 @@ use crate::features::lock::messages::CatchTumbler;
 use crate::features::lockpick::messages::LockpickAction;
 use crate::features::interface::definitions::*;
 use crate::features::controls::systems_for_control_schemas::{electric_pick_schema, normal_pick_schema};
-use crate::features::lock::messages::CatchTumbler;
 use crate::features::lockpick::component::LockpickComponent;
-use crate::features::lockpick::messages::{LockpickAction};
 use crate::features::lockpick::resources::LockpickType;
 
 
@@ -15,7 +13,6 @@ pub fn user_control_system(
     keyboard_input: Res<ButtonInput<KeyCode>>,
     mut pick_event: MessageWriter<LockpickAction>,
     mut tumbler_event: MessageWriter<CatchTumbler>,
-
     mut next_state: ResMut<NextState<Interfaces>>,
     mut state_history: ResMut<StateHistory>,
 
@@ -74,5 +71,3 @@ pub fn user_control_system(
         next_state.set(Interfaces::StartMenu);
     }
 }
-
-

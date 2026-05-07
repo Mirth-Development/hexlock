@@ -1,6 +1,6 @@
 use bevy::input::ButtonInput;
-use bevy::prelude::{KeyCode, MessageWriter, Res};
-use crate::features::lockpick::messages::{ChargeLockpick, LockpickAction};
+use bevy::prelude::{KeyCode, MessageWriter};
+use crate::features::lockpick::messages::{LockpickAction};
 
 pub fn normal_pick_schema(
     keyboard_input: &ButtonInput<KeyCode>,
@@ -15,7 +15,7 @@ pub fn normal_pick_schema(
 
 pub fn electric_pick_schema(
     keyboard_input: &ButtonInput<KeyCode>,
-    mut pick_event: &mut MessageWriter<LockpickAction>
+    pick_event: &mut MessageWriter<LockpickAction>
 ){
 
     if keyboard_input.just_pressed(KeyCode::KeyW){

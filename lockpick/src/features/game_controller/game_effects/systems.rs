@@ -41,7 +41,7 @@ pub fn on_lightning_effect(
     zap: On<Zap>,
     mut commands: Commands,
     lockpick_electric_charge: Res<LockpickElectricCharge>,
-    tumbler_component: Query<(&GlobalTransform),With<FocusedTumblerComponent>>,
+    tumbler_component: Query<&GlobalTransform, With<FocusedTumblerComponent>>,
     effects_sprite_handles: Res<EffectsSpriteHandles>
 )
 {
@@ -83,7 +83,7 @@ pub fn on_lightning_effect(
             //(bottom_y + gap / 2.0) = midpoint?
             translation: pos,
             // y =
-            scale: vec3(1.0, (gap / HEIGHT_OF_LIGHTNING_SPRITE), 1.0),
+            scale: vec3(1.0, gap / HEIGHT_OF_LIGHTNING_SPRITE, 1.0),
             ..default()
         }
         )
