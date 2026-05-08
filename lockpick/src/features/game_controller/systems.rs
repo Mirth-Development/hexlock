@@ -1,17 +1,15 @@
-use std::f32::consts::PI;
-use std::time::Duration;
 use bevy::prelude::*;
 use bevy::time::TimerMode::Once;
 use rand::prelude::{ SliceRandom};
-use crate::features::game_controller::components::{ChargeBarMarker, ChargeLoadingMarker};
+use crate::features::game_controller::components::{ChargeBarMarker, ChargeLoadingMarker, TumblerChamberNumberComponent};
 use crate::features::game_controller::messages::GameStateMessage;
 use crate::features::game_controller::resources::{GameResourceHandles, TumblerOrdering};
 use crate::features::interface::definitions::{Interfaces, StateHistory};
-use crate::features::lock::components::{GameObjectAnchorMarker, LockComponent, TumblerChamberComponent, TumblerChamberNumberComponent};
+use crate::features::lock::components::{ LockComponent, TumblerChamberComponent};
 use crate::features::lock::tumblers::components::{SetTumblerComponent, TumblerComponent};
 use crate::features::lock::tumblers::systems::TUMBLER_SET_RELEASE_VELOCITY;
 use crate::features::lockpick::component::LockpickComponent;
-use crate::features::lockpick::messages::{ChargeLockpick, HexDirection};
+use crate::features::lockpick::messages::{ChargeLockpick,};
 use crate::features::lockpick::resources::LockpickElectricCharge;
 use crate::features::lockpick::systems::LOCKPICK_HEAD_OFFSET;
 use crate::features::rand::resources::RandomSeed;
@@ -64,9 +62,6 @@ pub fn spawn_charge_bar (
     mut commands: Commands,
     game_resource_handles: Res<GameResourceHandles>,
 ) {
-    //let Ok(lockpick_transform) = lockpick_component.single() else {return};
-    //let charge_offset = vec3(LOCKPICK_HEAD_OFFSET - CHARGE_BAR_SPRITE_WIDTH - 30.0, CHARGE_BAR_SPRITE_HEIGHT + 30.0, 0.0);
-
     commands.spawn((
         Sprite::from_image(game_resource_handles.charge_bar.clone()),
         Visibility::Hidden,
@@ -87,62 +82,6 @@ pub fn spawn_charge_bar (
 
 }
 
-// //Spawn after lock, start of lock changes with config changes
-// pub fn spawn_magic_arrow (
-//     mut commands: Commands,
-//     game_resource_handles: Res<GameResourceHandles>,
-// ) {
-//
-//     commands.spawn((
-//         Sprite::from_image(game_resource_handles.magic_arrow.clone()),
-//         //Visibility::Hidden, //want to see it for now
-//         MagicArrowMarker,
-//         Transform{
-//             translation: Vec3::splat(0.0),
-//             ..default()
-//         },
-//     )
-//
-//     );
-//
-//
-// }
-//
-//
-//
-// pub fn move_magic_arrow(
-//     mut magic_arrow: Query<(&mut Transform), With<MagicArrowMarker>>,
-//     mut anchor_point: Query<(&GlobalTransform), With<GameObjectAnchorMarker>>,
-//     mut magic_arrow_action: MessageReader<HexDirection>
-// ){
-//     let Ok(mut magic_arrow_transform) = magic_arrow.single_mut() else {return};
-//     let Ok(anchor_point_transform) = anchor_point.single() else {return};
-//
-//     let offset = vec3(300.0, 300.0, 0.0);
-//
-//     if magic_arrow_transform.translation - offset != anchor_point_transform.translation(){
-//         magic_arrow_transform.translation = anchor_point_transform.translation() + offset;
-//     }
-//
-//     for action in magic_arrow_action.read(){
-//         match action {
-//             HexDirection::Up => {
-//                 magic_arrow_transform.rotation = Quat::from_rotation_z(-(PI/2.0) )
-//             }
-//             HexDirection::Down => {
-//                 magic_arrow_transform.rotation = Quat::from_rotation_z((-(3.0*PI)/2.0) )}
-//             HexDirection::Left => {
-//                 magic_arrow_transform.rotation = Quat::from_rotation_z(0.0)
-//             }
-//             HexDirection::Right => {
-//                 magic_arrow_transform.rotation = Quat::from_rotation_z(-PI)
-//             }
-//         }
-//     }
-//
-//
-// }
-
 pub fn spawn_lock_order (
     mut commands: Commands,
     mut random_seed: ResMut<RandomSeed>,
@@ -152,7 +91,9 @@ pub fn spawn_lock_order (
     mut tumblers: Query<(Entity, &mut TumblerComponent)>,
     tumbler_chamber_query: Query<(Entity), With<TumblerChamberComponent>>
 ) {
-    let Ok(lock) = lock_component.single() else {return};
+    let Ok(lock) = lock_component.single() else {
+        println!("No Lock!");
+        return};
 
     tumbler_ordering.order = Vec::new();
     tumbler_ordering.current_position = 1;
@@ -191,10 +132,15 @@ pub fn spawn_lock_order (
                 },
             )).id();
         });
+        println!("Spawned chamber number entity: {:?} for chamber {} displayed {}",
+                 num_entity_id, chamber_position, displayed_number);
 
         // Wire that entity back onto the tumbler.
         if let Ok((_, mut tumbler)) = tumblers.get_mut(tumbler_entity) {
+            println!("Wired tumbler at chamber {} -> sprite entity {:?}", chamber_position, num_entity_id);
             tumbler.order_num_entity = num_entity_id;
+            println!("[SPAWN] Wired tumbler at chamber {} -> sprite {:?} (tumbler entity {:?}, position {})",
+                     chamber_position, num_entity_id, tumbler_entity, tumbler.position);
         }
     }
 }
@@ -215,11 +161,18 @@ pub fn check_tumbler_order(
 
         // knock out each tumbler above amount
         if rank >= tumbler_order.current_position {
-            println!("each tumbler after position {} falls out", tumbler.position);
+            println!("[CHECK] knocking out tumbler position {} (rank {}, current_pos {})",
+                     tumbler.position, rank, tumbler_order.current_position);
 
-            // Set full opacity
-            if let Ok(mut sprite) = tumbler_number_query.get_mut(tumbler.order_num_entity) {
-                sprite.color = Color::srgba(1.0, 1.0, 1.0, 1.0);
+            match tumbler_number_query.get_mut(tumbler.order_num_entity) {
+                Ok(mut sprite) => {
+                    println!("[CHECK]   sprite found, current color: {:?}, setting full opacity", sprite.color);
+                    sprite.color = Color::srgba(1.0, 1.0, 1.0, 1.0);
+                    println!("[CHECK]   color is now: {:?}", sprite.color);
+                }
+                Err(e) => {
+                    println!("[CHECK]   sprite NOT found: {:?}", e);
+                }
             }
 
             tumbler.timer.reset();
@@ -229,52 +182,26 @@ pub fn check_tumbler_order(
         }
     }
 
-    // for (entity, mut tumbler) in tumbler_component_query.iter_mut() {
-    //     if !set_tumbler_component.contains(entity) {
-    //         println!("not set");
-    //         continue;
-    //     }
-    //     if tumbler_order.order[(tumbler.position - 1) as usize] < tumbler_order.current_position {
-    //         println!("below current position");
-    //         continue;
-    //     }
-    //
-    //     let Ok(mut sprite) = tumbler_number_query.get_mut(tumbler.order_num_entity) else {
-    //         println!("sprite not got");
-    //         continue;
-    //     };
-    //
-    //     let secs = if tumbler.timer.is_finished() {
-    //         0.0
-    //     } else {
-    //         tumbler.timer.remaining_secs()
-    //     };
-    //
-    //     println!("half transparency color!");
-    //     sprite.color = Color::srgba(1.0, 1.0, 1.0, 0.5);
-    //
-    //     if secs > 1.0 {
-    //         println!("pos: {} bigger than cur: {}", tumbler.position, tumbler_order.current_position);
-    //         println!("full transparency color!");
-    //         sprite.color = Color::srgba(1.0, 1.0, 1.0, 1.0);
-    //         tumbler.timer.finish();
-    //     }
-    // }
 }
 
 
 pub fn charge_charge_bar(
     //mut commands: Commands,
-    mut charge_bar_query: Query<(&mut Visibility, &mut Transform), With<ChargeBarMarker>>,
-    mut charge_loading_bar_query: Query<(&mut Transform, &mut Sprite), (With<ChargeLoadingMarker>, Without<ChargeBarMarker>, Without<LockpickComponent>)>,
+    mut charge_bar_query: Query<( &mut Transform,  &mut Visibility,), With<ChargeBarMarker>>,
+    mut charge_loading_bar_query: Query<(&mut Transform, &mut Sprite,), (With<ChargeLoadingMarker>, Without<ChargeBarMarker>, Without<LockpickComponent>)>,
     mut charge_actions: MessageReader<ChargeLockpick>,
     lockpick_electric_charge: Res<LockpickElectricCharge>,
     lockpick_component: Query<&Transform, (With<LockpickComponent>, Without<ChargeBarMarker>)>
 ){
-    let Ok(lockpick_transform) = lockpick_component.single() else {return};
-    let Ok((mut charge_loading_bar_transform, mut charge_loading_bar_sprite)) = charge_loading_bar_query.single_mut() else {return};
-    let Ok((mut charge_bar_visiblity, mut charge_bar_transform)) = charge_bar_query.single_mut() else {return};
-    let charge_offset = vec3(LOCKPICK_HEAD_OFFSET - CHARGE_BAR_SPRITE_WIDTH - 30.0, CHARGE_BAR_SPRITE_HEIGHT + 30.0, 0.0);
+    let Ok(lockpick_transform) = lockpick_component.single() else {
+        return};
+    let Ok((mut charge_loading_bar_transform, mut charge_loading_bar_sprite, )) = charge_loading_bar_query.single_mut() else {
+        println!("No Charge Loading Bar");
+        return};
+    let Ok((mut charge_bar_transform, mut charge_loading_bar_visibility)) = charge_bar_query.single_mut() else {
+        println!("No Charge Loading Sprite");
+        return};
+    let charge_offset = vec3(-LOCKPICK_HEAD_OFFSET - CHARGE_BAR_SPRITE_WIDTH - 30.0, CHARGE_BAR_SPRITE_HEIGHT + 30.0, 100.0);
 
     let scale = (CHARGE_BAR_SPRITE_WIDTH/CHARGE_LOADING_SPRITE_WIDTH)*(lockpick_electric_charge.current_charge/lockpick_electric_charge.max_charge);
 
@@ -284,12 +211,15 @@ pub fn charge_charge_bar(
     }
 
     for action in charge_actions.read(){
+        println!("Action found!");
         match action {
             ChargeLockpick::Charge => {
-                *charge_bar_visiblity = Visibility::Visible;
+                println!("Make Visible!");
+                *charge_loading_bar_visibility = Visibility::Visible;
             }
             ChargeLockpick::Release => {
-                *charge_bar_visiblity = Visibility::Hidden;
+                println!("Make Invisible!");
+                *charge_loading_bar_visibility = Visibility::Hidden;
             }
         }
     }
@@ -297,34 +227,11 @@ pub fn charge_charge_bar(
     charge_loading_bar_sprite.color = Color::srgb(1.0, is_ready, is_ready);
     charge_bar_transform.translation = lockpick_transform.translation + charge_offset;
     charge_loading_bar_transform.scale.x = scale;
-
-
-
-
-
-
-
-
-
-
-    //     Sprite::from_image(game_resource_handles.charge_bar.clone()),
-    //     Visibility::Hidden,
-    //     ChargeBar{
-    //         charge_max: lockpick_electric_charge.max_charge,
-    //         charge: lockpick_electric_charge.current_charge,
-    //     },
-    //     Transform{
-    //         translation: lockpick_transform.translation + charge_offset,
-    //         ..default()
-    //     },
-    //     children![(
-    //         Sprite::from_image(game_resource_handles.charge.clone()),
-    //         Transform::from_xyz(0.0,0.0,0.0)
-    //     )]
-    // )
-    //
-    // );
 }
+
+
+
+
 
 //Message
 

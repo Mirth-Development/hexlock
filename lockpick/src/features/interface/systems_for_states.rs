@@ -21,19 +21,19 @@ impl Plugin for SystemsForUserInterfaceStates {
         app.add_systems(OnEnter(Interfaces::StartMenu), setup_start_menu);
         app.add_systems(OnExit(Interfaces::StartMenu), (record_start_menu_exit, cleanup_entities).chain());
 
-        app.add_systems(OnEnter(Interfaces::Level1), (setup_level_1, load_lock_resources, spawn_lockpick, spawn_lock, spawn_charge_bar,spawn_lock_order).chain());
+        app.add_systems(OnEnter(Interfaces::Level1), (setup_level_1, load_lock_resources, spawn_lock, spawn_lockpick, spawn_charge_bar,spawn_lock_order).chain());
         app.add_systems(OnExit(Interfaces::Level1), (record_level_1_exit, cleanup_entities).chain());
 
-        app.add_systems(OnEnter(Interfaces::Level2), (setup_level_2, load_lock_resources, spawn_lockpick, spawn_lock, spawn_charge_bar,spawn_lock_order).chain());
+        app.add_systems(OnEnter(Interfaces::Level2), (setup_level_2, load_lock_resources, spawn_lock, spawn_lockpick, spawn_charge_bar,spawn_lock_order).chain());
         app.add_systems(OnExit(Interfaces::Level2), (record_level_2_exit, cleanup_entities).chain());
 
-        app.add_systems(OnEnter(Interfaces::Level3), (setup_level_3, load_lock_resources, spawn_lockpick, spawn_lock, spawn_charge_bar,spawn_lock_order).chain());
+        app.add_systems(OnEnter(Interfaces::Level3), (setup_level_3, load_lock_resources, spawn_lock, spawn_lockpick, spawn_charge_bar,spawn_lock_order).chain());
         app.add_systems(OnExit(Interfaces::Level3), (record_level_3_exit, cleanup_entities).chain());
 
-        app.add_systems(OnEnter(Interfaces::Level4), (setup_level_4, load_lock_resources, spawn_lockpick, spawn_lock, spawn_charge_bar,spawn_lock_order).chain());
+        app.add_systems(OnEnter(Interfaces::Level4), (setup_level_4, load_lock_resources, spawn_lock, spawn_lockpick, spawn_charge_bar,spawn_lock_order).chain());
         app.add_systems(OnExit(Interfaces::Level4), (record_level_4_exit, cleanup_entities).chain());
 
-        app.add_systems(OnEnter(Interfaces::Level5), (setup_level_5, load_lock_resources, spawn_lockpick, spawn_lock, spawn_charge_bar,spawn_lock_order).chain());
+        app.add_systems(OnEnter(Interfaces::Level5), (setup_level_5, load_lock_resources, spawn_lock, spawn_lockpick, spawn_charge_bar,spawn_lock_order).chain());
         app.add_systems(OnExit(Interfaces::Level5), (record_level_5_exit, cleanup_entities).chain());
 
         app.add_systems(OnEnter(Interfaces::Cards), setup_cards);

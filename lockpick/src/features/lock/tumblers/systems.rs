@@ -4,7 +4,7 @@ use crate::features::game_controller::components::TumblerChamberNumberComponent;
 use crate::features::game_controller::resources::TumblerOrdering;
 use crate::features::lock::spring::systems::HEIGHT_OF_SPRING_SPRITE;
 use crate::features::lock::systems::TOP_OF_CHAMBER;
-use crate::features::lock::tumblers::components::{SetTumblerComponent, TumblerComponent, TumblerMagicComponent, TumblerRustComponent};
+use crate::features::lock::tumblers::components::{SetTumblerComponent, TumblerComponent, TumblerRustComponent};
 use crate::features::lock::tumblers::event::BreakRust;
 use crate::features::lock::tumblers::resources::TumblerSize;
 use super::messages::TumblerTimerMessage;
