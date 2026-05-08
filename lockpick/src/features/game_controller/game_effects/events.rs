@@ -8,7 +8,8 @@ pub struct Zap{
 }
 
 #[derive(Event)]
-pub struct Rust{
+pub struct Magic{
+    pub life_timer: Timer,
     pub top: f32,
     pub bottom:f32,
 }

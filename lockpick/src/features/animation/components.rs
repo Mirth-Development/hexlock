@@ -26,9 +26,18 @@ pub struct AnimationFlip{
     pub animation_timer: Timer,
 }
 
+// #[derive(Component)]
+// #[require(Animated)]
+// pub struct AnimationFlip{
+//     pub original_translation: Vec3,
+//     pub animation_timer: Timer,
+// }
+
 pub trait Animatable {
-    fn new(duration_seconds: f32, original_translation: Vec3) -> Self;
+    fn new(duration_seconds: f32, original_translation: Vec3, timer_mode: TimerMode) -> Self;
     fn animate_step(&mut self, time: Duration, transform: &mut Transform);
+
+    fn repeats(&mut self) -> bool;
 
     fn reset_animation_transform(&mut self, transform: &mut Transform);
     fn animation_has_finished(&mut self) -> bool;

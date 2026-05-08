@@ -1,20 +1,17 @@
 use bevy::prelude::*;
 use crate::features::animation::components::{Animatable, Animated, AnimationShake};
-use crate::features::game_controller::game_effects::events::Zap;
+use crate::features::game_controller::game_effects::events::{Magic, Zap};
 use crate::features::lock::components::LockComponent;
 use crate::features::lock::resource::{TumblerSpringPairings};
 use crate::features::lock::spring::components::SpringComponent;
 use crate::features::lock::spring::resources::SpringSize;
 use crate::features::lock::spring::systems::HEIGHT_OF_SPRING_SPRITE;
-use crate::features::lock::systems::TOP_OF_CHAMBER;
+use crate::features::lock::systems::{tumbler_size_helper_function, TOP_OF_CHAMBER};
 use crate::features::lock::tumblers::components::{FocusedTumblerComponent, SetTumblerComponent, TumblerComponent, TumblerRustComponent};
 use crate::features::lock::tumblers::event::BreakRust;
 use crate::features::lock::tumblers::resources::{TumblerSize, TumblerType};
 use crate::features::lock::tumblers::systems::HEIGHT_OF_MEDIUM_TUMBLER_SPRITE;
 use crate::features::lockpick::component::LockpickComponent;
-
-
-
 use crate::features::lockpick::messages::{ChargeLockpick, LockpickAction};
 use crate::features::lockpick::resources::{LockpickElectricCharge, LockpickType};
 
@@ -61,7 +58,7 @@ pub fn spawn_lockpick (
                 )
         );
 
-
+        
     });
 }
 
@@ -178,7 +175,6 @@ pub fn handle_lockpick_message(
     lockpick_electric_charge: ResMut<LockpickElectricCharge>,
     mut charge_lockpick_writer: MessageWriter<ChargeLockpick>,
     mut actions: MessageReader<LockpickAction>,
-    //mut catch_tumbler_action: MessageWriter<CatchTumbler>,
     mut commands: Commands,
     mut lockpick_query: Query<(&Children, &GlobalTransform, &mut LockpickComponent)>,
     mut animated_sprite_query: Query<&mut Sprite, With<Animated>>,
@@ -274,11 +270,17 @@ pub fn handle_lockpick_message(
                     lockpick.is_moving = false;
                     if !check_set.contains(focused_tumbler_entity) {
                         if focused_tumbler.tumbler_type == TumblerType::Electric {
-                            commands.trigger(Zap{life_timer: Timer::from_seconds(0.4, TimerMode::Once),
-                                top: focused_tumbler_transform.translation().y,
-                                bottom: lockpick_transform.translation().y});
-                            println!("Zapping! power:{}", lockpick_electric_charge.current_charge);
-                            focused_tumbler.velocity.y = (200.0 + variant_tumbler_spring_speed)*lockpick_electric_charge.current_charge;
+                            if lockpick_electric_charge.current_charge > lockpick_electric_charge.max_charge /4.0 {
+                                commands.trigger(Zap{life_timer: Timer::from_seconds(0.4, TimerMode::Once),
+                                    top: focused_tumbler_transform.translation().y,
+                                    bottom: lockpick_transform.translation().y});
+                                println!("Zapping! power:{}", lockpick_electric_charge.current_charge);
+                                focused_tumbler.velocity.y = (200.0 + variant_tumbler_spring_speed)*lockpick_electric_charge.current_charge;
+                            } else {
+                                shake_tumbler_help_function(focused_children, &mut animated_sprite_query, &mut commands);
+                                println!("Not enough force")
+                            }
+
                         } else {
                             shake_tumbler_help_function(focused_children, &mut animated_sprite_query, &mut commands);
                             println!("lose time!")
@@ -295,6 +297,7 @@ pub fn handle_lockpick_message(
                             focused_tumbler.timer.reset();
                             println!("STUNNING TUMBLER!")
                         } else {
+                            shake_tumbler_help_function(focused_children, &mut animated_sprite_query, &mut commands);
                             println!("Not enough force")
                         }
 
@@ -307,6 +310,7 @@ pub fn handle_lockpick_message(
                 }
                 //May be for regular pick only?
                 LockpickAction::Pick => {
+
                     match lockpick.lockpick_type {
                         LockpickType::Normal => {
                             if !check_set.contains(focused_tumbler_entity) {
@@ -322,86 +326,64 @@ pub fn handle_lockpick_message(
 
                                 if found_rust.is_some(){
                                     shake_tumbler_help_function(focused_children, &mut animated_sprite_query, &mut commands);
-                                    // for child in focused_children.iter() {
-                                    //     if let Ok(_) = animated_sprite_query.get_mut(child) {
-                                    //         println!("Animates");
-                                    //         commands.entity(child).insert(AnimationShake::new(0.5, Vec3::splat(0.0)));
-                                    //     }
-                                    // }
                                     commands.trigger(BreakRust{id:found_rust.unwrap()});
 
 
                                 } else {
                                     if focused_tumbler.tumbler_type == TumblerType::Normal {
-                                        //lockpick.is_moving = true;
-                                        // lockpick.velocity.y += 800.0;
+                                        lockpick.is_moving = true;
+                                        lockpick.velocity.y += 800.0;
                                         println!("Picking!");
                                         focused_tumbler.velocity.y = 400.0 + variant_tumbler_spring_speed;
                                     } else {
                                         shake_tumbler_help_function(focused_children, &mut animated_sprite_query, &mut commands);
-                                        // for child in focused_children.iter() {
-                                        //     if let Ok(_) = animated_sprite_query.get_mut(child) {
-                                        //         println!("Animates");
-                                        //         commands.entity(child).insert(AnimationShake::new(0.5, Vec3::splat(0.0)));
-                                        //     }
-                                        // }
+
                                         println!("Lose time")
                                         //NOT RIGHT TUMBLER TYPE, LOSE TIME!
                                     }
                                 }
                             } else {
                                 shake_tumbler_help_function(focused_children, &mut animated_sprite_query, &mut commands);
-                                // for child in focused_children.iter() {
-                                //     if let Ok(_) = animated_sprite_query.get_mut(child) {
-                                //         println!("Animates");
-                                //         commands.entity(child).insert(AnimationShake::new(0.5, Vec3::splat(0.0)));
-                                //     }
-                                // }
                             }
                         }
                         _ => {println!("This type shouldn't pick!")}
                     }
                     lockpick.is_moving = true;
                     lockpick.velocity.y += 800.0;
+                }
 
-
-
-                    // println!("Pick Hit");
-                    // match lockpick.lockpick_type {
-                    //     LockpickType::Normal => {
-                    //         println!("Normal Type");
-                    //         if !check_rust.is_empty() {
-                    //             println!("Not Empty");
-                    //             let mut rust_found: Option<bool> = None;
-                    //             for child in focused_children.iter() {
-                    //                 //let Ok (animatable_sprite) =  animated_sprite_query.get(child) else {return};
-                    //                 if check_rust.contains(child) {
-                    //                     rust_found = Some(true);
-                    //                     if let Ok((_, rust)) = check_rust.get(child){
-                    //                         commands.trigger(BreakRust { id: child });
-                    //
-                    //                         if rust.hits > 1 {
-                    //                             if let Ok(animatable_sprite) = animated_sprite_query.get_mut(child) {
-                    //                                 println!("Animates");
-                    //                                 commands.entity(child).insert(AnimationShake::new(0.5, Vec3::splat(0.0)));
-                    //                             }
-                    //                         }
-                    //                     }
-                    //                     break;
-                    //                 }
-                    //
-                    //             }
-                    //
-                    //
-                    //         }
-                    //
-                    //     }
-
-                    // }
-
-                },
-
-                LockpickAction::Hex => todo!(),
+                LockpickAction::Hex => {
+                    match lockpick.lockpick_type {
+                        LockpickType::Magic => {
+                            if !check_set.contains(focused_tumbler_entity) {
+                                if focused_tumbler.tumbler_type == TumblerType::Magic {
+                                    //lockpick.is_moving = true;
+                                    // lockpick.velocity.y += 800.0;
+                                    println!("Magicking!");
+                                    //focused_tumbler.velocity.y = 400.0 + variant_tumbler_spring_speed;
+                                    commands.trigger(Magic{
+                                        life_timer: Timer::from_seconds(2.0, TimerMode::Once),
+                                        top: focused_tumbler_transform.translation().y - (tumbler_size_helper_function(&focused_tumbler)/2.0),
+                                        bottom: lockpick_transform.translation().y});
+                                } else {
+                                    shake_tumbler_help_function(focused_children, &mut animated_sprite_query, &mut commands);
+                                    // for child in focused_children.iter() {
+                                    //     if let Ok(_) = animated_sprite_query.get_mut(child) {
+                                    //         println!("Animates");
+                                    //         commands.entity(child).insert(AnimationShake::new(0.5, Vec3::splat(0.0)));
+                                    //     }
+                                    // }
+                                    println!("Lose time")
+                                    //NOT RIGHT TUMBLER TYPE, LOSE TIME!
+                                    }
+                                }
+                        }
+                        _ => {println!("This type shouldn't pick!")}
+                    }
+                    //lockpick.is_moving = true;
+                    // lockpick.velocity.y += 800.0;
+                }
+                ,
 
 
                 LockpickAction::SwitchNext => {
@@ -487,7 +469,7 @@ pub fn shake_tumbler_help_function(
     for child in tumbler_children.iter() {
         if let Ok(_) = sprite_query.get_mut(child) {
             println!("Animates");
-            commands.entity(child).insert(AnimationShake::new(0.5, Vec3::splat(0.0)));
+            commands.entity(child).insert(AnimationShake::new(0.5, Vec3::splat(0.0), TimerMode::Once));
         }
     }
 }

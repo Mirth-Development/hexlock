@@ -15,22 +15,22 @@ pub fn animation_controller<T: Component<Mutability = Mutable> + Animatable>(
 
 ) {
     for (sprite_entity, mut animated_sprite, mut sprite_transform) in &mut animatable {
-        if !animated_sprite.animation_has_finished() {
-            animated_sprite.animate_step(time.delta(), &mut sprite_transform);
-        } else {
+        if animated_sprite.animation_has_finished() && !animated_sprite.repeats() {
             animated_sprite.reset_animation_transform(&mut sprite_transform);
             commands.entity(sprite_entity).remove::<T>();
-        }
-    };
+        } else {
+            animated_sprite.animate_step(time.delta(), &mut sprite_transform);
+        };
+    }
 }
 
 
 //Implementations
 impl Animatable for AnimationShake {
-    fn new(duration_seconds: f32, original_translation: Vec3) -> Self {
+    fn new(duration_seconds: f32, original_translation: Vec3, timer_mode: TimerMode) -> Self {
         Self{
             original_translation,
-            animation_timer: Timer::from_seconds(duration_seconds, TimerMode::Once),
+            animation_timer: Timer::from_seconds(duration_seconds, timer_mode),
             animation_velocity: vec3(200.0,0.0,0.0),
         }
     }
@@ -39,7 +39,7 @@ impl Animatable for AnimationShake {
         self.animation_timer.tick(delta);
         let left_bound = -5.0;
         let right_bound = 5.0;
-
+        
         if transform.translation.x > right_bound {
             transform.translation.x = right_bound;
             self.animation_velocity.x  *= -1.0;
@@ -54,6 +54,14 @@ impl Animatable for AnimationShake {
 
     }
 
+    fn repeats(&mut self) -> bool {
+        if self.animation_timer.mode() == TimerMode::Repeating {
+            true
+        } else {
+            false
+        }
+    }
+
     fn reset_animation_transform(&mut self, transform: &mut Transform) {
         transform.translation = self.original_translation;
     }
@@ -65,13 +73,22 @@ impl Animatable for AnimationShake {
 // Pick switching will be instant due to time restraint
 
 impl Animatable for AnimationFlip {
-    fn new(duration_seconds: f32, offset_translation: Vec3) -> Self {
+    fn new(duration_seconds: f32, offset_translation: Vec3, timer_mode: TimerMode) -> Self {
         Self{
             original_translation: offset_translation,
             animation_timer: Timer::from_seconds(duration_seconds, TimerMode::Once),
             //animation_velocity: vec3(0.0,0.0,0.0),
         }
     }
+
+    fn repeats(&mut self) -> bool {
+        if self.animation_timer.mode() == TimerMode::Repeating {
+            true
+        } else {
+            false
+        }
+    }
+
     fn animate_step(&mut self, delta: Duration, transform: &mut Transform){
         println!("Animating!");
         self.animation_timer.tick(delta);
@@ -89,34 +106,3 @@ impl Animatable for AnimationFlip {
         self.animation_timer.is_finished()
     }
 }
-
-// impl Animatable for AnimationPushBack {
-//     fn new(duration_seconds: f32, original_translation: Vec3) -> Self {
-//         Self{
-//             original_translation,
-//             animation_timer: Timer::from_seconds(duration_seconds, TimerMode::Once),
-//             animation_velocity: vec3(200.0,0.0,0.0),
-//         }
-//     }
-//     fn animate_step(&mut self, delta: Duration, transform: &mut Transform){
-//         println!("Animating!");
-//         self.animation_timer.tick(delta);
-//         let target: f32 = 0.0;
-//         let velocity = -(transform.translation.x/self.animation_timer.duration().as_secs_f32());
-//
-//         if transform.translation.x >= target {
-//             transform.translation.x = target;
-//         }
-//         println!("x:{}, speed:{}, Velocity: {}", transform.translation.x, self.animation_velocity.x, velocity);
-//         transform.translation.x += velocity * delta.as_secs_f32()
-//
-//     }
-//
-//     fn reset_animation_transform(&mut self, transform: &mut Transform) {
-//         transform.translation = self.original_translation;
-//     }
-//     fn animation_has_finished(&mut self) -> bool {
-//
-//         self.animation_timer.is_finished()
-//     }
-// }
