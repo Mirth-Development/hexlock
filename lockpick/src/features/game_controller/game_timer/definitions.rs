@@ -232,7 +232,7 @@ impl Chronolog {
         // Prevents the countdown number from returning a negative value.
         // Will return the elapsed time if it's greater than 1.0.
         // Will return 0.0 if the elapsed time comes out as negative.
-        if (elapsed > 0.0) {
+        if elapsed > 0.0 {
             elapsed
         }
         else {

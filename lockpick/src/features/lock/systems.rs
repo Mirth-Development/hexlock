@@ -104,6 +104,7 @@ pub fn spawn_lock(
                 Sprite::from_image(lock_sprite_handles.start_sprite.clone()),
                 GameObjectAnchorMarker,
                 Transform::from_xyz(offset, LOCK_START_OFFSET, 0.0),
+                Visibility::default(),
             ));
             offset += (LOCK_START_SPRITE_WIDTH / 2.0) + (TUMBLER_CHAMBER_SPRITE_WIDTH / 2.0) + 10.0; //Extra pixel gap
 
@@ -113,6 +114,7 @@ pub fn spawn_lock(
                     Sprite::from_image(lock_sprite_handles.tumbler_chamber_sprite.clone()),
                     TumblerChamberComponent,
                     Transform::from_xyz(offset, 0.0, 0.0),
+                    Visibility::default(),
                 ));
 
                 //Spawn Tumbler
@@ -146,6 +148,7 @@ pub fn spawn_lock(
                             ),)],
                             tumbler.clone(),
                             FocusedTumblerComponent,
+                            Visibility::default(),
                             Transform {
                                 translation: tumbler_translation,
                                 ..default()
@@ -161,6 +164,7 @@ pub fn spawn_lock(
                                 sprites.1,
                             ),)],
                             tumbler.clone(),
+                            Visibility::default(),
                             Transform {
                                 translation: tumbler_translation,
                                 ..default()
@@ -184,7 +188,7 @@ pub fn spawn_lock(
 
                     )
                 }
-                
+
                 if tumbler.tumbler_type == TumblerType::Magic{
                     let mut magic_code: Vec<Directions> = Vec::new();
                     for x in 0..=3 {
@@ -215,6 +219,7 @@ pub fn spawn_lock(
                 //Spawn_Spring
                 let spring = parent_node
                     .spawn((
+                        Visibility::default(),
                         gen_random_spring(x, &mut rng.random_number_generator, &lock_sprite_handles),
                         Transform::from_xyz(
                             offset,
@@ -236,6 +241,7 @@ pub fn spawn_lock(
             //Spawn End of Lock
             parent_node.spawn((
                 Sprite::from_image(lock_sprite_handles.end_sprite.clone()),
+                Visibility::default(),
                 Transform {
                     //scale: Vec3::new(0.3, 0.3, 1.0),
                     translation: Vec3::new(offset, -LOCK_END_OFFSET, 0.0),
@@ -295,7 +301,7 @@ pub fn handle_catching_tumblers(
 pub fn spawn_animatable_sprite_child(
     tumbler_sprite: Handle<Image>,
     tumbler_color: Color,
-) -> (Sprite, Animated, Transform) {
+) -> (Sprite, Animated, Transform, Visibility) {
     (
         Sprite {
             image: tumbler_sprite,
@@ -304,7 +310,8 @@ pub fn spawn_animatable_sprite_child(
         },
         Animated,
         //AnimationShake::new(1.0, tumbler_translation),
-        Transform::from_xyz(0.0,0.0,0.0)
+        Transform::from_xyz(0.0, 0.0, 0.0),
+        Visibility::default(),
         // {
         //     translation: tumbler_translation,
         //     ..default()

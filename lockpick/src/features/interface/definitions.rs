@@ -14,6 +14,7 @@ impl Plugin for DefinitionsForUserInterface {
         // Resources
         app.init_resource::<ButtonChain>();
         app.init_resource::<StateHistory>();
+        app.init_resource::<InterfaceImages>();
         app.register_type::<ButtonChain>();
         app.register_type::<StateHistory>();
 
@@ -53,12 +54,18 @@ pub enum Interfaces {
 // ---------------------------------------------------------------------------------------------- //
 // COMPONENTS
 
+/// Using this as a way to mark combo arrow spawns so that they can be deleted later.
+#[derive(Component, Reflect)]
+pub struct ComboArrow;
+
 #[derive(Component, Reflect, PartialEq)]
 #[reflect(Component)]
 pub enum Containers {
     Confirmation,
+    Background,
     Card,
     Timer,
+    Combo
 }
 
 #[derive(Component, Debug, Reflect, PartialEq, Clone)]
@@ -116,6 +123,31 @@ pub struct Sizer {
 // ---------------------------------------------------------------------------------------------- //
 // RESOURCES
 
+#[derive(Resource, Reflect)]
+#[reflect(Resource)]
+pub struct InterfaceImages {
+    pub digit_zero: Handle<Image>,
+    pub digit_one: Handle<Image>,
+    pub digit_two: Handle<Image>,
+    pub digit_three: Handle<Image>,
+    pub digit_four: Handle<Image>,
+    pub digit_five: Handle<Image>,
+    pub digit_six: Handle<Image>,
+    pub digit_seven: Handle<Image>,
+    pub digit_eight: Handle<Image>,
+    pub digit_nine: Handle<Image>,
+    pub background_panel: Handle<Image>,
+    pub background_level: Handle<Image>,
+    pub background_start: Handle<Image>,
+    pub arrow_up: Handle<Image>,
+    pub arrow_down: Handle<Image>,
+    pub arrow_left: Handle<Image>,
+    pub arrow_right: Handle<Image>,
+    pub card_increase_time: Handle<Image>,
+    pub card_increase_set_time: Handle<Image>,
+    pub button: Handle<Image>,
+}
+
 #[derive(Resource, Reflect, Default)]
 #[reflect(Resource)]
 pub struct ButtonChain {
@@ -126,6 +158,37 @@ pub struct ButtonChain {
 #[reflect(Resource)]
 pub struct StateHistory {
     stack: Vec<Interfaces>,
+}
+
+// Have to forcibly shove InterfaceImages into the world the gnarly way since the interface states
+// get loaded before everything due to the Start Menu being the first thing required for the game
+// to appear.
+impl FromWorld for InterfaceImages {
+    fn from_world(world: &mut World) -> Self {
+        let asset_server = world.resource::<AssetServer>();
+        Self {
+            digit_zero:             asset_server.load("images/0.png"),
+            digit_one:              asset_server.load("images/1.png"),
+            digit_two:              asset_server.load("images/2.png"),
+            digit_three:            asset_server.load("images/3.png"),
+            digit_four:             asset_server.load("images/4.png"),
+            digit_five:             asset_server.load("images/5.png"),
+            digit_six:              asset_server.load("images/6.png"),
+            digit_seven:            asset_server.load("images/7.png"),
+            digit_eight:            asset_server.load("images/8.png"),
+            digit_nine:             asset_server.load("images/9.png"),
+            background_panel:       asset_server.load("images/Background_for_Panel.png"),
+            background_start:       asset_server.load("images/Background_for_Start.png"),
+            background_level:       asset_server.load("images/Background_for_Level.png"),
+            arrow_up:               asset_server.load("images/Direction_Up.png"),
+            arrow_down:             asset_server.load("images/Direction_Down.png"),
+            arrow_left:             asset_server.load("images/Direction_Left.png"),
+            arrow_right:            asset_server.load("images/Direction_Right.png"),
+            card_increase_time:     asset_server.load("images/Direction_Left.png"),
+            card_increase_set_time: asset_server.load("images/Direction_Right.png"),
+            button:                 asset_server.load("images/Button.png"),
+        }
+    }
 }
 
 impl ButtonChain {
@@ -173,4 +236,3 @@ impl StateHistory {
     }
 }
 // ---------------------------------------------------------------------------------------------- //
-

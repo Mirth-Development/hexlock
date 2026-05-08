@@ -8,9 +8,9 @@ use crate::features::lock::systems::*;
 use crate::features::lock::tumblers::systems::*;
 use crate::features::lock::spring::systems::*;
 use crate::features::controls::systems::*;
-use crate::features::game_controller::components::{ChargeBarMarker, MagicArrowMarker};
+use crate::features::game_controller::components::{ChargeBarMarker};
 use crate::features::game_controller::game_effects::systems::handle_lifetime_timers;
-use crate::features::game_controller::systems::{charge_charge_bar, check_game_state, check_tumbler_order, handle_game_state, move_magic_arrow, spawn_charge_bar, spawn_lock_order, spawn_magic_arrow};
+use crate::features::game_controller::systems::{charge_charge_bar, check_game_state,check_tumbler_order, handle_game_state, spawn_charge_bar,spawn_lock_order};
 
 
 
@@ -21,33 +21,32 @@ impl Plugin for SystemsForUserInterfaceStates {
         app.add_systems(OnEnter(Interfaces::StartMenu), setup_start_menu);
         app.add_systems(OnExit(Interfaces::StartMenu), (record_start_menu_exit, cleanup_entities).chain());
 
-        app.add_systems(OnEnter(Interfaces::Level1), (setup_level_1, load_lock_resources, spawn_lock, spawn_lockpick, spawn_charge_bar, spawn_magic_arrow, spawn_lock_order).chain());
+        app.add_systems(OnEnter(Interfaces::Level1), (setup_level_1, load_lock_resources, spawn_lockpick, spawn_lock, spawn_charge_bar,spawn_lock_order).chain());
         app.add_systems(OnExit(Interfaces::Level1), (record_level_1_exit, cleanup_entities).chain());
 
-        app.add_systems(OnEnter(Interfaces::Level2), (setup_level_2, load_lock_resources, spawn_lock, spawn_lockpick, spawn_charge_bar,spawn_magic_arrow, spawn_lock_order).chain());
+        app.add_systems(OnEnter(Interfaces::Level2), (setup_level_2, load_lock_resources, spawn_lockpick, spawn_lock, spawn_charge_bar,spawn_lock_order).chain());
         app.add_systems(OnExit(Interfaces::Level2), (record_level_2_exit, cleanup_entities).chain());
 
-        app.add_systems(OnEnter(Interfaces::Level3), (setup_level_3, load_lock_resources, spawn_lock, spawn_lockpick, spawn_charge_bar,spawn_magic_arrow, spawn_lock_order).chain());
+        app.add_systems(OnEnter(Interfaces::Level3), (setup_level_3, load_lock_resources, spawn_lockpick, spawn_lock, spawn_charge_bar,spawn_lock_order).chain());
         app.add_systems(OnExit(Interfaces::Level3), (record_level_3_exit, cleanup_entities).chain());
 
-        app.add_systems(OnEnter(Interfaces::Level4), (setup_level_4, load_lock_resources, spawn_lock, spawn_lockpick, spawn_charge_bar,spawn_magic_arrow, spawn_lock_order).chain());
+        app.add_systems(OnEnter(Interfaces::Level4), (setup_level_4, load_lock_resources, spawn_lockpick, spawn_lock, spawn_charge_bar,spawn_lock_order).chain());
         app.add_systems(OnExit(Interfaces::Level4), (record_level_4_exit, cleanup_entities).chain());
 
-        app.add_systems(OnEnter(Interfaces::Level5), (setup_level_5, load_lock_resources, spawn_lock, spawn_lockpick, spawn_charge_bar,spawn_magic_arrow, spawn_lock_order).chain());
+        app.add_systems(OnEnter(Interfaces::Level5), (setup_level_5, load_lock_resources, spawn_lockpick, spawn_lock, spawn_charge_bar,spawn_lock_order).chain());
         app.add_systems(OnExit(Interfaces::Level5), (record_level_5_exit, cleanup_entities).chain());
 
         app.add_systems(OnEnter(Interfaces::Cards), setup_cards);
         app.add_systems(OnExit(Interfaces::Cards), (record_cards_exit, cleanup_entities).chain());
 
-        app.add_systems(OnEnter(Interfaces::Won), (setup_won).chain());
+        app.add_systems(OnEnter(Interfaces::Won), setup_won);
         app.add_systems(OnExit(Interfaces::Won), (record_won_exit, cleanup_entities).chain());
 
-        app.add_systems(OnEnter(Interfaces::Lost), (setup_lost).chain());
+        app.add_systems(OnEnter(Interfaces::Lost), setup_lost);
         app.add_systems(OnExit(Interfaces::Lost), (record_lost_exit, cleanup_entities).chain());
 
         app.add_systems(Update, (
             move_to_focused_tumbler,
-            move_magic_arrow,
             tumbler_movement,
             lockpick_movement,
             user_control_system,
@@ -62,9 +61,7 @@ impl Plugin for SystemsForUserInterfaceStates {
             handle_game_state,
             handle_lockpick_charge,
             handle_lifetime_timers,
-        )
-            .chain()
-            .run_if(in_level_state)
+        ).chain().run_if(in_level_state)
         );
     }
 }
@@ -73,24 +70,27 @@ impl Plugin for SystemsForUserInterfaceStates {
 fn setup_start_menu(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
-    window_query: Query<&Window>
+    window_query: Query<&Window>,
+    images: Res<InterfaceImages>,
 ) -> Result<()> {
 
     // Defining variables for UI elements.
     let window = window_query.single()?;
-    let path_for_image: Option<&'static str> = Some("images/Button.png");
     let path_for_font = "fonts/Cinzel_Decorative.ttf";
     let color_of_text = Color::WHITE;
     let x_anchor = 50.0;
     let layer = 1.0;
 
     let button_width = 30.0;
-    let button_aspect_ratio: Option<f32> = Some(120.0 / 20.0);
+    let button_aspect_ratio: Option<f32> = Some(1115.0 / 200.0);
     let button_font_size = 0.02;
 
     let title_width = 55.0;
     let title_aspect_ratio: Option<f32> = Some(80.0 / 20.0);
-    let title_font_size = 0.06;
+    let title_font_size = 0.09;
+
+    // Spawning background visual.
+    spawn_background(&mut commands, window, Some(&images.background_start));
 
     // Title Label
     spawn_ui_element(
@@ -99,7 +99,7 @@ fn setup_start_menu(
         None,
         Some(Labels::Title),
         None,
-        Vec3::new(x_anchor, 25.0, layer),
+        Vec3::new(x_anchor, 30.0, layer),
         title_width,
         title_aspect_ratio,
         Some(TextSpawn {
@@ -116,8 +116,8 @@ fn setup_start_menu(
         Some(Buttons::Play),
         None,
         None,
-        path_for_image,
-        Vec3::new(x_anchor, 45.0, layer),
+        Some(&images.button),
+        Vec3::new(x_anchor, 50.0, layer),
         button_width,
         button_aspect_ratio,
         Some(TextSpawn {
@@ -134,8 +134,8 @@ fn setup_start_menu(
         Some(Buttons::ExitGame),
         None,
         None,
-        path_for_image,
-        Vec3::new(x_anchor, 60.0, layer),
+        Some(&images.button),
+        Vec3::new(x_anchor, 65.0, layer),
         button_width,
         button_aspect_ratio,
         Some(TextSpawn {
@@ -152,48 +152,27 @@ fn setup_start_menu(
 fn setup_level_1(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
-    window_query: Query<&Window>
+    window_query: Query<&Window>,
+    images: Res<InterfaceImages>,
 ) -> Result<()> {
 
     let window = window_query.single()?;
 
+    // Spawning background visual.
+    spawn_background(&mut commands, window, Some(&images.background_level));
+
     // Spawning timer related visuals.
-    spawn_timer_constants(&mut commands, &asset_server, window);
+    spawn_countdown(&mut commands, &asset_server, window, &images);
 
-    // Label for Level #
-    spawn_ui_element(
-        &mut commands, &asset_server, window,
-        None,
-        None,
-        Some(Labels::Level),
-        None,
-        Vec3::new(10.0, 5.0, 1.0),
-        10.0,
-        None,
-        Some(TextSpawn {
-            content: "LEVEL 1",
-            font_path: "fonts/Cinzel_Decorative.ttf",
-            font_size_scale: 0.01,
-            color: Color::WHITE,
-        })
-    );
-
-    // Button for Next Level
-    spawn_ui_element(
-        &mut commands, &asset_server, window,
-        Some(Buttons::GoToLevel2),
-        None,
-        None,
-        Some("images/Button.png"),
-        Vec3::new(10.0, 10.0, 2.0),
-        10.0,
-        Some(120.0 / 20.0),
-        Some(TextSpawn {
-            content: "Next Level",
-            font_path: "fonts/Spectral.ttf",
-            font_size_scale: 0.01,
-            color: Color::WHITE,
-        })
+    // Spawning title related visuals and buttons.
+    spawn_level_title(
+        &mut commands,
+        &asset_server,
+        window,
+        &images,
+        "LEVEL 1",
+        Some(Buttons::GoToLevel1),
+        Some(Buttons::GoToLevel2)
     );
 
     Ok(())
@@ -202,66 +181,27 @@ fn setup_level_1(
 fn setup_level_2(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
-    window_query: Query<&Window>
+    window_query: Query<&Window>,
+    images: Res<InterfaceImages>,
 ) -> Result<()> {
 
     let window = window_query.single()?;
 
+    // Spawning background visual.
+    spawn_background(&mut commands, window, Some(&images.background_level));
+
     // Spawning timer related visuals.
-    spawn_timer_constants(&mut commands, &asset_server, window);
+    spawn_countdown(&mut commands, &asset_server, window, &images);
 
-    // Label for Level #
-    spawn_ui_element(
-        &mut commands, &asset_server, window,
-        None,
-        None,
-        Some(Labels::Level),
-        None,
-        Vec3::new(10.0, 5.0, 1.0),
-        10.0,
-        None,
-        Some(TextSpawn {
-            content: "LEVEL 2",
-            font_path: "fonts/Cinzel_Decorative.ttf",
-            font_size_scale: 0.01,
-            color: Color::WHITE,
-        })
-    );
-
-    // Button for Previous Level
-    spawn_ui_element(
-        &mut commands, &asset_server, window,
+    // Spawning title related visuals and buttons.
+    spawn_level_title(
+        &mut commands,
+        &asset_server,
+        window,
+        &images,
+        "LEVEL 2",
         Some(Buttons::GoToLevel1),
-        None,
-        None,
-        Some("images/Button.png"),
-        Vec3::new(10.0, 10.0, 2.0),
-        10.0,
-        Some(120.0 / 20.0),
-        Some(TextSpawn {
-            content: "Previous Level",
-            font_path: "fonts/Spectral.ttf",
-            font_size_scale: 0.01,
-            color: Color::WHITE,
-        })
-    );
-
-    // Button for Next Level
-    spawn_ui_element(
-        &mut commands, &asset_server, window,
-        Some(Buttons::GoToLevel3),
-        None,
-        None,
-        Some("images/Button.png"),
-        Vec3::new(10.0, 15.0, 2.0),
-        10.0,
-        Some(120.0 / 20.0),
-        Some(TextSpawn {
-            content: "Next Level",
-            font_path: "fonts/Spectral.ttf",
-            font_size_scale: 0.01,
-            color: Color::WHITE,
-        })
+        Some(Buttons::GoToLevel3)
     );
 
     Ok(())
@@ -270,66 +210,27 @@ fn setup_level_2(
 fn setup_level_3(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
-    window_query: Query<&Window>
+    window_query: Query<&Window>,
+    images: Res<InterfaceImages>,
 ) -> Result<()> {
 
     let window = window_query.single()?;
 
+    // Spawning background visual.
+    spawn_background(&mut commands, window, Some(&images.background_level));
+
     // Spawning timer related visuals.
-    spawn_timer_constants(&mut commands, &asset_server, window);
+    spawn_countdown(&mut commands, &asset_server, window, &images);
 
-    // Label for Level #
-    spawn_ui_element(
-        &mut commands, &asset_server, window,
-        None,
-        None,
-        Some(Labels::Level),
-        None,
-        Vec3::new(10.0, 5.0, 1.0),
-        10.0,
-        None,
-        Some(TextSpawn {
-            content: "LEVEL 3",
-            font_path: "fonts/Cinzel_Decorative.ttf",
-            font_size_scale: 0.01,
-            color: Color::WHITE,
-        })
-    );
-
-    // Button for Previous Level
-    spawn_ui_element(
-        &mut commands, &asset_server, window,
+    // Spawning title related visuals and buttons.
+    spawn_level_title(
+        &mut commands,
+        &asset_server,
+        window,
+        &images,
+        "LEVEL 3",
         Some(Buttons::GoToLevel2),
-        None,
-        None,
-        Some("images/Button.png"),
-        Vec3::new(10.0, 10.0, 2.0),
-        10.0,
-        Some(120.0 / 20.0),
-        Some(TextSpawn {
-            content: "Previous Level",
-            font_path: "fonts/Spectral.ttf",
-            font_size_scale: 0.01,
-            color: Color::WHITE,
-        })
-    );
-
-    // Button for Next Level
-    spawn_ui_element(
-        &mut commands, &asset_server, window,
-        Some(Buttons::GoToLevel4),
-        None,
-        None,
-        Some("images/Button.png"),
-        Vec3::new(10.0, 15.0, 2.0),
-        10.0,
-        Some(120.0 / 20.0),
-        Some(TextSpawn {
-            content: "Next Level",
-            font_path: "fonts/Spectral.ttf",
-            font_size_scale: 0.01,
-            color: Color::WHITE,
-        })
+        Some(Buttons::GoToLevel4)
     );
 
     Ok(())
@@ -338,66 +239,27 @@ fn setup_level_3(
 fn setup_level_4(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
-    window_query: Query<&Window>
+    window_query: Query<&Window>,
+    images: Res<InterfaceImages>,
 ) -> Result<()> {
 
     let window = window_query.single()?;
 
+    // Spawning background visual.
+    spawn_background(&mut commands, window, Some(&images.background_level));
+
     // Spawning timer related visuals.
-    spawn_timer_constants(&mut commands, &asset_server, window);
+    spawn_countdown(&mut commands, &asset_server, window, &images);
 
-    // Label for Level #
-    spawn_ui_element(
-        &mut commands, &asset_server, window,
-        None,
-        None,
-        Some(Labels::Level),
-        None,
-        Vec3::new(10.0, 5.0, 1.0),
-        10.0,
-        None,
-        Some(TextSpawn {
-            content: "LEVEL 4",
-            font_path: "fonts/Cinzel_Decorative.ttf",
-            font_size_scale: 0.01,
-            color: Color::WHITE,
-        })
-    );
-
-    // Button for Previous Level
-    spawn_ui_element(
-        &mut commands, &asset_server, window,
+    // Spawning title related visuals and buttons.
+    spawn_level_title(
+        &mut commands,
+        &asset_server,
+        window,
+        &images,
+        "LEVEL 4",
         Some(Buttons::GoToLevel3),
-        None,
-        None,
-        Some("images/Button.png"),
-        Vec3::new(10.0, 10.0, 2.0),
-        10.0,
-        Some(120.0 / 20.0),
-        Some(TextSpawn {
-            content: "Previous Level",
-            font_path: "fonts/Spectral.ttf",
-            font_size_scale: 0.01,
-            color: Color::WHITE,
-        })
-    );
-
-    // Button for Next Level
-    spawn_ui_element(
-        &mut commands, &asset_server, window,
-        Some(Buttons::GoToLevel5),
-        None,
-        None,
-        Some("images/Button.png"),
-        Vec3::new(10.0, 15.0, 2.0),
-        10.0,
-        Some(120.0 / 20.0),
-        Some(TextSpawn {
-            content: "Next Level",
-            font_path: "fonts/Spectral.ttf",
-            font_size_scale: 0.01,
-            color: Color::WHITE,
-        })
+        Some(Buttons::GoToLevel5)
     );
 
     Ok(())
@@ -406,48 +268,27 @@ fn setup_level_4(
 fn setup_level_5(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
-    window_query: Query<&Window>
+    window_query: Query<&Window>,
+    images: Res<InterfaceImages>,
 ) -> Result<()> {
 
     let window = window_query.single()?;
 
+    // Spawning background visual.
+    spawn_background(&mut commands, window, Some(&images.background_level));
+
     // Spawning timer related visuals.
-    spawn_timer_constants(&mut commands, &asset_server, window);
+    spawn_countdown(&mut commands, &asset_server, window, &images);
 
-    // Label for Level #
-    spawn_ui_element(
-        &mut commands, &asset_server, window,
-        None,
-        None,
-        Some(Labels::Level),
-        None,
-        Vec3::new(10.0, 5.0, 1.0),
-        10.0,
-        None,
-        Some(TextSpawn {
-            content: "LEVEL 5",
-            font_path: "fonts/Cinzel_Decorative.ttf",
-            font_size_scale: 0.01,
-            color: Color::WHITE,
-        })
-    );
-
-    // Button for Previous Level
-    spawn_ui_element(
-        &mut commands, &asset_server, window,
+    // Spawning title related visuals and buttons.
+    spawn_level_title(
+        &mut commands,
+        &asset_server,
+        window,
+        &images,
+        "LEVEL 5",
         Some(Buttons::GoToLevel4),
-        None,
-        None,
-        Some("images/Button.png"),
-        Vec3::new(10.0, 10.0, 2.0),
-        10.0,
-        Some(120.0 / 20.0),
-        Some(TextSpawn {
-            content: "Previous Level",
-            font_path: "fonts/Spectral.ttf",
-            font_size_scale: 0.01,
-            color: Color::WHITE,
-        })
+        Some(Buttons::GoToLevel5)
     );
 
     Ok(())
@@ -456,12 +297,13 @@ fn setup_level_5(
 fn setup_cards(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
-    window_query: Query<&Window>
+    window_query: Query<&Window>,
+    images: Res<InterfaceImages>
 ) -> Result<()> {
 
     let window = window_query.single()?;
 
-    spawn_cards(&mut commands, &asset_server, window);
+    spawn_cards(&mut commands, &asset_server, window, &images);
 
     Ok(())
 }
@@ -544,7 +386,6 @@ fn cleanup_entities(
     lock_query: Query<Entity, With<LockComponent>>,
     lockpick_query: Query<Entity, With<LockpickComponent>>,
     charge_bar_marker: Query<Entity, With<ChargeBarMarker>>,
-    magic_arrow_marker: Query<Entity, With<MagicArrowMarker>>,
 )
 {
     for entity in button_query.iter()    { commands.entity(entity).despawn(); }
@@ -553,7 +394,6 @@ fn cleanup_entities(
     for entity in lock_query.iter()      { commands.entity(entity).despawn(); }
     for entity in lockpick_query.iter()  { commands.entity(entity).despawn(); }
     for entity in charge_bar_marker.iter()  { commands.entity(entity).despawn(); }
-    for entity in magic_arrow_marker.iter()  { commands.entity(entity).despawn(); }
 }
 
 // CHECKING IF IN-LEVEL

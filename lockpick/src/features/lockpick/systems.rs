@@ -46,6 +46,7 @@ pub fn spawn_lockpick (
     println!("Offset {}",-(lock_offset.offset as f32));
     commands.spawn((
         LockpickComponent::default(),
+        Visibility::default(),
         Transform {
             //focused_tumbler_transform.translation.x+LOCKPICK_HEAD_OFFSET
             translation: Vec3::new(-(lock_offset.offset as f32), LOCKPICK_LOWER_BOUND, 0.0),
@@ -58,13 +59,14 @@ pub fn spawn_lockpick (
                     image: asset_server.load("images/Lockpick.png"),
                     ..Default::default()
                 },
+                Visibility::default(),
                 Transform::from_xyz(0.0,0.0,0.0),
                 Animated,
                 // AnimationShake::new(1.0, Vec3::splat(0.0,))
                 )
         );
 
-        
+
     });
 }
 

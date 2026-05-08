@@ -19,7 +19,17 @@ impl Plugin for LockpickFeaturesPlugin {
     fn build(&self, app: &mut App) {
 
         app.add_plugins(GameTimer{});
-        app.add_systems(Startup, (spawn_camera, load_lock_sprite_resources,load_game_controller_sprites, load_random_seed, load_lockpick_resources, load_game_controller_resources, load_effects_sprite_resources).chain());
+
+        app.add_systems(Startup, (
+            spawn_camera,
+            load_lock_sprite_resources,
+            load_game_controller_sprites,
+            load_game_controller_resources,
+            load_random_seed,
+            load_lockpick_resources,
+            load_effects_sprite_resources
+        ).chain());
+
         app.add_observer(on_lightning_effect);
         app.add_observer(on_break_rust);
         app.add_observer(on_magic_effect);

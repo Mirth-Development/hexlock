@@ -3,11 +3,11 @@ use std::time::Duration;
 use bevy::prelude::*;
 use bevy::time::TimerMode::Once;
 use rand::prelude::{ SliceRandom};
-use crate::features::game_controller::components::{ChargeBarMarker, ChargeLoadingMarker, MagicArrowMarker, TumblerChamberNumberComponent};
+use crate::features::game_controller::components::{ChargeBarMarker, ChargeLoadingMarker};
 use crate::features::game_controller::messages::GameStateMessage;
 use crate::features::game_controller::resources::{GameResourceHandles, TumblerOrdering};
 use crate::features::interface::definitions::{Interfaces, StateHistory};
-use crate::features::lock::components::{GameObjectAnchorMarker, LockComponent, TumblerChamberComponent};
+use crate::features::lock::components::{GameObjectAnchorMarker, LockComponent, TumblerChamberComponent, TumblerChamberNumberComponent};
 use crate::features::lock::tumblers::components::{SetTumblerComponent, TumblerComponent};
 use crate::features::lock::tumblers::systems::TUMBLER_SET_RELEASE_VELOCITY;
 use crate::features::lockpick::component::LockpickComponent;
@@ -87,26 +87,61 @@ pub fn spawn_charge_bar (
 
 }
 
-//Spawn after lock, start of lock changes with config changes
-pub fn spawn_magic_arrow (
-    mut commands: Commands,
-    game_resource_handles: Res<GameResourceHandles>,
-) {
-
-    commands.spawn((
-        Sprite::from_image(game_resource_handles.magic_arrow.clone()),
-        //Visibility::Hidden, //want to see it for now
-        MagicArrowMarker,
-        Transform{
-            translation: Vec3::splat(0.0),
-            ..default()
-        },
-    )
-
-    );
-
-
-}
+// //Spawn after lock, start of lock changes with config changes
+// pub fn spawn_magic_arrow (
+//     mut commands: Commands,
+//     game_resource_handles: Res<GameResourceHandles>,
+// ) {
+//
+//     commands.spawn((
+//         Sprite::from_image(game_resource_handles.magic_arrow.clone()),
+//         //Visibility::Hidden, //want to see it for now
+//         MagicArrowMarker,
+//         Transform{
+//             translation: Vec3::splat(0.0),
+//             ..default()
+//         },
+//     )
+//
+//     );
+//
+//
+// }
+//
+//
+//
+// pub fn move_magic_arrow(
+//     mut magic_arrow: Query<(&mut Transform), With<MagicArrowMarker>>,
+//     mut anchor_point: Query<(&GlobalTransform), With<GameObjectAnchorMarker>>,
+//     mut magic_arrow_action: MessageReader<HexDirection>
+// ){
+//     let Ok(mut magic_arrow_transform) = magic_arrow.single_mut() else {return};
+//     let Ok(anchor_point_transform) = anchor_point.single() else {return};
+//
+//     let offset = vec3(300.0, 300.0, 0.0);
+//
+//     if magic_arrow_transform.translation - offset != anchor_point_transform.translation(){
+//         magic_arrow_transform.translation = anchor_point_transform.translation() + offset;
+//     }
+//
+//     for action in magic_arrow_action.read(){
+//         match action {
+//             HexDirection::Up => {
+//                 magic_arrow_transform.rotation = Quat::from_rotation_z(-(PI/2.0) )
+//             }
+//             HexDirection::Down => {
+//                 magic_arrow_transform.rotation = Quat::from_rotation_z((-(3.0*PI)/2.0) )}
+//             HexDirection::Left => {
+//                 magic_arrow_transform.rotation = Quat::from_rotation_z(0.0)
+//             }
+//             HexDirection::Right => {
+//                 magic_arrow_transform.rotation = Quat::from_rotation_z(-PI)
+//             }
+//         }
+//     }
+//
+//
+// }
 
 pub fn spawn_lock_order (
     mut commands: Commands,
@@ -162,46 +197,6 @@ pub fn spawn_lock_order (
             tumbler.order_num_entity = num_entity_id;
         }
     }
-
-
-    // Lookup:
-    // let tumbler_entity = tumbler_by_position[target_position as usize];
-    //
-    //
-    // let mut position = 0;
-    // for (entity, tumbler_chamber) in tumbler_chamber_query {
-    //     // let mut tumbler_entity= None;
-    //     // for (entity, tumbler) in tumblers.iter(){
-    //     //     if number_lottery[position] == tumbler.position{
-    //     //         tumbler_entity = Some(entity);
-    //     //     }
-    //     // }
-    //     //
-    //     // if tumbler_entity == None {
-    //     //     panic!("NO ENTITY");
-    //     // } else {
-    // let mut num_entity_id = Entity::PLACEHOLDER; //Had to switch to this else i get the parent entity
-    //     commands.entity(entity).with_children(|parent_node| {
-    //     num_entity_id = parent_node.spawn((
-    //         Sprite::from_image(asset_server.load(helper_get_number_handle(number_lottery[position]))),
-    //         TumblerChamberNumberComponent,
-    //         Transform {
-    //             translation: Vec3::new(0.0, -350.0, 1.0),
-    //             scale: Vec3::new(0.7, 0.7, 0.7),
-    //             ..default()
-    //         },
-    //     )).id();
-    // });
-    //     for (mut tumbler_component) in tumblers.iter_mut(){
-    //         if tumbler_component.position == number_lottery[i] {
-    //             tumbler_component.order_num_entity = num_entity_id;
-    //             break;
-    //         }
-    //
-    //     }
-    //
-    //     position += 1;
-    // }
 }
 
 pub fn check_tumbler_order(
@@ -265,39 +260,6 @@ pub fn check_tumbler_order(
     //         tumbler.timer.finish();
     //     }
     // }
-}
-
-pub fn move_magic_arrow(
-    mut magic_arrow: Query<(&mut Transform), With<MagicArrowMarker>>,
-    mut anchor_point: Query<(&GlobalTransform), With<GameObjectAnchorMarker>>,
-    mut magic_arrow_action: MessageReader<HexDirection>
-){
-    let Ok(mut magic_arrow_transform) = magic_arrow.single_mut() else {return};
-    let Ok(anchor_point_transform) = anchor_point.single() else {return};
-
-    let offset = vec3(300.0, 300.0, 0.0);
-
-    if magic_arrow_transform.translation - offset != anchor_point_transform.translation(){
-        magic_arrow_transform.translation = anchor_point_transform.translation() + offset;
-    }
-
-    for action in magic_arrow_action.read(){
-        match action {
-            HexDirection::Up => {
-                magic_arrow_transform.rotation = Quat::from_rotation_z(-(PI/2.0) )
-            }
-            HexDirection::Down => {
-                magic_arrow_transform.rotation = Quat::from_rotation_z((-(3.0*PI)/2.0) )}
-            HexDirection::Left => {
-                magic_arrow_transform.rotation = Quat::from_rotation_z(0.0)
-            }
-            HexDirection::Right => {
-                magic_arrow_transform.rotation = Quat::from_rotation_z(-PI)
-            }
-        }
-    }
-
-
 }
 
 
