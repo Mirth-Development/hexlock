@@ -8,9 +8,11 @@ use crate::features::lock::systems::*;
 use crate::features::lock::tumblers::systems::*;
 use crate::features::lock::spring::systems::*;
 use crate::features::controls::systems::*;
+use crate::features::game_controller::components::{ChargeBarMarker, MagicArrowMarker};
 use crate::features::game_controller::game_effects::systems::handle_lifetime_timers;
-use crate::features::game_controller::systems::{charge_chargebar, check_game_state, handle_game_state, spawn_charge_bar};
-use crate::features::game_controller::components::ChargeBarMarker;
+use crate::features::game_controller::systems::{charge_charge_bar, check_game_state, handle_game_state, move_magic_arrow, spawn_charge_bar, spawn_magic_arrow};
+
+
 
 pub struct SystemsForUserInterfaceStates {}
 impl Plugin for SystemsForUserInterfaceStates {
@@ -19,19 +21,19 @@ impl Plugin for SystemsForUserInterfaceStates {
         app.add_systems(OnEnter(Interfaces::StartMenu), setup_start_menu);
         app.add_systems(OnExit(Interfaces::StartMenu), (record_start_menu_exit, cleanup_entities).chain());
 
-        app.add_systems(OnEnter(Interfaces::Level1), (setup_level_1, load_lock_resources, spawn_lockpick, spawn_lock, spawn_charge_bar).chain());
+        app.add_systems(OnEnter(Interfaces::Level1), (setup_level_1, load_lock_resources, spawn_lockpick, spawn_lock, spawn_charge_bar, spawn_magic_arrow).chain());
         app.add_systems(OnExit(Interfaces::Level1), (record_level_1_exit, cleanup_entities).chain());
 
-        app.add_systems(OnEnter(Interfaces::Level2), (setup_level_2, load_lock_resources, spawn_lockpick, spawn_lock, spawn_charge_bar).chain());
+        app.add_systems(OnEnter(Interfaces::Level2), (setup_level_2, load_lock_resources, spawn_lockpick, spawn_lock, spawn_charge_bar,spawn_magic_arrow).chain());
         app.add_systems(OnExit(Interfaces::Level2), (record_level_2_exit, cleanup_entities).chain());
 
-        app.add_systems(OnEnter(Interfaces::Level3), (setup_level_3, load_lock_resources, spawn_lockpick, spawn_lock, spawn_charge_bar).chain());
+        app.add_systems(OnEnter(Interfaces::Level3), (setup_level_3, load_lock_resources, spawn_lockpick, spawn_lock, spawn_charge_bar,spawn_magic_arrow).chain());
         app.add_systems(OnExit(Interfaces::Level3), (record_level_3_exit, cleanup_entities).chain());
 
-        app.add_systems(OnEnter(Interfaces::Level4), (setup_level_4, load_lock_resources, spawn_lockpick, spawn_lock, spawn_charge_bar).chain());
+        app.add_systems(OnEnter(Interfaces::Level4), (setup_level_4, load_lock_resources, spawn_lockpick, spawn_lock, spawn_charge_bar,spawn_magic_arrow).chain());
         app.add_systems(OnExit(Interfaces::Level4), (record_level_4_exit, cleanup_entities).chain());
 
-        app.add_systems(OnEnter(Interfaces::Level5), (setup_level_5, load_lock_resources, spawn_lockpick, spawn_lock, spawn_charge_bar).chain());
+        app.add_systems(OnEnter(Interfaces::Level5), (setup_level_5, load_lock_resources, spawn_lockpick, spawn_lock, spawn_charge_bar,spawn_magic_arrow).chain());
         app.add_systems(OnExit(Interfaces::Level5), (record_level_5_exit, cleanup_entities).chain());
 
         app.add_systems(OnEnter(Interfaces::Cards), setup_cards);
@@ -45,12 +47,13 @@ impl Plugin for SystemsForUserInterfaceStates {
 
         app.add_systems(Update, (
             move_to_focused_tumbler,
+            move_magic_arrow,
             tumbler_movement,
             lockpick_movement,
             user_control_system,
             timer_tumbler_finished,
             stretch_to_tumbler,
-            charge_chargebar,
+            charge_charge_bar,
             handle_lockpick_message,
             handle_catching_tumblers,
             handle_tumbler_set,
@@ -553,6 +556,7 @@ fn cleanup_entities(
     lock_query: Query<Entity, With<LockComponent>>,
     lockpick_query: Query<Entity, With<LockpickComponent>>,
     charge_bar_marker: Query<Entity, With<ChargeBarMarker>>,
+    magic_arrow_marker: Query<Entity, With<MagicArrowMarker>>,
 )
 {
     for entity in button_query.iter()    { commands.entity(entity).despawn(); }
@@ -561,6 +565,7 @@ fn cleanup_entities(
     for entity in lock_query.iter()      { commands.entity(entity).despawn(); }
     for entity in lockpick_query.iter()  { commands.entity(entity).despawn(); }
     for entity in charge_bar_marker.iter()  { commands.entity(entity).despawn(); }
+    for entity in magic_arrow_marker.iter()  { commands.entity(entity).despawn(); }
 }
 
 // CHECKING IF IN-LEVEL
@@ -577,3 +582,4 @@ pub fn in_level_state(
         Interfaces::Level5
     )
 }
+

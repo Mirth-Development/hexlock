@@ -84,7 +84,7 @@ pub fn timer_tumbler_finished (
                 if let Ok((_sprite, is_shaking)) = animated_sprite_query.get_mut(child) {
                     //commands.entity(child).remove::<Sprite>(); //test - works
                     if !is_shaking{
-                        commands.entity(child).insert(AnimationShake::new(0.5, Vec3::splat(0.0)));
+                        commands.entity(child).insert(AnimationShake::new(0.5, Vec3::splat(0.0), TimerMode::Once));
                     }
 
                 }

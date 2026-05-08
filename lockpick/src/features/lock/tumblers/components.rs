@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use crate::features::lock::tumblers::resources::{TumblerSize, TumblerType};
+use crate::features::lock::tumblers::resources::{Directions, TumblerSize, TumblerType};
 
 //Naming Component
 #[derive(Component, Clone)]
@@ -20,6 +20,11 @@ pub struct SetTumblerComponent;
 #[derive(Component)]
 pub struct TumblerRustComponent{
     pub hits: u32,
+}
+
+#[derive(Component)]
+pub struct TumblerMagicComponent{
+    pub arrow_code: Vec<Directions>
 }
 
 impl Default for TumblerComponent {
