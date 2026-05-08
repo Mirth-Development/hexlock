@@ -10,7 +10,7 @@ use crate::features::lock::tumblers::resources::*;
 pub struct SystemsForUserInterfaceSpawns {}
 impl Plugin for SystemsForUserInterfaceSpawns {
     fn build(&self, app: &mut App) {
-        app.add_systems(Update, (resize, handle_button_interactions).chain());
+        app.add_systems(Update, (resize, resize_background, handle_button_interactions).chain());
         app.add_systems(Update, (
             despawn_combo,
             spawn_combo,
@@ -27,7 +27,7 @@ pub fn spawn_ui_element(
     ui_button: Option<Buttons>,
     ui_container: Option<Containers>,
     ui_label: Option<Labels>,
-    path_for_image: Option<&'static str>,   // PATH_FOR_IMAGE : This takes in the file path for the image you're trying to use for the UI element.
+    image_handle: Option<&Handle<Image>>,    // IMAGE_HANDLE : Takes in a handle for an image that has been loaded into the asset server.
     position: Vec3,                         // POSITION : Percentage based with origin centered at the top left of the window.  Z values should be discrete.
     size_of_element: f32,                   // SIZE_OF_ELEMENT : Size is based on the width of the window and is percentage based.
                                             //      A value of 20.0 equals 20% of the window's width.  You use this value to
@@ -69,9 +69,9 @@ pub fn spawn_ui_element(
     ));
 
     // Applying an image to the UI element if one was passed in.
-    if let Some(image_path) = path_for_image {
+    if let Some(handle) = image_handle {
         entity.insert(ImageNode {
-            image: asset_server.load(image_path),
+            image: handle.clone(),
             ..default()
         });
     }
@@ -108,26 +108,29 @@ pub fn spawn_ui_element(
     entity.id()
 }
 
+// Doesn't use UI spawning since it needs to be behind the world elements.  UI elements layer over
+// world elements no matter what.
 pub fn spawn_background(
     commands: &mut Commands,
-    asset_server: &AssetServer,
     window: &Window,
-    image_path: &'static str,
+    image: Option<&Handle<Image>>,
 )
 {
-    spawn_ui_element(
-        commands,
-        asset_server,
-        window,
-        None,
-        Some(Containers::Confirmation),
-        None,
-        Some(image_path),
-        Vec3::new(50.0, 50.0, 0.0),
-        100.0,
-        Some(2560.0 / 1440.0),
-        None
-    );
+    let aspect_ratio = window.width() / window.height();
+    let world_height = 1080.0 * 1.3;
+    let world_width = world_height * aspect_ratio;
+
+    if let Some(handle) = image {
+        commands.spawn((
+            Sprite {
+                image: handle.clone(),
+                custom_size: Some(Vec2::new(world_width, world_height)),
+                ..default()
+            },
+            Transform::from_xyz(0.0, 0.0, -100.0),
+            Containers::Background,
+        ));
+    }
 }
 
 /// Used to create confirmation dialogs that can have different text within them based on what's
@@ -136,6 +139,7 @@ pub fn spawn_confirmation(
     commands: &mut Commands,
     asset_server: &AssetServer,
     window: &Window,
+    images: &InterfaceImages,
     dialog_text: &'static str,
 )
 {
@@ -147,7 +151,7 @@ pub fn spawn_confirmation(
         None,
         Some(Containers::Confirmation),
         None,
-        Some("images/Background_for_Panel.png"),
+        Some(&images.background_panel),
         Vec3::new(50.0, 40.0, 3.0),
         35.0,
         Some(530.0 / 230.0),
@@ -182,7 +186,7 @@ pub fn spawn_confirmation(
         Some(Buttons::Yes),
         Some(Containers::Confirmation),
         None,
-        Some("images/Background_for_Panel.png"),
+        Some(&images.background_panel),
         Vec3::new(45.0, 45.0, 4.0),
         7.5,
         Some(530.0 / 230.0),
@@ -202,7 +206,7 @@ pub fn spawn_confirmation(
         Some(Buttons::No),
         Some(Containers::Confirmation),
         None,
-        Some("images/Background_for_Panel.png"),
+        Some(&images.background_panel),
         Vec3::new(55.0, 45.0, 4.0),
         7.5,
         Some(530.0 / 230.0),
@@ -219,6 +223,7 @@ pub fn spawn_countdown(
     commands: &mut Commands,
     asset_server: &AssetServer,
     window: &Window,
+    images: &InterfaceImages,
 )
 {
     // Background
@@ -229,7 +234,7 @@ pub fn spawn_countdown(
         None,
         Some(Containers::Timer),
         None,
-        Some("images/Background_for_Panel.png"),
+        Some(&images.background_panel),
         Vec3::new(89.0, 10.0, 3.0),
         20.0,
         Some(500.0 / 230.0),
@@ -262,6 +267,7 @@ pub fn spawn_countdown_digits(
     asset_server: Res<AssetServer>,
     window_query: Query<&Window>,
     the_timer: Res<TheTimer>,
+    images: Res<InterfaceImages>,
 ) -> Result<()>
 {
     // Had to throw down this error catcher over the usual question mark operator usage.  As for why...?
@@ -273,17 +279,17 @@ pub fn spawn_countdown_digits(
     let Ok(window) = window_query.single()
     else { return Ok(()); };
 
-    let digit_images: [&str; 10] = [
-        "images/0.png",
-        "images/1.png",
-        "images/2.png",
-        "images/3.png",
-        "images/4.png",
-        "images/5.png",
-        "images/6.png",
-        "images/7.png",
-        "images/8.png",
-        "images/9.png",
+    let digit_images: [&Handle<Image>; 10] = [
+        &images.digit_zero,
+        &images.digit_one,
+        &images.digit_two,
+        &images.digit_three,
+        &images.digit_four,
+        &images.digit_five,
+        &images.digit_six,
+        &images.digit_seven,
+        &images.digit_eight,
+        &images.digit_nine,
     ];
 
     // Obtaining current digit values.  Have to cast to usize because Rust arrays can't take u32?
@@ -353,6 +359,7 @@ pub fn spawn_cards(
     commands: &mut Commands,
     asset_server: &AssetServer,
     window: &Window,
+    images: &InterfaceImages,
 )
 {
     // Card for Timer Increase
@@ -365,7 +372,7 @@ pub fn spawn_cards(
             Some(Buttons::CardTimerIncrease),
             Some(Containers::Card),
             None,
-            Some("images/Card_IT.png"),
+            Some(&images.card_increase_time),
             Vec3::new(35.0, 50.0, 3.0),
             25.0,
             Some(560.0 / 920.0),
@@ -423,7 +430,7 @@ pub fn spawn_cards(
             Some(Buttons::CardSetTimeIncrease),
             Some(Containers::Card),
             None,
-            Some("images/Card_IST.png"),
+            Some(&images.card_increase_set_time),
             Vec3::new(65.0, 50.0, 3.0),
             25.0,
             Some(560.0 / 920.0),
@@ -477,6 +484,7 @@ pub fn spawn_combo(
     asset_server: Res<AssetServer>,
     window_query: Query<&Window>,
     tumbler_query: Query<(Entity, &TumblerMagicComponent), With<FocusedTumblerComponent>>,
+    images: Res<InterfaceImages>,
 ) -> Result<()>
 {
 
@@ -492,13 +500,13 @@ pub fn spawn_combo(
     else { return Ok(()); };
 
     // Creating a list of 4 images off of the queried tumbler's arrow codes.
-    let mut list_of_images: Vec<&str> = Vec::new();
+    let mut list_of_images: Vec<&Handle<Image>> = Vec::new();
     for code in &tumbler.arrow_code {
         match code {
-            Directions::Up      => list_of_images.push("images/Direction_Up.png"),
-            Directions::Down    => list_of_images.push("images/Direction_Down.png"),
-            Directions::Left    => list_of_images.push("images/Direction_Left.png"),
-            Directions::Right   => list_of_images.push("images/Direction_Right.png"),
+            Directions::Up      => list_of_images.push(&images.arrow_up),
+            Directions::Down    => list_of_images.push(&images.arrow_down),
+            Directions::Left    => list_of_images.push(&images.arrow_left),
+            Directions::Right   => list_of_images.push(&images.arrow_right),
         }
     }
 
@@ -510,7 +518,7 @@ pub fn spawn_combo(
         None,
         Some(Containers::Combo),
         None,
-        Some("images/Background_for_Panel.png"),
+        Some(&images.background_panel),
         Vec3::new(27.5, 42.0, 3.0),
         23.0,
         Some(550.0 / 200.0),
@@ -681,12 +689,35 @@ pub fn resize(
     Ok(())
 }
 
+pub fn resize_background(
+    window_query: Query<&Window>,
+    mut background_query: Query<(&mut Sprite, &Containers)>,
+    mut resize_reader: MessageReader<WindowResized>,
+) {
+    for _ in resize_reader.read() {
+
+        let Ok(window) = window_query.single()
+        else { return; };
+
+        let aspect_ratio = window.width() / window.height();
+        let world_height = 1080.0 * 1.3;
+        let world_width = world_height * aspect_ratio;
+
+        for (mut sprite, container) in background_query.iter_mut() {
+            if *container == Containers::Background {
+                sprite.custom_size = Some(Vec2::new(world_width, world_height));
+            }
+        }
+    }
+}
+
 /// Buttons are programmed out based on enum type and will direct state transitions and trigger confirmation dialogs where appropriate.
 pub fn handle_button_interactions(
     asset_server: Res<AssetServer>,
     window_query: Query<&Window>,
     container_query: Query<(Entity, &Containers)>,
     interaction_query: Query<(&Interaction, &Buttons), Changed<Interaction>>,
+    images: Res<InterfaceImages>,
     mut commands: Commands,
     mut button_chain: ResMut<ButtonChain>,
     mut next_state: ResMut<NextState<Interfaces>>,
@@ -716,13 +747,13 @@ pub fn handle_button_interactions(
 
                 ([], Buttons::StartMenu) => {
                     let window = window_query.single()?;
-                    spawn_confirmation(&mut commands, &asset_server, &window, "Are you sure you wish to navigate to the Start Menu?");
+                    spawn_confirmation(&mut commands, &asset_server, &window, &images, "Are you sure you wish to navigate to the Start Menu?");
                     button_chain.push(Buttons::StartMenu);
                 },
 
                 ([], Buttons::ExitGame) => {
                     let window = window_query.single()?;
-                    spawn_confirmation(&mut commands, &asset_server, &window, "Close the program and exit the game?");
+                    spawn_confirmation(&mut commands, &asset_server, &window, &images, "Close the program and exit the game?");
                     button_chain.push(Buttons::ExitGame);
                 },
 

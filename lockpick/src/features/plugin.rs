@@ -24,7 +24,8 @@ impl Plugin for LockpickFeaturesPlugin {
             spawn_camera,
             load_lock_sprite_resources,
             load_game_controller_sprites,
-            load_random_seed, load_lockpick_resources,
+            load_random_seed,
+            load_lockpick_resources,
             load_effects_sprite_resources
         ).chain());
 

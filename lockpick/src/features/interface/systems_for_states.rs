@@ -69,12 +69,12 @@ impl Plugin for SystemsForUserInterfaceStates {
 fn setup_start_menu(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
-    window_query: Query<&Window>
+    window_query: Query<&Window>,
+    images: Res<InterfaceImages>,
 ) -> Result<()> {
 
     // Defining variables for UI elements.
     let window = window_query.single()?;
-    let path_for_image: Option<&'static str> = Some("images/Button.png");
     let path_for_font = "fonts/Cinzel_Decorative.ttf";
     let color_of_text = Color::WHITE;
     let x_anchor = 50.0;
@@ -89,7 +89,7 @@ fn setup_start_menu(
     let title_font_size = 0.09;
 
     // Spawning background visual.
-    spawn_background(&mut commands, &asset_server, window, "images/Background_for_Start.png");
+    spawn_background(&mut commands, window, Some(&images.background_start));
 
     // Title Label
     spawn_ui_element(
@@ -115,7 +115,7 @@ fn setup_start_menu(
         Some(Buttons::Play),
         None,
         None,
-        path_for_image,
+        Some(&images.background_panel),
         Vec3::new(x_anchor, 50.0, layer),
         button_width,
         button_aspect_ratio,
@@ -133,7 +133,7 @@ fn setup_start_menu(
         Some(Buttons::ExitGame),
         None,
         None,
-        path_for_image,
+        Some(&images.background_panel),
         Vec3::new(x_anchor, 65.0, layer),
         button_width,
         button_aspect_ratio,
@@ -151,16 +151,17 @@ fn setup_start_menu(
 fn setup_level_1(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
-    window_query: Query<&Window>
+    window_query: Query<&Window>,
+    images: Res<InterfaceImages>,
 ) -> Result<()> {
 
     let window = window_query.single()?;
 
     // Spawning background visual.
-    spawn_background(&mut commands, &asset_server, window, "images/Background_for_Level.png");
+    spawn_background(&mut commands, window, Some(&images.background_level));
 
     // Spawning timer related visuals.
-    spawn_countdown(&mut commands, &asset_server, window);
+    spawn_countdown(&mut commands, &asset_server, window, &images);
 
     // Label for Level #
     spawn_ui_element(
@@ -186,7 +187,7 @@ fn setup_level_1(
         Some(Buttons::GoToLevel2),
         None,
         None,
-        Some("images/Button.png"),
+        Some(&images.background_panel),
         Vec3::new(10.0, 10.0, 2.0),
         10.0,
         Some(120.0 / 20.0),
@@ -204,16 +205,17 @@ fn setup_level_1(
 fn setup_level_2(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
-    window_query: Query<&Window>
+    window_query: Query<&Window>,
+    images: Res<InterfaceImages>,
 ) -> Result<()> {
 
     let window = window_query.single()?;
 
     // Spawning background visual.
-    spawn_background(&mut commands, &asset_server, window, "images/Background_for_Level.png");
+    spawn_background(&mut commands, window, Some(&images.background_level));
 
     // Spawning timer related visuals.
-    spawn_countdown(&mut commands, &asset_server, window);
+    spawn_countdown(&mut commands, &asset_server, window, &images);
 
     // Label for Level #
     spawn_ui_element(
@@ -239,7 +241,7 @@ fn setup_level_2(
         Some(Buttons::GoToLevel1),
         None,
         None,
-        Some("images/Button.png"),
+        Some(&images.background_panel),
         Vec3::new(10.0, 10.0, 2.0),
         10.0,
         Some(120.0 / 20.0),
@@ -257,7 +259,7 @@ fn setup_level_2(
         Some(Buttons::GoToLevel3),
         None,
         None,
-        Some("images/Button.png"),
+        Some(&images.background_panel),
         Vec3::new(10.0, 15.0, 2.0),
         10.0,
         Some(120.0 / 20.0),
@@ -275,16 +277,17 @@ fn setup_level_2(
 fn setup_level_3(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
-    window_query: Query<&Window>
+    window_query: Query<&Window>,
+    images: Res<InterfaceImages>,
 ) -> Result<()> {
 
     let window = window_query.single()?;
 
     // Spawning background visual.
-    spawn_background(&mut commands, &asset_server, window, "images/Background_for_Level.png");
+    spawn_background(&mut commands, window, Some(&images.background_level));
 
     // Spawning timer related visuals.
-    spawn_countdown(&mut commands, &asset_server, window);
+    spawn_countdown(&mut commands, &asset_server, window, &images);
 
     // Label for Level #
     spawn_ui_element(
@@ -310,7 +313,7 @@ fn setup_level_3(
         Some(Buttons::GoToLevel2),
         None,
         None,
-        Some("images/Button.png"),
+        Some(&images.background_panel),
         Vec3::new(10.0, 10.0, 2.0),
         10.0,
         Some(120.0 / 20.0),
@@ -328,7 +331,7 @@ fn setup_level_3(
         Some(Buttons::GoToLevel4),
         None,
         None,
-        Some("images/Button.png"),
+        Some(&images.background_panel),
         Vec3::new(10.0, 15.0, 2.0),
         10.0,
         Some(120.0 / 20.0),
@@ -346,16 +349,17 @@ fn setup_level_3(
 fn setup_level_4(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
-    window_query: Query<&Window>
+    window_query: Query<&Window>,
+    images: Res<InterfaceImages>,
 ) -> Result<()> {
 
     let window = window_query.single()?;
 
     // Spawning background visual.
-    spawn_background(&mut commands, &asset_server, window, "images/Background_for_Level.png");
+    spawn_background(&mut commands, window, Some(&images.background_level));
 
     // Spawning timer related visuals.
-    spawn_countdown(&mut commands, &asset_server, window);
+    spawn_countdown(&mut commands, &asset_server, window, &images);
 
     // Label for Level #
     spawn_ui_element(
@@ -381,7 +385,7 @@ fn setup_level_4(
         Some(Buttons::GoToLevel3),
         None,
         None,
-        Some("images/Button.png"),
+        Some(&images.background_panel),
         Vec3::new(10.0, 10.0, 2.0),
         10.0,
         Some(120.0 / 20.0),
@@ -399,7 +403,7 @@ fn setup_level_4(
         Some(Buttons::GoToLevel5),
         None,
         None,
-        Some("images/Button.png"),
+        Some(&images.background_panel),
         Vec3::new(10.0, 15.0, 2.0),
         10.0,
         Some(120.0 / 20.0),
@@ -417,16 +421,17 @@ fn setup_level_4(
 fn setup_level_5(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
-    window_query: Query<&Window>
+    window_query: Query<&Window>,
+    images: Res<InterfaceImages>,
 ) -> Result<()> {
 
     let window = window_query.single()?;
 
     // Spawning background visual.
-    spawn_background(&mut commands, &asset_server, window, "images/Background_for_Level.png");
+    spawn_background(&mut commands, window, Some(&images.background_level));
 
     // Spawning timer related visuals.
-    spawn_countdown(&mut commands, &asset_server, window);
+    spawn_countdown(&mut commands, &asset_server, window, &images);
 
     // Label for Level #
     spawn_ui_element(
@@ -452,7 +457,7 @@ fn setup_level_5(
         Some(Buttons::GoToLevel4),
         None,
         None,
-        Some("images/Button.png"),
+        Some(&images.background_panel),
         Vec3::new(10.0, 10.0, 2.0),
         10.0,
         Some(120.0 / 20.0),
@@ -470,12 +475,13 @@ fn setup_level_5(
 fn setup_cards(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
-    window_query: Query<&Window>
+    window_query: Query<&Window>,
+    images: Res<InterfaceImages>
 ) -> Result<()> {
 
     let window = window_query.single()?;
 
-    spawn_cards(&mut commands, &asset_server, window);
+    spawn_cards(&mut commands, &asset_server, window, &images);
 
     Ok(())
 }
