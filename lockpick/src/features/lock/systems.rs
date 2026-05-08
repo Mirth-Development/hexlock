@@ -1,10 +1,11 @@
 use bevy::prelude::*;
-use super::components::{LockComponent, TumblerChamberComponent};
+use rand::RngExt;
+use super::components::{GameObjectAnchorMarker, LockComponent, TumblerChamberComponent};
 use super::resource::{LockSpriteHandles, TumblerSpringPairings};
-use super::tumblers::components::{FocusedTumblerComponent, TumblerComponent};
-use super::spring::components::SpringComponent;
+use super::tumblers::components::{FocusedTumblerComponent, TumblerComponent, TumblerMagicComponent};
+use super::tumblers::resources::Directions;
 use super::super::game_controller::rust_randomizer::systems::chance_to_add_rust;
-use super::tumblers::components::{FocusedTumblerComponent, SetTumblerComponent, TumblerComponent};
+use super::tumblers::components::{SetTumblerComponent};
 use crate::features::animation::components::{Animatable, Animated, AnimationShake};
 use crate::features::game_controller::tumbler_randomizer::systems::gen_random_tumbler;
 use crate::features::lock::messages::CatchTumbler;
@@ -54,7 +55,6 @@ pub fn load_lock_sprite_resources(mut commands: Commands, asset_server: Res<Asse
 
 pub fn load_lock_resources(
     mut commands: Commands,
-    asset_server: Res<AssetServer>
 ) {
     //Sanity code
     println!("Loading GameResources!");
@@ -83,7 +83,7 @@ pub fn spawn_lock(
     //Sprites are spawned centered on their spawn coords, so the offset calculates where to place them
     offset += (LOCK_START_SPRITE_WIDTH / 2.0) + 10.0; //Extra pixel gap
 
-    let mut lock = LockComponent {
+    let lock = LockComponent {
         num_of_tumblers: 8, //Max amount for our purposes
         ..default()
     };
@@ -98,6 +98,7 @@ pub fn spawn_lock(
             //Start of Lock
             parent_node.spawn((
                 Sprite::from_image(lock_sprite_handles.start_sprite.clone()),
+                GameObjectAnchorMarker,
                 Transform::from_xyz(offset, LOCK_START_OFFSET, 0.0),
             ));
             offset += (LOCK_START_SPRITE_WIDTH / 2.0) + (TUMBLER_CHAMBER_SPRITE_WIDTH / 2.0) + 10.0; //Extra pixel gap
@@ -114,13 +115,12 @@ pub fn spawn_lock(
                 let mut tumbler_entity_commands: EntityCommands;
                 let tumbler_entity_id: Entity;
                 //Generate random tumbler attributes
-                let (tumbler, sprites) = gen_random_tumbler(
+                let (mut tumbler, sprites) = gen_random_tumbler(
                     x,
                     tumbler_set_timer.clone(),
-                    &mut rng.RandomNumberGenerator,
+                    &mut rng.random_number_generator,
                     &lock_sprite_handles,
                 );
-
                 //get translation
                 let tumbler_translation = vec3(
                     offset,
@@ -129,6 +129,8 @@ pub fn spawn_lock(
                         - (HEIGHT_OF_SPRING_SPRITE),
                     0.0,
                 );
+
+
                 if x == 1 {
                     tumbler_entity_commands = parent_node
                         .spawn((
@@ -166,14 +168,10 @@ pub fn spawn_lock(
 
                 //Randomly generate rust on regular components
                 if tumbler.tumbler_type == TumblerType::Normal {
-                    let height = match tumbler.size {
-                        TumblerSize::Small => HEIGHT_OF_SMALL_TUMBLER_SPRITE,
-                        TumblerSize::Medium => HEIGHT_OF_MEDIUM_TUMBLER_SPRITE,
-                        TumblerSize::Large => HEIGHT_OF_LARGE_TUMBLER_SPRITE,
-                    };
+                    let height = tumbler_size_helper_function(&tumbler);
 
                     chance_to_add_rust(
-                        &mut rng.RandomNumberGenerator,
+                        &mut rng.random_number_generator,
                         &mut tumbler_entity_commands,
                         &effects_sprite_handles,
                         height
@@ -182,11 +180,38 @@ pub fn spawn_lock(
 
                     )
                 }
+                
+                if tumbler.tumbler_type == TumblerType::Magic{
+                    let mut magic_code: Vec<Directions> = Vec::new();
+                    for x in 0..=3 {
+                        let rand_dir = match rng.random_number_generator.random_range(0..4){
+                            0 => {
+                                Directions::Left
+                            }
+                            1 => {
+                                Directions::Up
+                            }
+                            2 => {
+                                Directions::Right
+                            }
+                            _ => {
+                                Directions::Down
+                            }
+                        };
+                        magic_code.push(rand_dir);
+
+                    }
+                    println!("{:?}",magic_code);
+                    tumbler_entity_commands.insert(TumblerMagicComponent {
+                        arrow_code: magic_code
+                    });
+
+                }
 
                 //Spawn_Spring
                 let spring = parent_node
                     .spawn((
-                        gen_random_spring(x, &mut rng.RandomNumberGenerator, &lock_sprite_handles),
+                        gen_random_spring(x, &mut rng.random_number_generator, &lock_sprite_handles),
                         Transform::from_xyz(
                             offset,
                             TOP_OF_CHAMBER - (HEIGHT_OF_SPRING_SPRITE / 2.0),
@@ -229,29 +254,26 @@ pub fn handle_catching_tumblers(
     mut animated_sprite_query: Query<&mut Sprite, With<Animated>>,
 ) {
 
-    let Ok((focused_entity, mut focused_tumbler_transform, mut focused_tumbler, focused_tumbler_children)) =
+    let Ok((focused_entity, focused_tumbler_transform, mut focused_tumbler, focused_tumbler_children)) =
         tumbler_query.single_mut()
     else {
         return;
     };
 
     //You will see the following match function in a few different functions, I could have put the const in the Component.... but I didnt want to go undo everything :)
-    let height = match focused_tumbler.size {
-        TumblerSize::Small => HEIGHT_OF_SMALL_TUMBLER_SPRITE,
-        TumblerSize::Medium => HEIGHT_OF_MEDIUM_TUMBLER_SPRITE,
-        TumblerSize::Large => HEIGHT_OF_LARGE_TUMBLER_SPRITE,
-    };
+    //Edit its now a helper function
+    let height = tumbler_size_helper_function(&focused_tumbler);
     for action in actions.read() {
         match action {
             CatchTumbler::Catch => {
-                if (focused_tumbler_transform.translation.y + (height / 2.0) >= (TOP_OF_CHAMBER - TUMBLER_SET_THRESHOLD)){
+                if focused_tumbler_transform.translation.y + (height / 2.0) >= (TOP_OF_CHAMBER - TUMBLER_SET_THRESHOLD){
                     writer.write(TumblerTimerMessage(focused_entity));
                 } else {
                     //Add time/score reducing code here!
                     for child in focused_tumbler_children.iter(){
                         if let Ok(_) = animated_sprite_query.get_mut(child) {
                             //commands.entity(child).remove::<Sprite>(); //test - works
-                            commands.entity(child).insert(AnimationShake::new(0.5, Vec3::splat(0.0)));
+                            commands.entity(child).insert(AnimationShake::new(0.5, Vec3::splat(0.0), TimerMode::Once));
                         }
                     }
                     if (focused_tumbler.velocity.y != (TOP_OF_CHAMBER - (height / 2.0) - (HEIGHT_OF_SPRING_SPRITE / 2.0))) && !check_set.contains(focused_entity)
@@ -282,4 +304,13 @@ pub fn spawn_animatable_sprite_child(
         //     ..default()
         // },
     )
+}
+
+pub fn tumbler_size_helper_function(tumbler: &TumblerComponent) -> f32{
+    let height = match tumbler.size {
+        TumblerSize::Small => HEIGHT_OF_SMALL_TUMBLER_SPRITE,
+        TumblerSize::Medium => HEIGHT_OF_MEDIUM_TUMBLER_SPRITE,
+        TumblerSize::Large => HEIGHT_OF_LARGE_TUMBLER_SPRITE,
+    };
+    height
 }

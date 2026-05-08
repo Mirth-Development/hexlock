@@ -1,4 +1,3 @@
-use crate::features::animation::components::{AnimationShake, Animated};
 use bevy::prelude::*;
 use rand::prelude::StdRng;
 use rand::seq::IndexedRandom;

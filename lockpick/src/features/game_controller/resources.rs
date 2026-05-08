@@ -3,7 +3,8 @@ use bevy::prelude::*;
 #[derive(Resource)]
 pub struct GameResourceHandles {
     pub charge_bar: Handle<Image>,
-    pub charge: Handle<Image>
+    pub charge: Handle<Image>,
+    pub magic_arrow: Handle<Image>,
 }
 
 #[derive(Resource)]

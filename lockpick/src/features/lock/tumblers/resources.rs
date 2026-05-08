@@ -13,3 +13,11 @@ pub enum TumblerSize{
     Medium,
     Large
 }
+
+# [derive(Copy, Clone, Debug)]
+pub enum Directions{
+    Up,
+    Down,
+    Left,
+    Right,
+}

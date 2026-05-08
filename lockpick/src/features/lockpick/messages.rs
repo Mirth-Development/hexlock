@@ -17,3 +17,11 @@ pub enum ChargeLockpick {
     Charge,
     Release
 }
+
+#[derive(Message)]
+pub enum HexDirection {
+    Up,
+    Down,
+    Left,
+    Right
+}

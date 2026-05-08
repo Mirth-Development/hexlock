@@ -1,11 +1,9 @@
 use bevy::prelude::*;
+use crate::features::controls::systems_for_control_schemas::{electric_pick_schema, magic_pick_schema, normal_pick_schema};
 use crate::features::lock::messages::CatchTumbler;
-use crate::features::lockpick::messages::LockpickAction;
 use crate::features::interface::definitions::*;
-use crate::features::controls::systems_for_control_schemas::{electric_pick_schema, normal_pick_schema};
-use crate::features::lock::messages::CatchTumbler;
 use crate::features::lockpick::component::LockpickComponent;
-use crate::features::lockpick::messages::{LockpickAction};
+use crate::features::lockpick::messages::{HexDirection, LockpickAction};
 use crate::features::lockpick::resources::LockpickType;
 
 
@@ -14,8 +12,8 @@ pub fn user_control_system(
     lockpick_query: Query<&LockpickComponent>,
     keyboard_input: Res<ButtonInput<KeyCode>>,
     mut pick_event: MessageWriter<LockpickAction>,
+    mut magic_event: MessageWriter<HexDirection>,
     mut tumbler_event: MessageWriter<CatchTumbler>,
-
     mut next_state: ResMut<NextState<Interfaces>>,
     mut state_history: ResMut<StateHistory>,
 
@@ -36,7 +34,11 @@ pub fn user_control_system(
                 );
             },
             LockpickType::Magic => {
-
+                magic_pick_schema(
+                    &keyboard_input,
+                    &mut pick_event,
+                    &mut magic_event,
+                );
             }
         }
 
@@ -56,12 +58,12 @@ pub fn user_control_system(
 
     if keyboard_input.just_pressed(KeyCode::KeyQ){
         pick_event.write(LockpickAction::SwitchLast);
-        println!("Right Sent!");
+        println!("Switch Last");
     }
 
     if keyboard_input.just_pressed(KeyCode::KeyE){
         pick_event.write(LockpickAction::SwitchNext);
-        println!("Right Sent!");
+        println!("Switch Next");
     }
 
     if keyboard_input.just_pressed(KeyCode::Space){
@@ -74,5 +76,3 @@ pub fn user_control_system(
         next_state.set(Interfaces::StartMenu);
     }
 }
-
-
