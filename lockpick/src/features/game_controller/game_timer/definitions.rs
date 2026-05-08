@@ -39,7 +39,7 @@ pub struct TheTimer {
 impl Default for TheTimer {
     fn default() -> Self {
         Self {
-            chronolog: Chronolog::new(),
+            chronolog: Chronolog::new(None),
         }
     }
 }
@@ -164,9 +164,17 @@ impl Default for Chronolog {
 }
 
 impl Chronolog {
-    pub fn new() -> Self {
+
+    /// Requires an Option to be thrown into it for usage, the Option may be filled or None.
+    ///
+    /// Passing in None will set the start_value to 0.0.
+    /// Passing in Some(INSERT_FLOATING_POINT_HERE) will set the start_value to INSERT_FLOATING_POINT_HERE.
+    ///
+    /// Does not work with negatives, so don't even try unless you'd like to cry like I have.
+    pub fn new(starting_value: Option<f32>) -> Self {
         Self {
-            start_value: Some(0.0),
+
+            start_value: Some(starting_value.unwrap_or(0.0)),
 
             ticker_for_hundreds: Some(Ticker{
                 number: Some(0),
@@ -203,13 +211,55 @@ impl Chronolog {
     /// This type of reset will cause for the Chronolog to continue ticking immediately after reset
     /// in the same way that a Chronolog will tick when created using the "new" method.
     pub fn reset(&mut self) {
-        *self = Chronolog::new();
+        *self = Chronolog::new(None);
     }
 
     /// Will wipe out all the tickers in the Chronolog.  Can be used to create a blank slate to add new
     /// tickers onto a Chronolog if you want to.
     pub fn blank(&mut self) {
         *self = Chronolog::default();
+    }
+
+    /// Returns how long a Chronolog has until it hits the zero value.
+    ///
+    /// The start_value of a Chronolog dictates the top of the countdown and the constant increasing
+    /// values of the Chronolog are reversed through subtraction in this method to create a countdown effect.
+    pub fn get_countdown_number(&self) -> f32 {
+
+        let start = self.start_value.unwrap_or(0.0);
+        let elapsed = start - self.get_number();
+
+        // Prevents the countdown number from returning a negative value.
+        // Will return the elapsed time if it's greater than 1.0.
+        // Will return 0.0 if the elapsed time comes out as negative.
+        if (elapsed > 0.0) {
+            elapsed
+        }
+        else {
+            0.0
+        }
+    }
+
+    /// Returns a string for the current countdown value, the number of digits is based on how many
+    /// whole places is desired and how many floating places is desired.
+    ///
+    /// It's important to note that a decimal is added into the string and should be accounted for
+    /// if you're gonna try and convert the string into an indexable structure.
+    pub fn get_countdown_string(
+        &self,
+        number_of_whole_places: usize,
+        number_of_floating_places: usize
+    ) -> String {
+
+        let countdown = self.get_countdown_number();
+        let character_count = number_of_whole_places + number_of_floating_places + 1;
+
+        // Left side of printout is dictated implicitly by (number_of_characters - floating).
+        format!("{:0>number_of_characters$.floating$}",
+                countdown,
+                number_of_characters = character_count,
+                floating = number_of_floating_places
+        )
     }
 
     /// Returns the number that's in the hundreds' ticker.  Will return 0 if there is no ticker.

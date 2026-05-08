@@ -233,7 +233,14 @@ pub fn spawn_chronodigits(
     the_timer: Res<TheTimer>,
 ) -> Result<()>
 {
-    let window = window_query.single()?;
+    // Had to throw down this error catcher over the usual question mark operator usage.  As for why...?
+    // I don't really understand it.  All I can say is that a panic event would occur when the program
+    // would close via forced exit (close button) and the usual result handler wouldn't work.  My best
+    // guess is that this system is being used extensively (each frame) and it's rather large (lot to process) so it's possible
+    // that the pre-check for window wasn't enough for the entirety of how long it takes to process this function
+    // for each and every frame.
+    let Ok(window) = window_query.single()
+    else { return Ok(()); };
 
     let digit_images: [&str; 10] = [
         "images/0.png",
@@ -250,9 +257,12 @@ pub fn spawn_chronodigits(
 
     // Obtaining current digit values.  Have to cast to usize because Rust arrays can't take u32?
     // Did not know that.  Doesn't usize account for u32?  ME DON'T UNDERSTAND!
-    let hundreds = the_timer.chronolog.digit_for_hundreds() as usize;
-    let tens = the_timer.chronolog.digit_for_tens() as usize;
-    let ones = the_timer.chronolog.digit_for_ones() as usize;
+    // EDIT: You can't even use index access on an array?!  WTF?! I'm sure there's some brilliant reason
+    // but that drives me insane.
+    let countdown: Vec<char> = the_timer.chronolog.get_countdown_string(3, 3).chars().collect();
+    let hundreds = countdown[0].to_digit(10).unwrap_or(0) as usize;
+    let tens     = countdown[1].to_digit(10).unwrap_or(0) as usize;
+    let ones     = countdown[2].to_digit(10).unwrap_or(0) as usize;
 
     // Digit for Hundreds Place
     let digit_hundreds = spawn_ui_element(
@@ -260,7 +270,7 @@ pub fn spawn_chronodigits(
         &asset_server,
         window,
         None,
-        None,
+        Some(Containers::Timer),
         None,
         Some(digit_images[hundreds]),
         Vec3::new(86.0, 12.0, 4.0),
@@ -275,7 +285,7 @@ pub fn spawn_chronodigits(
         &asset_server,
         window,
         None,
-        None,
+        Some(Containers::Timer),
         None,
         Some(digit_images[tens]),
         Vec3::new(89.0, 12.0, 4.0),
@@ -290,7 +300,7 @@ pub fn spawn_chronodigits(
         &asset_server,
         window,
         None,
-        None,
+        Some(Containers::Timer),
         None,
         Some(digit_images[ones]),
         Vec3::new(92.0, 12.0, 4.0),
@@ -549,6 +559,7 @@ pub fn handle_button_interactions(
                     button_chain.clear();
                     next_state.set(Interfaces::Level1);
                     the_timer.chronolog.reset();
+                    the_timer.chronolog.start_value = Some(111.0);
                 },
 
                 (_, Buttons::GoToLevel1) => {

@@ -146,6 +146,54 @@ pub fn on_magic_effect(
 
 
 
+pub fn on_magic_effect(
+    magic: On<Magic>,
+    mut commands: Commands,
+    tumbler_component: Query<(&GlobalTransform, &TumblerComponent),With<FocusedTumblerComponent>>,
+    effects_sprite_handles: Res<EffectsSpriteHandles>
+)
+{
+    //let Ok(lockpick_transform) = lockpick_component.single() else {panic!("No Lockpick!")};
+    let Ok((focused_tumbler_transform, focused_tumbler)) = tumbler_component.single() else {panic!("No Focused Tumbler!")};
+
+    println!("Spawn Magic!");
+    let midpoint = magic.top.midpoint(magic.bottom);
+
+    //let height = tumbler_size_helper_function(&focused_tumbler);
+
+    let top_y = magic.top;
+    let bottom_y = magic.bottom; //focused_tumbler_transform.translation().y + height / 2.0;
+    let gap = top_y - bottom_y;//TOP_OF_CHAMBER - bottom_y;
+    let pos = vec3(focused_tumbler_transform.translation().x, midpoint, 1.0 );
+
+
+    let mut entity_commands = commands.spawn((
+        Sprite {
+            image: effects_sprite_handles.magic_effect.clone(),
+            //color: Color::srgba(1.0, 1.0, 1.0, charge_intensity),
+            ..default()
+        },
+        Animated,
+        AnimationFlip::new(1.0, pos, TimerMode::Once),
+        EffectLifetimeTimer(magic.life_timer.clone()),//Timer::from_seconds(0.4, TimerMode::Once)),
+        Transform{
+            //(bottom_y + gap / 2.0) = midpoint?
+            translation: pos,
+            // y =
+            scale: vec3(1.0, (gap / HEIGHT_OF_MAGIC_SPRITE), 1.0),
+            ..default()
+        }
+    )
+
+
+    );
+    let entity = entity_commands.id();
+    entity_commands.insert(EffectKillMarker { 0: entity });
+
+}
+
+
+
 //Tick Lifettime timers
 
 pub fn handle_lifetime_timers(
