@@ -15,3 +15,8 @@ pub struct LockSpriteHandles {
 pub struct TumblerSpringPairings {
     pub array: Vec<(Entity, Entity)> //Tumbler, Spring
 }
+
+#[derive(Resource)]
+pub struct LockOffset {
+    pub offset: u32,
+}

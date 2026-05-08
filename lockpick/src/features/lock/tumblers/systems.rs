@@ -1,8 +1,10 @@
 use bevy::prelude::*;
 use crate::features::animation::components::{Animatable, Animated, AnimationShake};
+use crate::features::game_controller::components::TumblerChamberNumberComponent;
+use crate::features::game_controller::resources::TumblerOrdering;
 use crate::features::lock::spring::systems::HEIGHT_OF_SPRING_SPRITE;
 use crate::features::lock::systems::TOP_OF_CHAMBER;
-use crate::features::lock::tumblers::components::{SetTumblerComponent, TumblerComponent, TumblerRustComponent};
+use crate::features::lock::tumblers::components::{SetTumblerComponent, TumblerComponent, TumblerMagicComponent, TumblerRustComponent};
 use crate::features::lock::tumblers::event::BreakRust;
 use crate::features::lock::tumblers::resources::TumblerSize;
 use super::messages::TumblerTimerMessage;
@@ -61,46 +63,92 @@ pub fn tumbler_movement(
 
 pub fn timer_tumbler_finished (
     time: Res<Time>,
+    mut tumbler_ordering : ResMut <TumblerOrdering>,
     mut commands: Commands,
     mut tumbler_query: Query<(Entity , &mut TumblerComponent, &Children), With<SetTumblerComponent>>,
     mut animated_sprite_query: Query<(&mut Sprite, Has<AnimationShake>), With<Animated>>, //Can get a bool on whether a component exists or not
-
+    mut tumbler_number_query: Query<&mut Sprite, (With<TumblerChamberNumberComponent>, Without<Animated>)>,
 ) {
 
 
     for (tumbler_entity, mut tumbler, tumbler_children) in &mut tumbler_query{
         //println!("Time:{}, Tumbler pos:{}", tumbler.timer.remaining_secs(), tumbler.position);
 
-        if tumbler.timer.is_finished(){
-            println!("Timer at {} Finished!", tumbler.position);
+        if tumbler.timer.is_finished() {
             tumbler.timer.reset();
             tumbler.timer.pause();
             tumbler.velocity.y = TUMBLER_SET_RELEASE_VELOCITY;
-            commands.entity(tumbler_entity).remove::<SetTumblerComponent>();
 
-        } else if tumbler.timer.remaining_secs() < 2.0{
-            tumbler.timer.tick(time.delta());
-            for child in tumbler_children.iter(){
-                if let Ok((_sprite, is_shaking)) = animated_sprite_query.get_mut(child) {
-                    //commands.entity(child).remove::<Sprite>(); //test - works
-                    if !is_shaking{
-                        commands.entity(child).insert(AnimationShake::new(0.5, Vec3::splat(0.0), TimerMode::Once));
-                    }
+            let rank = tumbler_ordering.order[(tumbler.position - 1) as usize];
 
-                }
+            // Restore full opacity for THIS tumbler
+            if let Ok(mut sprite) = tumbler_number_query.get_mut(tumbler.order_num_entity) {
+                sprite.color = Color::srgba(1.0, 1.0, 1.0, 1.0);
             }
 
-        } else {
-            tumbler.timer.tick(time.delta());
-        }
+            // Reset position
+            if rank < tumbler_ordering.current_position {
+                tumbler_ordering.current_position = rank;
+                println!("current_position back to {}", rank);
+            }
+
+            commands.entity(tumbler_entity).remove::<SetTumblerComponent>();
+        }else {
+                tumbler.timer.tick(time.delta());
+                if tumbler.timer.remaining_secs() < 4.0 && !tumbler.timer.is_finished(){
+                    for child in tumbler_children.iter(){
+                        if let Ok((_sprite, is_shaking)) = animated_sprite_query.get_mut(child) {
+                            //commands.entity(child).remove::<Sprite>(); //test - works
+                            if !is_shaking{
+                                commands.entity(child).insert(AnimationShake::new(0.5, Vec3::splat(0.0), TimerMode::Once));
+                            }
+
+                        }
+                    }
+                }
+
+
+            }
+
+        // if tumbler.timer.is_finished(){
+        //     println!("Timer at {} Finished!", tumbler.position);
+        //     tumbler.timer.reset();
+        //     tumbler.timer.pause();
+        //     tumbler.velocity.y = TUMBLER_SET_RELEASE_VELOCITY;
+        //     println!("{}, {}",tumbler_ordering.order[(tumbler.position-1) as usize],  tumbler_ordering.current_position);
+        //     if tumbler_ordering.order[(tumbler.position-1) as usize] <= tumbler_ordering.current_position  {
+        //         println!("{} is less or equal to, {}",tumbler_ordering.order[(tumbler.position-1 ) as usize],  tumbler_ordering.current_position);
+        //         tumbler_ordering.current_position -= 1;
+        //         println!("current pos{}", tumbler_ordering.current_position);
+        //     }
+        //     commands.entity(tumbler_entity).remove::<SetTumblerComponent>();
+        //
+        // } else {
+        //     tumbler.timer.tick(time.delta());
+        //     if tumbler.timer.remaining_secs() < 4.0 && !tumbler.timer.is_finished(){
+        //         for child in tumbler_children.iter(){
+        //             if let Ok((_sprite, is_shaking)) = animated_sprite_query.get_mut(child) {
+        //                 //commands.entity(child).remove::<Sprite>(); //test - works
+        //                 if !is_shaking{
+        //                     commands.entity(child).insert(AnimationShake::new(0.5, Vec3::splat(0.0), TimerMode::Once));
+        //                 }
+        //
+        //             }
+        //         }
+        //     }
+        //
+        //
+        // }
     }
 }
 
  pub fn handle_tumbler_set (
      check_set: Query<(), With<SetTumblerComponent>>, //Call all set elements
+     mut tumbler_ordering: ResMut<TumblerOrdering>,
      mut commands: Commands,
      mut actions: MessageReader<TumblerTimerMessage>,
-     mut tumblers: Query<(Entity, &mut Transform, &mut TumblerComponent)>
+     mut tumblers: Query<(Entity, &mut Transform, &mut TumblerComponent)>,
+     mut tumbler_number_query: Query<&mut Sprite, With<TumblerChamberNumberComponent>>,
  ){
 
      for action in actions.read(){
@@ -125,7 +173,17 @@ pub fn timer_tumbler_finished (
              focused_transform.translation.y = TOP_OF_CHAMBER - (height / 2.0);
              focused_tumbler.timer.reset();
              focused_tumbler.timer.unpause();
+             println!("order:{}, focused:{}", tumbler_ordering.current_position ,tumbler_ordering.order[(focused_tumbler.position - 1) as usize]);
+             if tumbler_ordering.current_position == tumbler_ordering.order[(focused_tumbler.position - 1) as usize]{
+
+                 tumbler_ordering.current_position +=1;
+                 // println!("add to current position, now: {}",tumbler_ordering.current_position )
+                 if let Ok(mut sprite) = tumbler_number_query.get_mut(focused_tumbler.order_num_entity) {
+                     sprite.color = Color::srgba(1.0, 1.0, 1.0, 0.5);
+                 }
+             }
              commands.entity(action.0).insert(SetTumblerComponent);
+
 
          }
 

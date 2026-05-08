@@ -8,7 +8,8 @@ pub struct TumblerComponent{
     pub velocity: Vec3,
     pub timer: Timer,
     pub tumbler_type: TumblerType ,
-    pub size: TumblerSize
+    pub size: TumblerSize,
+    pub order_num_entity: Entity,
 }
 
 #[derive(Component)]
@@ -35,6 +36,7 @@ impl Default for TumblerComponent {
             timer: Timer::from_seconds(1.0, TimerMode::Once),
             tumbler_type: TumblerType::Normal,
             size: TumblerSize::Medium,
+            order_num_entity: Entity::PLACEHOLDER //This is how defaults are handled for entities
             //set: false //Handle this with a component
         }
     }

@@ -8,3 +8,6 @@ pub struct ChargeLoadingMarker;
 
 #[derive(Component)]
 pub struct MagicArrowMarker;
+
+#[derive(Component)]
+pub struct TumblerChamberNumberComponent;

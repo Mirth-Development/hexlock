@@ -1,10 +1,11 @@
 use bevy::prelude::*;
 use rand::RngExt;
 use super::components::{GameObjectAnchorMarker, LockComponent, TumblerChamberComponent};
-use super::resource::{LockSpriteHandles, TumblerSpringPairings};
+use super::resource::{LockOffset, LockSpriteHandles, TumblerSpringPairings};
 use super::tumblers::components::{FocusedTumblerComponent, TumblerComponent, TumblerMagicComponent};
 use super::tumblers::resources::Directions;
 use super::super::game_controller::rust_randomizer::systems::chance_to_add_rust;
+use super::super::game_controller::resources::TumblerOrdering;
 use super::tumblers::components::{SetTumblerComponent};
 use crate::features::animation::components::{Animatable, Animated, AnimationShake};
 use crate::features::game_controller::tumbler_randomizer::systems::gen_random_tumbler;
@@ -60,13 +61,16 @@ pub fn load_lock_resources(
     println!("Loading GameResources!");
 
     //List all resources required for load on startup here
+    commands.insert_resource(LockOffset{ offset: 0 });
     commands.insert_resource(TumblerSpringPairings { array: Vec::new() });
+
 }
 
 //Spawn and Build Lock
 pub fn spawn_lock(
     lock_sprite_handles: Res<LockSpriteHandles>,
     effects_sprite_handles: Res<EffectsSpriteHandles>,
+    mut lock_offset: ResMut<LockOffset>,
     mut rng: ResMut<RandomSeed>,
     mut commands: Commands,
     mut tumbler_spring_pairings: ResMut<TumblerSpringPairings>,
@@ -242,11 +246,13 @@ pub fn spawn_lock(
         })
         //Add the offset back into the entity by replacing the Transform of the parent
         .insert(Transform::from_xyz(-offset / 2.0, 0.0, 0.0));
+        lock_offset.offset = offset as u32;
 }
 
 
 pub fn handle_catching_tumblers(
     check_set: Query<(), With<SetTumblerComponent>>, //Call all set elements
+    //mut tumbler_ordering: ResMut<TumblerOrdering>,
     mut commands: Commands,
     mut actions: MessageReader<CatchTumbler>,
     mut writer: MessageWriter<TumblerTimerMessage>,

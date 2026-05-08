@@ -1,8 +1,10 @@
+use bevy::ecs::error::panic;
 use bevy::prelude::*;
+use bevy::ui::debug::print_ui_layout_tree;
 use crate::features::animation::components::{Animatable, Animated, AnimationShake};
 use crate::features::game_controller::game_effects::events::{Magic, Zap};
 use crate::features::lock::components::LockComponent;
-use crate::features::lock::resource::{TumblerSpringPairings};
+use crate::features::lock::resource::{LockOffset, TumblerSpringPairings};
 use crate::features::lock::spring::components::SpringComponent;
 use crate::features::lock::spring::resources::SpringSize;
 use crate::features::lock::spring::systems::HEIGHT_OF_SPRING_SPRITE;
@@ -15,7 +17,7 @@ use crate::features::lockpick::component::LockpickComponent;
 use crate::features::lockpick::messages::{ChargeLockpick, LockpickAction};
 use crate::features::lockpick::resources::{LockpickElectricCharge, LockpickType};
 
-pub const LOCKPICK_HEAD_OFFSET: f32 = 1041.0;
+pub const LOCKPICK_HEAD_OFFSET: f32 = -1041.0;
 const LOCKPICK_MAX_HEIGHT: f32 = TOP_OF_CHAMBER - (HEIGHT_OF_MEDIUM_TUMBLER_SPRITE / 2.0 + HEIGHT_OF_SPRING_SPRITE);
 const LOCKPICK_LOWER_BOUND: f32 = -200.0;
 
@@ -37,12 +39,16 @@ pub fn load_lockpick_resources(
 //Spawn Systems
 pub fn spawn_lockpick (
     mut commands: Commands,
+    lock_offset: Res<LockOffset>,
     asset_server: Res<AssetServer>,
 ) {
+
+    println!("Offset {}",-(lock_offset.offset as f32));
     commands.spawn((
         LockpickComponent::default(),
         Transform {
-            translation: Vec3::new(0.0, LOCKPICK_LOWER_BOUND, 0.0),
+            //focused_tumbler_transform.translation.x+LOCKPICK_HEAD_OFFSET
+            translation: Vec3::new(-(lock_offset.offset as f32), LOCKPICK_LOWER_BOUND, 0.0),
             ..Default::default()
         }
     )).with_children(| parent_node| {
@@ -76,12 +82,12 @@ pub fn move_to_focused_tumbler(
 
     for (global_position, tumbler) in &tumbler_query {
         if tumbler.position == lockpick.current_tumbler {
-            if (lockpick_transform.translation.x + LOCKPICK_HEAD_OFFSET ) != global_position.translation().x {
+            if (lockpick_transform.translation.x - LOCKPICK_HEAD_OFFSET ) != global_position.translation().x {
                 //println!("Moving Pick!");
-                let target_point = global_position.translation() + Vec3::new(-LOCKPICK_HEAD_OFFSET+ 10.0 , 0.0, 0.0);
+                let target_point = global_position.translation() + Vec3::new(LOCKPICK_HEAD_OFFSET+ 10.0 , 0.0, 0.0);
                 let distance = lockpick_transform.translation.distance(target_point);
                 println!("distance {}", distance);
-                lockpick_transform.translation.x = global_position.translation().x - (LOCKPICK_HEAD_OFFSET ) ;
+                lockpick_transform.translation.x = global_position.translation().x + (LOCKPICK_HEAD_OFFSET ) ;
             }
         }
     }

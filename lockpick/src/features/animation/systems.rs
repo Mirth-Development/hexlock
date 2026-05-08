@@ -81,14 +81,6 @@ impl Animatable for AnimationFlip {
         }
     }
 
-    fn repeats(&mut self) -> bool {
-        if self.animation_timer.mode() == TimerMode::Repeating {
-            true
-        } else {
-            false
-        }
-    }
-
     fn animate_step(&mut self, delta: Duration, transform: &mut Transform){
         println!("Animating!");
         self.animation_timer.tick(delta);
@@ -96,6 +88,14 @@ impl Animatable for AnimationFlip {
             transform.scale.y *= -1.0;
         }
 
+    }
+
+    fn repeats(&mut self) -> bool {
+        if self.animation_timer.mode() == TimerMode::Repeating {
+            true
+        } else {
+            false
+        }
     }
 
     fn reset_animation_transform(&mut self, transform: &mut Transform) {

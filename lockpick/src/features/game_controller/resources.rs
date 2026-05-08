@@ -8,6 +8,12 @@ pub struct GameResourceHandles {
 }
 
 #[derive(Resource)]
+pub struct TumblerOrdering {
+    pub current_position: u32,
+    pub order: Vec<u32>
+}
+
+#[derive(Resource)]
 pub struct PlayerAttributes{
     //Effects the player can choose at the end of each round
     //Bools should be checked only once

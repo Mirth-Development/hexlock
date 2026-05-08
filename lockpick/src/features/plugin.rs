@@ -2,7 +2,7 @@ use bevy::prelude::*;
 use crate::features::animation::plugin::AnimationFeaturesPlugin;
 use crate::features::game_controller::game_effects::systems::{load_effects_sprite_resources, on_lightning_effect, on_magic_effect};
 use crate::features::game_controller::messages::GameStateMessage;
-use crate::features::game_controller::systems::load_game_controller_sprites;
+use crate::features::game_controller::systems::{load_game_controller_resources, load_game_controller_sprites};
 use crate::features::lock::messages::CatchTumbler;
 use crate::features::lock::tumblers::messages::TumblerTimerMessage;
 use crate::features::lock::tumblers::systems::on_break_rust;
@@ -19,7 +19,7 @@ impl Plugin for LockpickFeaturesPlugin {
     fn build(&self, app: &mut App) {
 
         app.add_plugins(GameTimer{});
-        app.add_systems(Startup, (spawn_camera, load_lock_sprite_resources,load_game_controller_sprites, load_random_seed, load_lockpick_resources, load_effects_sprite_resources).chain());
+        app.add_systems(Startup, (spawn_camera, load_lock_sprite_resources,load_game_controller_sprites, load_random_seed, load_lockpick_resources, load_game_controller_resources, load_effects_sprite_resources).chain());
         app.add_observer(on_lightning_effect);
         app.add_observer(on_break_rust);
         app.add_observer(on_magic_effect);
