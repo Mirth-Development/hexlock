@@ -4,14 +4,16 @@ use bevy::window::WindowResized;
 use crate::features::interface::definitions::*;
 use crate::features::game_controller::game_timer::definitions::*;
 use crate::features::interface::systems_for_states::*;
+use crate::features::lock::tumblers::components::*;
+use crate::features::lock::tumblers::resources::*;
 
 pub struct SystemsForUserInterfaceSpawns {}
 impl Plugin for SystemsForUserInterfaceSpawns {
     fn build(&self, app: &mut App) {
         app.add_systems(Update, (resize, handle_button_interactions).chain());
         app.add_systems(Update, (
-            despawn_combo_arrows,
-            spawn_combo_arrows,
+            despawn_combo,
+            spawn_combo,
             despawn_countdown_digits,
             spawn_countdown_digits
         ).chain().run_if(in_level_state));
@@ -243,7 +245,7 @@ pub fn spawn_countdown_digits(
     // would close via forced exit (close button) and the usual result handler wouldn't work.  My best
     // guess is that this system is being used extensively (each frame) and it's rather large (lot to process) so it's possible
     // that the pre-check for window wasn't enough for the entirety of how long it takes to process this function
-    // for each and every frame.
+    // for each and every frame.  I kind of doubt that's the problem, but I can't think of anything else.
     let Ok(window) = window_query.single()
     else { return Ok(()); };
 
@@ -447,36 +449,60 @@ pub fn spawn_cards(
 }
 
 pub fn spawn_combo(
-    commands: &mut Commands,
-    asset_server: &AssetServer,
-    window: &Window,
-)
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+    window_query: Query<&Window>,
+    tumbler_query: Query<(Entity, &TumblerMagicComponent), With<FocusedTumblerComponent>>,
+) -> Result<()>
 {
+
+    // Had to throw down this error catcher over the usual question mark operator usage.  As for why...?
+    // I don't really understand it.  All I can say is that a panic event would occur when the program
+    // would close via forced exit (close button) and the usual result handler wouldn't work.  My best
+    // guess is that this system is being used extensively (each frame) and it's rather large (lot to process) so it's possible
+    // that the pre-check for window wasn't enough for the entirety of how long it takes to process this function
+    // for each and every frame.  I kind of doubt that's the problem, but I can't think of anything else.
+    let Ok(window) = window_query.single()
+    else { return Ok(()); };
+    let Ok((entity, tumbler)) = tumbler_query.single()
+    else { return Ok(()); };
+
+    // Creating a list of 4 images off of the queried tumbler's arrow codes.
+    let mut list_of_images: Vec<&str> = Vec::new();
+    for code in &tumbler.arrow_code {
+        match code {
+            Directions::Up      => list_of_images.push("images/Direction_Up.png"),
+            Directions::Down    => list_of_images.push("images/Direction_Down.png"),
+            Directions::Left    => list_of_images.push("images/Direction_Left.png"),
+            Directions::Right   => list_of_images.push("images/Direction_Right.png"),
+        }
+    }
+
     // Container
-    spawn_ui_element(
-        commands,
-        asset_server,
+    let container = spawn_ui_element(
+        &mut commands,
+        &asset_server,
         window,
         None,
         Some(Containers::Combo),
         None,
         Some("images/Background_for_Panel.png"),
-        Vec3::new(31.0, 43.0, 3.0),
-        15.0,
-        Some(530.0 / 230.0),
+        Vec3::new(27.5, 42.0, 3.0),
+        23.0,
+        Some(550.0 / 200.0),
         None
     );
 
     // Label for Title
-    spawn_ui_element(
-        commands,
-        asset_server,
+    let label = spawn_ui_element(
+        &mut commands,
+        &asset_server,
         window,
         None,
         Some(Containers::Combo),
         None,
         None,
-        Vec3::new(31.0, 40.0, 4.0),
+        Vec3::new(27.5, 37.0, 4.0),
         20.0,
         Some(100.0 / 20.0),
         Some(TextSpawn {
@@ -486,89 +512,80 @@ pub fn spawn_combo(
             color: Color::WHITE,
         })
     );
-}
 
-pub fn spawn_combo_arrows(
-    mut commands: Commands,
-    asset_server: &AssetServer,
-    window_query: Query<&Window>,
-    magic_tumbler: Query<(Entity, &MagicTumblerComponent), With<FocusedTumbler>>,
-) -> Result<()>
-{
-
-    let window = window_query.single()?;
-
-    // Arrow Up
-    let arrow_up = spawn_ui_element(
-        &mut commands,
-        asset_server,
-        &window,
-        None,
-        None,
-        None,
-        Some("images/1.png"),
-        Vec3::new(30.0, 10.0, 3.0),
-        5.0,
-        Some(85.0 / 135.0),
-        None
-    );
-
-    // Arrow Down
-    let arrow_down = spawn_ui_element(
-        &mut commands,
-        asset_server,
-        &window,
-        None,
-        None,
-        None,
-        Some("images/2.png"),
-        Vec3::new(30.0, 10.0, 3.0),
-        5.0,
-        Some(85.0 / 135.0),
-        None
-    );
-
-    // Arrow Left
-    let arrow_left = spawn_ui_element(
+    // Arrow #1
+    let arrow_1 = spawn_ui_element(
         &mut commands,
         &asset_server,
         window,
         None,
         None,
         None,
-        Some("images/3.png"),
-        Vec3::new(30.0, 10.0, 3.0),
-        5.0,
-        Some(85.0 / 135.0),
+        Some(list_of_images[0]),
+        Vec3::new(20.0, 43.0, 4.0),
+        4.0,
+        Some(150.0 / 150.0),
         None
     );
 
-    // Arrow Right
-    let arrow_right = spawn_ui_element(
+    // Arrow #2
+    let arrow_2 = spawn_ui_element(
         &mut commands,
         &asset_server,
         window,
         None,
         None,
         None,
-        Some("images/4.png"),
-        Vec3::new(30.0, 10.0, 3.0),
-        5.0,
-        Some(85.0 / 135.0),
+        Some(list_of_images[1]),
+        Vec3::new(25.0, 43.0, 4.0),
+        4.0,
+        Some(150.0 / 150.0),
         None
     );
 
-    // Marking arrows so that they can be deleted by their despawner.
-    commands.entity(arrow_up).insert(ComboArrow);
-    commands.entity(arrow_down).insert(ComboArrow);
-    commands.entity(arrow_left).insert(ComboArrow);
-    commands.entity(arrow_right).insert(ComboArrow);
+    // Arrow #3
+    let arrow_3 = spawn_ui_element(
+        &mut commands,
+        &asset_server,
+        window,
+        None,
+        None,
+        None,
+        Some(list_of_images[2]),
+        Vec3::new(30.0, 43.0, 4.0),
+        4.0,
+        Some(150.0 / 150.0),
+        None
+    );
+
+    // Arrow #4
+    let arrow_4 = spawn_ui_element(
+        &mut commands,
+        &asset_server,
+        window,
+        None,
+        None,
+        None,
+        Some(list_of_images[3]),
+        Vec3::new(35.0, 43.0, 4.0),
+        4.0,
+        Some(150.0 / 150.0),
+        None
+    );
+
+    // Marking combo so that it can be deleted by their despawner.
+    commands.entity(container).insert(ComboArrow);
+    commands.entity(label).insert(ComboArrow);
+    commands.entity(arrow_1).insert(ComboArrow);
+    commands.entity(arrow_2).insert(ComboArrow);
+    commands.entity(arrow_3).insert(ComboArrow);
+    commands.entity(arrow_4).insert(ComboArrow);
 
     Ok(())
 }
 
 /// Used to obliterate arrow spawns when the focused tumbler marker changes.
-pub fn despawn_combo_arrows(
+pub fn despawn_combo(
     mut commands: Commands,
     arrow_query: Query<Entity, With<ComboArrow>>,
 ) {

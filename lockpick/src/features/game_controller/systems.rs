@@ -1,7 +1,7 @@
 use std::f32::consts::PI;
 use bevy::prelude::*;
 use bevy::time::TimerMode::Once;
-use crate::features::game_controller::components::{ChargeBarMarker, ChargeLoadingMarker, MagicArrowMarker};
+use crate::features::game_controller::components::{ChargeBarMarker, ChargeLoadingMarker};
 use crate::features::game_controller::messages::GameStateMessage;
 use crate::features::game_controller::resources::{GameResourceHandles};
 use crate::features::interface::definitions::{Interfaces, StateHistory};
@@ -66,61 +66,61 @@ pub fn spawn_charge_bar (
 
 }
 
-//Spawn after lock, start of lock changes with config changes
-pub fn spawn_magic_arrow (
-    mut commands: Commands,
-    game_resource_handles: Res<GameResourceHandles>,
-) {
-
-    commands.spawn((
-        Sprite::from_image(game_resource_handles.magic_arrow.clone()),
-        //Visibility::Hidden, //want to see it for now
-        MagicArrowMarker,
-        Transform{
-            translation: Vec3::splat(0.0),
-            ..default()
-        },
-    )
-
-    );
-
-
-}
-
-
-
-pub fn move_magic_arrow(
-    mut magic_arrow: Query<(&mut Transform), With<MagicArrowMarker>>,
-    mut anchor_point: Query<(&GlobalTransform), With<GameObjectAnchorMarker>>,
-    mut magic_arrow_action: MessageReader<HexDirection>
-){
-    let Ok(mut magic_arrow_transform) = magic_arrow.single_mut() else {return};
-    let Ok(anchor_point_transform) = anchor_point.single() else {return};
-
-    let offset = vec3(300.0, 300.0, 0.0);
-
-    if magic_arrow_transform.translation - offset != anchor_point_transform.translation(){
-        magic_arrow_transform.translation = anchor_point_transform.translation() + offset;
-    }
-
-    for action in magic_arrow_action.read(){
-        match action {
-            HexDirection::Up => {
-                magic_arrow_transform.rotation = Quat::from_rotation_z(-(PI/2.0) )
-            }
-            HexDirection::Down => {
-                magic_arrow_transform.rotation = Quat::from_rotation_z((-(3.0*PI)/2.0) )}
-            HexDirection::Left => {
-                magic_arrow_transform.rotation = Quat::from_rotation_z(0.0)
-            }
-            HexDirection::Right => {
-                magic_arrow_transform.rotation = Quat::from_rotation_z(-PI)
-            }
-        }
-    }
-
-
-}
+// //Spawn after lock, start of lock changes with config changes
+// pub fn spawn_magic_arrow (
+//     mut commands: Commands,
+//     game_resource_handles: Res<GameResourceHandles>,
+// ) {
+//
+//     commands.spawn((
+//         Sprite::from_image(game_resource_handles.magic_arrow.clone()),
+//         //Visibility::Hidden, //want to see it for now
+//         MagicArrowMarker,
+//         Transform{
+//             translation: Vec3::splat(0.0),
+//             ..default()
+//         },
+//     )
+//
+//     );
+//
+//
+// }
+//
+//
+//
+// pub fn move_magic_arrow(
+//     mut magic_arrow: Query<(&mut Transform), With<MagicArrowMarker>>,
+//     mut anchor_point: Query<(&GlobalTransform), With<GameObjectAnchorMarker>>,
+//     mut magic_arrow_action: MessageReader<HexDirection>
+// ){
+//     let Ok(mut magic_arrow_transform) = magic_arrow.single_mut() else {return};
+//     let Ok(anchor_point_transform) = anchor_point.single() else {return};
+//
+//     let offset = vec3(300.0, 300.0, 0.0);
+//
+//     if magic_arrow_transform.translation - offset != anchor_point_transform.translation(){
+//         magic_arrow_transform.translation = anchor_point_transform.translation() + offset;
+//     }
+//
+//     for action in magic_arrow_action.read(){
+//         match action {
+//             HexDirection::Up => {
+//                 magic_arrow_transform.rotation = Quat::from_rotation_z(-(PI/2.0) )
+//             }
+//             HexDirection::Down => {
+//                 magic_arrow_transform.rotation = Quat::from_rotation_z((-(3.0*PI)/2.0) )}
+//             HexDirection::Left => {
+//                 magic_arrow_transform.rotation = Quat::from_rotation_z(0.0)
+//             }
+//             HexDirection::Right => {
+//                 magic_arrow_transform.rotation = Quat::from_rotation_z(-PI)
+//             }
+//         }
+//     }
+//
+//
+// }
 
 
 pub fn charge_charge_bar(
