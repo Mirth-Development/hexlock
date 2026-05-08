@@ -186,10 +186,10 @@ pub fn spawn_confirmation(
         Some(Buttons::Yes),
         Some(Containers::Confirmation),
         None,
-        Some(&images.background_panel),
-        Vec3::new(45.0, 45.0, 4.0),
-        7.5,
-        Some(530.0 / 230.0),
+        Some(&images.button),
+        Vec3::new(42.5, 45.0, 4.0),
+        12.5,
+        Some(1115.0 / 200.0),
         Some(TextSpawn {
             content: "YES",
             font_path: "fonts/Cinzel.ttf",
@@ -206,13 +206,79 @@ pub fn spawn_confirmation(
         Some(Buttons::No),
         Some(Containers::Confirmation),
         None,
-        Some(&images.background_panel),
-        Vec3::new(55.0, 45.0, 4.0),
-        7.5,
-        Some(530.0 / 230.0),
+        Some(&images.button),
+        Vec3::new(57.5, 45.0, 4.0),
+        12.5,
+        Some(1115.0 / 200.0),
         Some(TextSpawn {
             content: "NO",
             font_path: "fonts/Cinzel.ttf",
+            font_size_scale: 0.01,
+            color: Color::WHITE,
+        })
+    );
+}
+
+
+pub fn spawn_level_title(
+    commands: &mut Commands,
+    asset_server: &AssetServer,
+    window: &Window,
+    images: &InterfaceImages,
+    title_text: &'static str,
+    previous_level: Option<Buttons>,
+    next_level: Option<Buttons>,
+)
+{
+    // Label for Level #
+    spawn_ui_element(
+        commands, &asset_server, window,
+        None,
+        None,
+        Some(Labels::Level),
+        None,
+        Vec3::new(21.5, 16.0, 1.0),
+        30.0,
+        None,
+        Some(TextSpawn {
+            content: title_text,
+            font_path: "fonts/Cinzel_Decorative.ttf",
+            font_size_scale: 0.055,
+            color: Color::WHITE,
+        })
+    );
+
+    // Button for Previous Level
+    spawn_ui_element(
+        commands, &asset_server, window,
+        previous_level,
+        None,
+        None,
+        Some(&images.button),
+        Vec3::new(16.0, 5.0, 2.0),
+        10.0,
+        Some(1115.0 / 200.0),
+        Some(TextSpawn {
+            content: "Previous",
+            font_path: "fonts/Spectral.ttf",
+            font_size_scale: 0.01,
+            color: Color::WHITE,
+        })
+    );
+
+    // Button for Next Level
+    spawn_ui_element(
+        commands, &asset_server, window,
+        next_level,
+        None,
+        None,
+        Some(&images.button),
+        Vec3::new(27.0, 5.0, 2.0),
+        10.0,
+        Some(1115.0 / 200.0),
+        Some(TextSpawn {
+            content: "Next",
+            font_path: "fonts/Spectral.ttf",
             font_size_scale: 0.01,
             color: Color::WHITE,
         })
@@ -727,7 +793,7 @@ pub fn handle_button_interactions(
 ) -> Result<()>
 {
     for (interaction, button) in interaction_query.iter() {
-
+        println!("Button clicked: {:?}", button);
         if *interaction == Interaction::Pressed {
 
             match (button_chain.as_slice(), button) {

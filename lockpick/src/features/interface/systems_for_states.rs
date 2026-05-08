@@ -81,7 +81,7 @@ fn setup_start_menu(
     let layer = 1.0;
 
     let button_width = 30.0;
-    let button_aspect_ratio: Option<f32> = Some(120.0 / 20.0);
+    let button_aspect_ratio: Option<f32> = Some(1115.0 / 200.0);
     let button_font_size = 0.02;
 
     let title_width = 55.0;
@@ -115,7 +115,7 @@ fn setup_start_menu(
         Some(Buttons::Play),
         None,
         None,
-        Some(&images.background_panel),
+        Some(&images.button),
         Vec3::new(x_anchor, 50.0, layer),
         button_width,
         button_aspect_ratio,
@@ -133,7 +133,7 @@ fn setup_start_menu(
         Some(Buttons::ExitGame),
         None,
         None,
-        Some(&images.background_panel),
+        Some(&images.button),
         Vec3::new(x_anchor, 65.0, layer),
         button_width,
         button_aspect_ratio,
@@ -163,40 +163,15 @@ fn setup_level_1(
     // Spawning timer related visuals.
     spawn_countdown(&mut commands, &asset_server, window, &images);
 
-    // Label for Level #
-    spawn_ui_element(
-        &mut commands, &asset_server, window,
-        None,
-        None,
-        Some(Labels::Level),
-        None,
-        Vec3::new(10.0, 5.0, 1.0),
-        10.0,
-        None,
-        Some(TextSpawn {
-            content: "LEVEL 1",
-            font_path: "fonts/Cinzel_Decorative.ttf",
-            font_size_scale: 0.01,
-            color: Color::WHITE,
-        })
-    );
-
-    // Button for Next Level
-    spawn_ui_element(
-        &mut commands, &asset_server, window,
-        Some(Buttons::GoToLevel2),
-        None,
-        None,
-        Some(&images.background_panel),
-        Vec3::new(10.0, 10.0, 2.0),
-        10.0,
-        Some(120.0 / 20.0),
-        Some(TextSpawn {
-            content: "Next Level",
-            font_path: "fonts/Spectral.ttf",
-            font_size_scale: 0.01,
-            color: Color::WHITE,
-        })
+    // Spawning title related visuals and buttons.
+    spawn_level_title(
+        &mut commands,
+        &asset_server,
+        window,
+        &images,
+        "LEVEL 1",
+        Some(Buttons::GoToLevel1),
+        Some(Buttons::GoToLevel2)
     );
 
     Ok(())
@@ -217,58 +192,15 @@ fn setup_level_2(
     // Spawning timer related visuals.
     spawn_countdown(&mut commands, &asset_server, window, &images);
 
-    // Label for Level #
-    spawn_ui_element(
-        &mut commands, &asset_server, window,
-        None,
-        None,
-        Some(Labels::Level),
-        None,
-        Vec3::new(10.0, 5.0, 1.0),
-        10.0,
-        None,
-        Some(TextSpawn {
-            content: "LEVEL 2",
-            font_path: "fonts/Cinzel_Decorative.ttf",
-            font_size_scale: 0.01,
-            color: Color::WHITE,
-        })
-    );
-
-    // Button for Previous Level
-    spawn_ui_element(
-        &mut commands, &asset_server, window,
+    // Spawning title related visuals and buttons.
+    spawn_level_title(
+        &mut commands,
+        &asset_server,
+        window,
+        &images,
+        "LEVEL 2",
         Some(Buttons::GoToLevel1),
-        None,
-        None,
-        Some(&images.background_panel),
-        Vec3::new(10.0, 10.0, 2.0),
-        10.0,
-        Some(120.0 / 20.0),
-        Some(TextSpawn {
-            content: "Previous Level",
-            font_path: "fonts/Spectral.ttf",
-            font_size_scale: 0.01,
-            color: Color::WHITE,
-        })
-    );
-
-    // Button for Next Level
-    spawn_ui_element(
-        &mut commands, &asset_server, window,
-        Some(Buttons::GoToLevel3),
-        None,
-        None,
-        Some(&images.background_panel),
-        Vec3::new(10.0, 15.0, 2.0),
-        10.0,
-        Some(120.0 / 20.0),
-        Some(TextSpawn {
-            content: "Next Level",
-            font_path: "fonts/Spectral.ttf",
-            font_size_scale: 0.01,
-            color: Color::WHITE,
-        })
+        Some(Buttons::GoToLevel3)
     );
 
     Ok(())
@@ -289,58 +221,15 @@ fn setup_level_3(
     // Spawning timer related visuals.
     spawn_countdown(&mut commands, &asset_server, window, &images);
 
-    // Label for Level #
-    spawn_ui_element(
-        &mut commands, &asset_server, window,
-        None,
-        None,
-        Some(Labels::Level),
-        None,
-        Vec3::new(10.0, 5.0, 1.0),
-        10.0,
-        None,
-        Some(TextSpawn {
-            content: "LEVEL 3",
-            font_path: "fonts/Cinzel_Decorative.ttf",
-            font_size_scale: 0.01,
-            color: Color::WHITE,
-        })
-    );
-
-    // Button for Previous Level
-    spawn_ui_element(
-        &mut commands, &asset_server, window,
+    // Spawning title related visuals and buttons.
+    spawn_level_title(
+        &mut commands,
+        &asset_server,
+        window,
+        &images,
+        "LEVEL 3",
         Some(Buttons::GoToLevel2),
-        None,
-        None,
-        Some(&images.background_panel),
-        Vec3::new(10.0, 10.0, 2.0),
-        10.0,
-        Some(120.0 / 20.0),
-        Some(TextSpawn {
-            content: "Previous Level",
-            font_path: "fonts/Spectral.ttf",
-            font_size_scale: 0.01,
-            color: Color::WHITE,
-        })
-    );
-
-    // Button for Next Level
-    spawn_ui_element(
-        &mut commands, &asset_server, window,
-        Some(Buttons::GoToLevel4),
-        None,
-        None,
-        Some(&images.background_panel),
-        Vec3::new(10.0, 15.0, 2.0),
-        10.0,
-        Some(120.0 / 20.0),
-        Some(TextSpawn {
-            content: "Next Level",
-            font_path: "fonts/Spectral.ttf",
-            font_size_scale: 0.01,
-            color: Color::WHITE,
-        })
+        Some(Buttons::GoToLevel4)
     );
 
     Ok(())
@@ -361,58 +250,15 @@ fn setup_level_4(
     // Spawning timer related visuals.
     spawn_countdown(&mut commands, &asset_server, window, &images);
 
-    // Label for Level #
-    spawn_ui_element(
-        &mut commands, &asset_server, window,
-        None,
-        None,
-        Some(Labels::Level),
-        None,
-        Vec3::new(10.0, 5.0, 1.0),
-        10.0,
-        None,
-        Some(TextSpawn {
-            content: "LEVEL 4",
-            font_path: "fonts/Cinzel_Decorative.ttf",
-            font_size_scale: 0.01,
-            color: Color::WHITE,
-        })
-    );
-
-    // Button for Previous Level
-    spawn_ui_element(
-        &mut commands, &asset_server, window,
+    // Spawning title related visuals and buttons.
+    spawn_level_title(
+        &mut commands,
+        &asset_server,
+        window,
+        &images,
+        "LEVEL 4",
         Some(Buttons::GoToLevel3),
-        None,
-        None,
-        Some(&images.background_panel),
-        Vec3::new(10.0, 10.0, 2.0),
-        10.0,
-        Some(120.0 / 20.0),
-        Some(TextSpawn {
-            content: "Previous Level",
-            font_path: "fonts/Spectral.ttf",
-            font_size_scale: 0.01,
-            color: Color::WHITE,
-        })
-    );
-
-    // Button for Next Level
-    spawn_ui_element(
-        &mut commands, &asset_server, window,
-        Some(Buttons::GoToLevel5),
-        None,
-        None,
-        Some(&images.background_panel),
-        Vec3::new(10.0, 15.0, 2.0),
-        10.0,
-        Some(120.0 / 20.0),
-        Some(TextSpawn {
-            content: "Next Level",
-            font_path: "fonts/Spectral.ttf",
-            font_size_scale: 0.01,
-            color: Color::WHITE,
-        })
+        Some(Buttons::GoToLevel5)
     );
 
     Ok(())
@@ -433,40 +279,15 @@ fn setup_level_5(
     // Spawning timer related visuals.
     spawn_countdown(&mut commands, &asset_server, window, &images);
 
-    // Label for Level #
-    spawn_ui_element(
-        &mut commands, &asset_server, window,
-        None,
-        None,
-        Some(Labels::Level),
-        None,
-        Vec3::new(10.0, 5.0, 1.0),
-        10.0,
-        None,
-        Some(TextSpawn {
-            content: "LEVEL 5",
-            font_path: "fonts/Cinzel_Decorative.ttf",
-            font_size_scale: 0.01,
-            color: Color::WHITE,
-        })
-    );
-
-    // Button for Previous Level
-    spawn_ui_element(
-        &mut commands, &asset_server, window,
+    // Spawning title related visuals and buttons.
+    spawn_level_title(
+        &mut commands,
+        &asset_server,
+        window,
+        &images,
+        "LEVEL 5",
         Some(Buttons::GoToLevel4),
-        None,
-        None,
-        Some(&images.background_panel),
-        Vec3::new(10.0, 10.0, 2.0),
-        10.0,
-        Some(120.0 / 20.0),
-        Some(TextSpawn {
-            content: "Previous Level",
-            font_path: "fonts/Spectral.ttf",
-            font_size_scale: 0.01,
-            color: Color::WHITE,
-        })
+        Some(Buttons::GoToLevel5)
     );
 
     Ok(())

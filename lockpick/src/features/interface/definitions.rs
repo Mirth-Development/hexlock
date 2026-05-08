@@ -145,6 +145,7 @@ pub struct InterfaceImages {
     pub arrow_right: Handle<Image>,
     pub card_increase_time: Handle<Image>,
     pub card_increase_set_time: Handle<Image>,
+    pub button: Handle<Image>,
 }
 
 #[derive(Resource, Reflect, Default)]
@@ -185,6 +186,7 @@ impl FromWorld for InterfaceImages {
             arrow_right:            asset_server.load("images/Direction_Right.png"),
             card_increase_time:     asset_server.load("images/Direction_Left.png"),
             card_increase_set_time: asset_server.load("images/Direction_Right.png"),
+            button:                 asset_server.load("images/Button.png"),
         }
     }
 }
