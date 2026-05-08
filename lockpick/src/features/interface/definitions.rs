@@ -53,12 +53,17 @@ pub enum Interfaces {
 // ---------------------------------------------------------------------------------------------- //
 // COMPONENTS
 
+/// Using this as a way to mark combo arrow spawns so that they can be deleted later.
+#[derive(Component, Reflect)]
+pub struct ComboArrow;
+
 #[derive(Component, Reflect, PartialEq)]
 #[reflect(Component)]
 pub enum Containers {
     Confirmation,
     Card,
     Timer,
+    Combo
 }
 
 #[derive(Component, Debug, Reflect, PartialEq, Clone)]
@@ -173,4 +178,3 @@ impl StateHistory {
     }
 }
 // ---------------------------------------------------------------------------------------------- //
-

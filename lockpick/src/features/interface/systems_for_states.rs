@@ -37,10 +37,10 @@ impl Plugin for SystemsForUserInterfaceStates {
         app.add_systems(OnEnter(Interfaces::Cards), setup_cards);
         app.add_systems(OnExit(Interfaces::Cards), (record_cards_exit, cleanup_entities).chain());
 
-        app.add_systems(OnEnter(Interfaces::Won), (setup_won).chain());
+        app.add_systems(OnEnter(Interfaces::Won), setup_won);
         app.add_systems(OnExit(Interfaces::Won), (record_won_exit, cleanup_entities).chain());
 
-        app.add_systems(OnEnter(Interfaces::Lost), (setup_lost).chain());
+        app.add_systems(OnEnter(Interfaces::Lost), setup_lost);
         app.add_systems(OnExit(Interfaces::Lost), (record_lost_exit, cleanup_entities).chain());
 
         app.add_systems(Update, (
@@ -58,9 +58,7 @@ impl Plugin for SystemsForUserInterfaceStates {
             handle_game_state,
             handle_lockpick_charge,
             handle_lifetime_timers,
-        )
-            .chain()
-            .run_if(in_level_state)
+        ).chain().run_if(in_level_state)
         );
     }
 }
@@ -154,7 +152,10 @@ fn setup_level_1(
     let window = window_query.single()?;
 
     // Spawning timer related visuals.
-    spawn_timer_constants(&mut commands, &asset_server, window);
+    spawn_countdown(&mut commands, &asset_server, window);
+
+    // Spawning combo related visuals.
+    spawn_combo(&mut commands, &asset_server, window);
 
     // Label for Level #
     spawn_ui_element(
@@ -204,7 +205,10 @@ fn setup_level_2(
     let window = window_query.single()?;
 
     // Spawning timer related visuals.
-    spawn_timer_constants(&mut commands, &asset_server, window);
+    spawn_countdown(&mut commands, &asset_server, window);
+
+    // Spawning combo related visuals.
+    spawn_combo(&mut commands, &asset_server, window);
 
     // Label for Level #
     spawn_ui_element(
@@ -272,7 +276,10 @@ fn setup_level_3(
     let window = window_query.single()?;
 
     // Spawning timer related visuals.
-    spawn_timer_constants(&mut commands, &asset_server, window);
+    spawn_countdown(&mut commands, &asset_server, window);
+
+    // Spawning combo related visuals.
+    spawn_combo(&mut commands, &asset_server, window);
 
     // Label for Level #
     spawn_ui_element(
@@ -340,7 +347,10 @@ fn setup_level_4(
     let window = window_query.single()?;
 
     // Spawning timer related visuals.
-    spawn_timer_constants(&mut commands, &asset_server, window);
+    spawn_countdown(&mut commands, &asset_server, window);
+
+    // Spawning combo related visuals.
+    spawn_combo(&mut commands, &asset_server, window);
 
     // Label for Level #
     spawn_ui_element(
@@ -408,7 +418,10 @@ fn setup_level_5(
     let window = window_query.single()?;
 
     // Spawning timer related visuals.
-    spawn_timer_constants(&mut commands, &asset_server, window);
+    spawn_countdown(&mut commands, &asset_server, window);
+
+    // Spawning combo related visuals.
+    spawn_combo(&mut commands, &asset_server, window);
 
     // Label for Level #
     spawn_ui_element(

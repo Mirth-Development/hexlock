@@ -9,7 +9,12 @@ pub struct SystemsForUserInterfaceSpawns {}
 impl Plugin for SystemsForUserInterfaceSpawns {
     fn build(&self, app: &mut App) {
         app.add_systems(Update, (resize, handle_button_interactions).chain());
-        app.add_systems(Update, (despawn_chronodigits, spawn_chronodigits).chain().run_if(in_level_state));
+        app.add_systems(Update, (
+            despawn_combo_arrows,
+            spawn_combo_arrows,
+            despawn_countdown_digits,
+            spawn_countdown_digits
+        ).chain().run_if(in_level_state));
     }
 }
 
@@ -116,10 +121,10 @@ pub fn spawn_confirmation(
         None,
         Some(Containers::Confirmation),
         None,
-        Some("images/Background_Confirmation.png"),
+        Some("images/Background_for_Panel.png"),
         Vec3::new(50.0, 40.0, 3.0),
         35.0,
-        Some(100.0 / 50.0),
+        Some(530.0 / 230.0),
         None
     );
 
@@ -151,10 +156,10 @@ pub fn spawn_confirmation(
         Some(Buttons::Yes),
         Some(Containers::Confirmation),
         None,
-        Some("images/Button.png"),
+        Some("images/Background_for_Panel.png"),
         Vec3::new(45.0, 45.0, 4.0),
-        5.0,
-        Some(100.0 / 50.0),
+        7.5,
+        Some(530.0 / 230.0),
         Some(TextSpawn {
             content: "YES",
             font_path: "fonts/Cinzel.ttf",
@@ -171,10 +176,10 @@ pub fn spawn_confirmation(
         Some(Buttons::No),
         Some(Containers::Confirmation),
         None,
-        Some("images/Button.png"),
+        Some("images/Background_for_Panel.png"),
         Vec3::new(55.0, 45.0, 4.0),
-        5.0,
-        Some(100.0 / 50.0),
+        7.5,
+        Some(530.0 / 230.0),
         Some(TextSpawn {
             content: "NO",
             font_path: "fonts/Cinzel.ttf",
@@ -184,7 +189,7 @@ pub fn spawn_confirmation(
     );
 }
 
-pub fn spawn_timer_constants(
+pub fn spawn_countdown(
     commands: &mut Commands,
     asset_server: &AssetServer,
     window: &Window,
@@ -198,7 +203,7 @@ pub fn spawn_timer_constants(
         None,
         Some(Containers::Timer),
         None,
-        Some("images/Background_Timer.png"),
+        Some("images/Background_for_Panel.png"),
         Vec3::new(89.0, 10.0, 3.0),
         20.0,
         Some(500.0 / 230.0),
@@ -226,7 +231,7 @@ pub fn spawn_timer_constants(
     );
 }
 
-pub fn spawn_chronodigits(
+pub fn spawn_countdown_digits(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
     window_query: Query<&Window>,
@@ -441,9 +446,139 @@ pub fn spawn_cards(
     }
 }
 
+pub fn spawn_combo(
+    commands: &mut Commands,
+    asset_server: &AssetServer,
+    window: &Window,
+)
+{
+    // Container
+    spawn_ui_element(
+        commands,
+        asset_server,
+        window,
+        None,
+        Some(Containers::Combo),
+        None,
+        Some("images/Background_for_Panel.png"),
+        Vec3::new(31.0, 43.0, 3.0),
+        15.0,
+        Some(530.0 / 230.0),
+        None
+    );
+
+    // Label for Title
+    spawn_ui_element(
+        commands,
+        asset_server,
+        window,
+        None,
+        Some(Containers::Combo),
+        None,
+        None,
+        Vec3::new(31.0, 40.0, 4.0),
+        20.0,
+        Some(100.0 / 20.0),
+        Some(TextSpawn {
+            content: "Combo for Tumbler",
+            font_path: "fonts/Cinzel_Decorative.ttf",
+            font_size_scale: 0.0075,
+            color: Color::WHITE,
+        })
+    );
+}
+
+pub fn spawn_combo_arrows(
+    mut commands: Commands,
+    asset_server: &AssetServer,
+    window_query: Query<&Window>,
+    magic_tumbler: Query<(Entity, &MagicTumblerComponent), With<FocusedTumbler>>,
+) -> Result<()>
+{
+
+    let window = window_query.single()?;
+
+    // Arrow Up
+    let arrow_up = spawn_ui_element(
+        &mut commands,
+        asset_server,
+        &window,
+        None,
+        None,
+        None,
+        Some("images/1.png"),
+        Vec3::new(30.0, 10.0, 3.0),
+        5.0,
+        Some(85.0 / 135.0),
+        None
+    );
+
+    // Arrow Down
+    let arrow_down = spawn_ui_element(
+        &mut commands,
+        asset_server,
+        &window,
+        None,
+        None,
+        None,
+        Some("images/2.png"),
+        Vec3::new(30.0, 10.0, 3.0),
+        5.0,
+        Some(85.0 / 135.0),
+        None
+    );
+
+    // Arrow Left
+    let arrow_left = spawn_ui_element(
+        &mut commands,
+        &asset_server,
+        window,
+        None,
+        None,
+        None,
+        Some("images/3.png"),
+        Vec3::new(30.0, 10.0, 3.0),
+        5.0,
+        Some(85.0 / 135.0),
+        None
+    );
+
+    // Arrow Right
+    let arrow_right = spawn_ui_element(
+        &mut commands,
+        &asset_server,
+        window,
+        None,
+        None,
+        None,
+        Some("images/4.png"),
+        Vec3::new(30.0, 10.0, 3.0),
+        5.0,
+        Some(85.0 / 135.0),
+        None
+    );
+
+    // Marking arrows so that they can be deleted by their despawner.
+    commands.entity(arrow_up).insert(ComboArrow);
+    commands.entity(arrow_down).insert(ComboArrow);
+    commands.entity(arrow_left).insert(ComboArrow);
+    commands.entity(arrow_right).insert(ComboArrow);
+
+    Ok(())
+}
+
+/// Used to obliterate arrow spawns when the focused tumbler marker changes.
+pub fn despawn_combo_arrows(
+    mut commands: Commands,
+    arrow_query: Query<Entity, With<ComboArrow>>,
+) {
+    for arrow in arrow_query.iter() {
+        commands.entity(arrow).despawn();
+    }
+}
 
 /// Used to annihilate the infinite number of asset spawns that are occurring each frame.
-pub fn despawn_chronodigits(
+pub fn despawn_countdown_digits(
     mut commands: Commands,
     digit_query: Query<Entity, With<Chronodigit>>,
 ) {
