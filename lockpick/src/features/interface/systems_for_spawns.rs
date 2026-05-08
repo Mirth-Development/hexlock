@@ -50,6 +50,7 @@ pub fn spawn_ui_element(
     let mut entity = commands.spawn((
         Button,
         ZIndex(position.z as i32),
+        Visibility::default(),
         Sizer {
             position,
             size_of_element,
@@ -90,6 +91,7 @@ pub fn spawn_ui_element(
     entity.with_children(|parent| {
         if let Some(text_spawn) = text {
             parent.spawn((
+                Visibility::default(),
                 Text::new(text_spawn.content),
                 TextColor(text_spawn.color),
                 TextLayout::new_with_justify(Justify::Center),
@@ -104,6 +106,28 @@ pub fn spawn_ui_element(
     });
 
     entity.id()
+}
+
+pub fn spawn_background(
+    commands: &mut Commands,
+    asset_server: &AssetServer,
+    window: &Window,
+    image_path: &'static str,
+)
+{
+    spawn_ui_element(
+        commands,
+        asset_server,
+        window,
+        None,
+        Some(Containers::Confirmation),
+        None,
+        Some(image_path),
+        Vec3::new(50.0, 50.0, 0.0),
+        100.0,
+        Some(2560.0 / 1440.0),
+        None
+    );
 }
 
 /// Used to create confirmation dialogs that can have different text within them based on what's
@@ -519,7 +543,7 @@ pub fn spawn_combo(
         &asset_server,
         window,
         None,
-        None,
+        Some(Containers::Combo),
         None,
         Some(list_of_images[0]),
         Vec3::new(20.0, 43.0, 4.0),
@@ -534,7 +558,7 @@ pub fn spawn_combo(
         &asset_server,
         window,
         None,
-        None,
+        Some(Containers::Combo),
         None,
         Some(list_of_images[1]),
         Vec3::new(25.0, 43.0, 4.0),
@@ -549,7 +573,7 @@ pub fn spawn_combo(
         &asset_server,
         window,
         None,
-        None,
+        Some(Containers::Combo),
         None,
         Some(list_of_images[2]),
         Vec3::new(30.0, 43.0, 4.0),
@@ -564,7 +588,7 @@ pub fn spawn_combo(
         &asset_server,
         window,
         None,
-        None,
+        Some(Containers::Combo),
         None,
         Some(list_of_images[3]),
         Vec3::new(35.0, 43.0, 4.0),
@@ -573,7 +597,7 @@ pub fn spawn_combo(
         None
     );
 
-    // Marking combo so that it can be deleted by their despawner.
+    // Marking combo UI so that they can be deleted by their despawner.
     commands.entity(container).insert(ComboArrow);
     commands.entity(label).insert(ComboArrow);
     commands.entity(arrow_1).insert(ComboArrow);

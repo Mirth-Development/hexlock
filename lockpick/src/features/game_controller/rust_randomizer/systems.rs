@@ -26,6 +26,7 @@ pub fn chance_to_add_rust(
 
                 },
                 Animated,
+                Visibility::default(),
                 TumblerRustComponent{
                     //parent_id: tumbler_entity_commands.id(),
                     hits: random_hit,

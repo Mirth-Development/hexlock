@@ -41,6 +41,7 @@ pub fn spawn_lockpick (
 ) {
     commands.spawn((
         LockpickComponent::default(),
+        Visibility::default(),
         Transform {
             translation: Vec3::new(0.0, LOCKPICK_LOWER_BOUND, 0.0),
             ..Default::default()
@@ -52,13 +53,14 @@ pub fn spawn_lockpick (
                     image: asset_server.load("images/Lockpick.png"),
                     ..Default::default()
                 },
+                Visibility::default(),
                 Transform::from_xyz(0.0,0.0,0.0),
                 Animated,
                 // AnimationShake::new(1.0, Vec3::splat(0.0,))
                 )
         );
 
-        
+
     });
 }
 

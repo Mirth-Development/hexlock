@@ -86,7 +86,10 @@ fn setup_start_menu(
 
     let title_width = 55.0;
     let title_aspect_ratio: Option<f32> = Some(80.0 / 20.0);
-    let title_font_size = 0.06;
+    let title_font_size = 0.09;
+
+    // Spawning background visual.
+    spawn_background(&mut commands, &asset_server, window, "images/Background_for_Start.png");
 
     // Title Label
     spawn_ui_element(
@@ -95,7 +98,7 @@ fn setup_start_menu(
         None,
         Some(Labels::Title),
         None,
-        Vec3::new(x_anchor, 25.0, layer),
+        Vec3::new(x_anchor, 30.0, layer),
         title_width,
         title_aspect_ratio,
         Some(TextSpawn {
@@ -113,7 +116,7 @@ fn setup_start_menu(
         None,
         None,
         path_for_image,
-        Vec3::new(x_anchor, 45.0, layer),
+        Vec3::new(x_anchor, 50.0, layer),
         button_width,
         button_aspect_ratio,
         Some(TextSpawn {
@@ -131,7 +134,7 @@ fn setup_start_menu(
         None,
         None,
         path_for_image,
-        Vec3::new(x_anchor, 60.0, layer),
+        Vec3::new(x_anchor, 65.0, layer),
         button_width,
         button_aspect_ratio,
         Some(TextSpawn {
@@ -152,6 +155,9 @@ fn setup_level_1(
 ) -> Result<()> {
 
     let window = window_query.single()?;
+
+    // Spawning background visual.
+    spawn_background(&mut commands, &asset_server, window, "images/Background_for_Level.png");
 
     // Spawning timer related visuals.
     spawn_countdown(&mut commands, &asset_server, window);
@@ -202,6 +208,9 @@ fn setup_level_2(
 ) -> Result<()> {
 
     let window = window_query.single()?;
+
+    // Spawning background visual.
+    spawn_background(&mut commands, &asset_server, window, "images/Background_for_Level.png");
 
     // Spawning timer related visuals.
     spawn_countdown(&mut commands, &asset_server, window);
@@ -271,6 +280,9 @@ fn setup_level_3(
 
     let window = window_query.single()?;
 
+    // Spawning background visual.
+    spawn_background(&mut commands, &asset_server, window, "images/Background_for_Level.png");
+
     // Spawning timer related visuals.
     spawn_countdown(&mut commands, &asset_server, window);
 
@@ -339,6 +351,9 @@ fn setup_level_4(
 
     let window = window_query.single()?;
 
+    // Spawning background visual.
+    spawn_background(&mut commands, &asset_server, window, "images/Background_for_Level.png");
+
     // Spawning timer related visuals.
     spawn_countdown(&mut commands, &asset_server, window);
 
@@ -406,6 +421,9 @@ fn setup_level_5(
 ) -> Result<()> {
 
     let window = window_query.single()?;
+
+    // Spawning background visual.
+    spawn_background(&mut commands, &asset_server, window, "images/Background_for_Level.png");
 
     // Spawning timer related visuals.
     spawn_countdown(&mut commands, &asset_server, window);

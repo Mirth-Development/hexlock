@@ -121,6 +121,28 @@ pub struct Sizer {
 // ---------------------------------------------------------------------------------------------- //
 // RESOURCES
 
+#[derive(Resource, Reflect)]
+#[reflect(Resource)]
+pub struct InterfaceImages {
+    pub digit_zero: Handle<Image>,
+    pub digit_one: Handle<Image>,
+    pub digit_two: Handle<Image>,
+    pub digit_three: Handle<Image>,
+    pub digit_four: Handle<Image>,
+    pub digit_five: Handle<Image>,
+    pub digit_six: Handle<Image>,
+    pub digit_seven: Handle<Image>,
+    pub digit_eight: Handle<Image>,
+    pub digit_nine: Handle<Image>,
+    pub background_panel: Handle<Image>,
+    pub background_level: Handle<Image>,
+    pub background_start: Handle<Image>,
+    pub arrow_up: Handle<Image>,
+    pub arrow_down: Handle<Image>,
+    pub arrow_left: Handle<Image>,
+    pub arrow_right: Handle<Image>,
+}
+
 #[derive(Resource, Reflect, Default)]
 #[reflect(Resource)]
 pub struct ButtonChain {
@@ -131,6 +153,31 @@ pub struct ButtonChain {
 #[reflect(Resource)]
 pub struct StateHistory {
     stack: Vec<Interfaces>,
+}
+
+pub fn load_interface_images(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>
+) {
+    commands.insert_resource(InterfaceImages {
+        digit_zero:         asset_server.load("images/0.png"),
+        digit_one:          asset_server.load("images/1.png"),
+        digit_two:          asset_server.load("images/2.png"),
+        digit_three:        asset_server.load("images/3.png"),
+        digit_four:         asset_server.load("images/4.png"),
+        digit_five:         asset_server.load("images/5.png"),
+        digit_six:          asset_server.load("images/6.png"),
+        digit_seven:        asset_server.load("images/7.png"),
+        digit_eight:        asset_server.load("images/8.png"),
+        digit_nine:         asset_server.load("images/9.png"),
+        background_panel:   asset_server.load("images/Background_for_Panel.png"),
+        background_level:   asset_server.load("images/Background_for_Level.png"),
+        background_start:   asset_server.load("images/Background_for_Start.png"),
+        arrow_up:           asset_server.load("images/Direction_Up.png"),
+        arrow_down:         asset_server.load("images/Direction_Down.png"),
+        arrow_left:         asset_server.load("images/Direction_Left.png"),
+        arrow_right:        asset_server.load("images/Direction_Right.png"),
+    });
 }
 
 impl ButtonChain {
