@@ -18,3 +18,9 @@ Controls
     A -Key and D - Key = Move pick left and right
 
     Arrow keys (or J-Key, I-Key, L-key, K-Key) = Play small arrow game to activate the magic pick.
+
+Tips
+
+    Electric pick can stun set tumblers
+    Rust can be banged off (and so can I)
+    Tumblers must be set in order
