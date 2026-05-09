@@ -6,7 +6,7 @@ use crate::features::game_controller::systems::{load_game_controller_resources, 
 use crate::features::lock::messages::CatchTumbler;
 use crate::features::lock::tumblers::messages::TumblerTimerMessage;
 use crate::features::lock::tumblers::systems::on_break_rust;
-use crate::features::lockpick::messages::{ChargeLockpick, HexDirection, LockpickAction};
+use crate::features::lockpick::messages::{ChargeLockpick, HexDirection, LockpickAction, StartHexCodeInput};
 use crate::features::lockpick::systems::load_lockpick_resources;
 use crate::features::rand::systems::load_random_seed;
 use super::camera::systems::spawn_camera;
@@ -41,6 +41,7 @@ impl Plugin for LockpickFeaturesPlugin {
         app.add_message::<GameStateMessage>();
         app.add_message::<ChargeLockpick>();
         app.add_message::<HexDirection>();
+        app.add_message::<StartHexCodeInput>();
 
     }
 }

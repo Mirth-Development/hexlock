@@ -10,7 +10,7 @@ use crate::features::lock::spring::systems::*;
 use crate::features::controls::systems::*;
 use crate::features::game_controller::components::{ChargeBarMarker};
 use crate::features::game_controller::game_effects::systems::handle_lifetime_timers;
-use crate::features::game_controller::systems::{charge_charge_bar, check_game_state,check_tumbler_order, handle_game_state, spawn_charge_bar,spawn_lock_order};
+use crate::features::game_controller::systems::{charge_charge_bar, check_game_state, check_tumbler_order, enter_arrow_code, handle_game_state, spawn_charge_bar, spawn_lock_order};
 
 
 
@@ -53,6 +53,7 @@ impl Plugin for SystemsForUserInterfaceStates {
             timer_tumbler_finished,
             stretch_to_tumbler,
             charge_charge_bar,
+            enter_arrow_code,
             handle_lockpick_message,
             handle_catching_tumblers,
             handle_tumbler_set,

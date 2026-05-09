@@ -25,3 +25,6 @@ pub enum HexDirection {
     Left,
     Right
 }
+
+#[derive(Message)]
+pub struct StartHexCodeInput(pub f32);

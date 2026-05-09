@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use crate::features::lock::tumblers::resources::Directions;
 
 #[derive(Resource)]
 pub struct GameResourceHandles {
@@ -12,6 +13,13 @@ pub struct TumblerOrdering {
     pub current_position: u32,
     pub order: Vec<u32>
 }
+
+# [derive(Resource)]
+pub struct InputtedArrowCode{
+    pub inputting : bool,
+    pub entered_code: Vec<Directions>,
+}
+
 
 #[derive(Resource)]
 pub struct PlayerAttributes{

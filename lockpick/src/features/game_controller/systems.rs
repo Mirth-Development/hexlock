@@ -3,13 +3,14 @@ use bevy::time::TimerMode::Once;
 use rand::prelude::{ SliceRandom};
 use crate::features::game_controller::components::{ChargeBarMarker, ChargeLoadingMarker, TumblerChamberNumberComponent};
 use crate::features::game_controller::messages::GameStateMessage;
-use crate::features::game_controller::resources::{GameResourceHandles, TumblerOrdering};
+use crate::features::game_controller::resources::{GameResourceHandles, InputtedArrowCode, TumblerOrdering};
 use crate::features::interface::definitions::{Interfaces, StateHistory};
 use crate::features::lock::components::{ LockComponent, TumblerChamberComponent};
-use crate::features::lock::tumblers::components::{SetTumblerComponent, TumblerComponent};
+use crate::features::lock::tumblers::components::{FocusedTumblerComponent, SetTumblerComponent, TumblerComponent, TumblerMagicComponent};
+use crate::features::lock::tumblers::resources::Directions;
 use crate::features::lock::tumblers::systems::TUMBLER_SET_RELEASE_VELOCITY;
 use crate::features::lockpick::component::LockpickComponent;
-use crate::features::lockpick::messages::{ChargeLockpick,};
+use crate::features::lockpick::messages::{ChargeLockpick, HexDirection, StartHexCodeInput};
 use crate::features::lockpick::resources::LockpickElectricCharge;
 use crate::features::lockpick::systems::LOCKPICK_HEAD_OFFSET;
 use crate::features::rand::resources::RandomSeed;
@@ -52,8 +53,15 @@ pub fn load_game_controller_resources(
         order: Vec::new()
     };
 
+    let code = InputtedArrowCode {
+        inputting: false,
+        entered_code: Vec::new(),
+    };
+
+
 
     commands.insert_resource(ordering);
+    commands.insert_resource(code);
 
 }
 
@@ -194,6 +202,7 @@ pub fn charge_charge_bar(
     lockpick_component: Query<&Transform, (With<LockpickComponent>, Without<ChargeBarMarker>)>
 ){
     let Ok(lockpick_transform) = lockpick_component.single() else {
+        println!("No Lockpick Transform");
         return};
     let Ok((mut charge_loading_bar_transform, mut charge_loading_bar_sprite, )) = charge_loading_bar_query.single_mut() else {
         println!("No Charge Loading Bar");
@@ -229,6 +238,67 @@ pub fn charge_charge_bar(
     charge_loading_bar_transform.scale.x = scale;
 }
 
+
+pub fn enter_arrow_code(
+    mut arrow_resource : ResMut<InputtedArrowCode>,
+    mut lock_pick_query : Query<&mut LockpickComponent>,
+    mut start_hex_code_action: MessageReader<StartHexCodeInput>,
+    mut focused_tumbler_component: Query<(&mut TumblerComponent, &TumblerMagicComponent), With<FocusedTumblerComponent>>,
+    mut hex_actions: MessageReader<HexDirection>,
+
+){
+    let mut tumbler_weights= 0.0;
+
+    for action in start_hex_code_action.read(){
+        arrow_resource.inputting = true;
+        tumbler_weights = action.0;
+    }
+
+    if arrow_resource.inputting {
+        println!("Entering Code!");
+        let Ok((mut focused_tumbler, tumbler_magic)) = focused_tumbler_component.single_mut() else {
+            println!("No focused tumbler or not magic tumbler!");
+            return
+        };
+
+        let Ok(mut lockpick) = lock_pick_query.single_mut() else {
+            println!("No lockpick!");
+            return;
+        };
+
+        for action in hex_actions.read(){
+            match action {
+                HexDirection::Up => {
+                    arrow_resource.entered_code.push(Directions::Up);
+                }
+                HexDirection::Down => {
+                    arrow_resource.entered_code.push(Directions::Down);
+                }
+                HexDirection::Left => {
+                    arrow_resource.entered_code.push(Directions::Left);
+                }
+                HexDirection::Right => {
+                    arrow_resource.entered_code.push(Directions::Right);
+                }
+            }
+            if arrow_resource.entered_code.len() > 4 {
+                arrow_resource.entered_code.remove(0);
+            }
+
+        }
+        println!("input: {:?}", arrow_resource.entered_code);
+        if arrow_resource.entered_code == tumbler_magic.arrow_code {
+            arrow_resource.entered_code.clear();
+            arrow_resource.inputting = false;
+            lockpick.is_moving = false;
+            focused_tumbler.velocity.y = (200.0 + tumbler_weights);
+        }
+
+    }
+
+
+
+}
 
 
 

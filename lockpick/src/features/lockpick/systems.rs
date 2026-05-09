@@ -14,7 +14,7 @@ use crate::features::lock::tumblers::event::BreakRust;
 use crate::features::lock::tumblers::resources::{TumblerSize, TumblerType};
 use crate::features::lock::tumblers::systems::HEIGHT_OF_MEDIUM_TUMBLER_SPRITE;
 use crate::features::lockpick::component::LockpickComponent;
-use crate::features::lockpick::messages::{ChargeLockpick, LockpickAction};
+use crate::features::lockpick::messages::{ChargeLockpick, LockpickAction, StartHexCodeInput};
 use crate::features::lockpick::resources::{LockpickElectricCharge, LockpickType};
 
 pub const LOCKPICK_HEAD_OFFSET: f32 = -1041.0;
@@ -182,6 +182,7 @@ pub fn handle_lockpick_message(
     tumbler_spring_pairings: Res<TumblerSpringPairings>,
     lockpick_electric_charge: ResMut<LockpickElectricCharge>,
     mut charge_lockpick_writer: MessageWriter<ChargeLockpick>,
+    mut start_hex_message: MessageWriter<StartHexCodeInput>,
     mut actions: MessageReader<LockpickAction>,
     mut commands: Commands,
     mut lockpick_query: Query<(&Children, &GlobalTransform, &mut LockpickComponent)>,
@@ -369,10 +370,14 @@ pub fn handle_lockpick_message(
                                     // lockpick.velocity.y += 800.0;
                                     println!("Magicking!");
                                     //focused_tumbler.velocity.y = 400.0 + variant_tumbler_spring_speed;
+                                    lockpick.is_moving = true;
                                     commands.trigger(Magic{
-                                        life_timer: Timer::from_seconds(2.0, TimerMode::Once),
+                                        life_timer: Timer::from_seconds(0.5, TimerMode::Once),
                                         top: focused_tumbler_transform.translation().y - (tumbler_size_helper_function(&focused_tumbler)/2.0),
                                         bottom: lockpick_transform.translation().y});
+                                    start_hex_message.write(StartHexCodeInput(variant_tumbler_spring_speed));
+
+
                                 } else {
                                     shake_tumbler_help_function(focused_children, &mut animated_sprite_query, &mut commands);
                                     // for child in focused_children.iter() {
