@@ -5,7 +5,6 @@ use super::resource::{LockOffset, LockSpriteHandles, TumblerSpringPairings};
 use super::tumblers::components::{FocusedTumblerComponent, TumblerComponent, TumblerMagicComponent};
 use super::tumblers::resources::Directions;
 use super::super::game_controller::rust_randomizer::systems::chance_to_add_rust;
-use super::super::game_controller::resources::TumblerOrdering;
 use super::tumblers::components::{SetTumblerComponent};
 use crate::features::animation::components::{Animatable, Animated, AnimationShake};
 use crate::features::game_controller::tumbler_randomizer::systems::gen_random_tumbler;
@@ -57,7 +56,6 @@ pub fn load_lock_sprite_resources(mut commands: Commands, asset_server: Res<Asse
 
 pub fn load_lock_resources(
     mut commands: Commands,
-    asset_server: Res<AssetServer>,
 ) {
     //Sanity code
     println!("Loading GameResources!");
@@ -124,7 +122,7 @@ pub fn spawn_lock(
                 let mut tumbler_entity_commands: EntityCommands;
                 let tumbler_entity_id: Entity;
                 //Generate random tumbler attributes
-                let (mut tumbler, sprites) = gen_random_tumbler(
+                let (tumbler, sprites) = gen_random_tumbler(
                     x,
                     tumbler_set_timer.clone(),
                     &mut rng.random_number_generator,
@@ -194,7 +192,7 @@ pub fn spawn_lock(
 
                 if tumbler.tumbler_type == TumblerType::Magic{
                     let mut magic_code: Vec<Directions> = Vec::new();
-                    for x in 0..=3 {
+                    for _ in 0..=3 {
                         let rand_dir = match rng.random_number_generator.random_range(0..4){
                             0 => {
                                 Directions::Left
