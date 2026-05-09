@@ -43,7 +43,7 @@ pub fn spawn_lockpick (
     asset_server: Res<AssetServer>,
 ) {
 
-    println!("Offset {}",-(lock_offset.offset as f32));
+    //println!("Offset {}",-(lock_offset.offset as f32));
     commands.spawn((
         LockpickComponent::default(),
         Visibility::default(),
@@ -88,7 +88,7 @@ pub fn move_to_focused_tumbler(
                 //println!("Moving Pick!");
                 let target_point = global_position.translation() + Vec3::new(LOCKPICK_HEAD_OFFSET+ 10.0 , 0.0, 0.0);
                 let distance = lockpick_transform.translation.distance(target_point);
-                println!("distance {}", distance);
+                //println!("distance {}", distance);
                 lockpick_transform.translation.x = global_position.translation().x + (LOCKPICK_HEAD_OFFSET ) ;
             }
         }

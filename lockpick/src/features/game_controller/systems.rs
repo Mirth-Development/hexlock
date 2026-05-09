@@ -1,10 +1,11 @@
 use bevy::prelude::*;
 use bevy::time::TimerMode::Once;
 use rand::prelude::{ SliceRandom};
+use crate::features::animation::components::Animated;
 use crate::features::game_controller::components::{ChargeBarMarker, ChargeLoadingMarker, TumblerChamberNumberComponent};
 use crate::features::game_controller::messages::GameStateMessage;
 use crate::features::game_controller::resources::{GameResourceHandles, InputtedArrowCode, TumblerOrdering};
-use crate::features::interface::definitions::{Interfaces, StateHistory};
+use crate::features::interface::definitions::{ComboArrow, Interfaces, StateHistory};
 use crate::features::lock::components::{ LockComponent, TumblerChamberComponent};
 use crate::features::lock::tumblers::components::{FocusedTumblerComponent, SetTumblerComponent, TumblerComponent, TumblerMagicComponent};
 use crate::features::lock::tumblers::resources::Directions;
@@ -12,7 +13,7 @@ use crate::features::lock::tumblers::systems::TUMBLER_SET_RELEASE_VELOCITY;
 use crate::features::lockpick::component::LockpickComponent;
 use crate::features::lockpick::messages::{ChargeLockpick, HexDirection, StartHexCodeInput};
 use crate::features::lockpick::resources::LockpickElectricCharge;
-use crate::features::lockpick::systems::LOCKPICK_HEAD_OFFSET;
+use crate::features::lockpick::systems::{shake_tumbler_help_function, LOCKPICK_HEAD_OFFSET};
 use crate::features::rand::resources::RandomSeed;
 
 const CHARGE_BAR_SPRITE_WIDTH: f32 = 150.0;
@@ -169,17 +170,14 @@ pub fn check_tumbler_order(
 
         // knock out each tumbler above amount
         if rank >= tumbler_order.current_position {
-            println!("[CHECK] knocking out tumbler position {} (rank {}, current_pos {})",
-                     tumbler.position, rank, tumbler_order.current_position);
 
             match tumbler_number_query.get_mut(tumbler.order_num_entity) {
                 Ok(mut sprite) => {
-                    println!("[CHECK]   sprite found, current color: {:?}, setting full opacity", sprite.color);
+
                     sprite.color = Color::srgba(1.0, 1.0, 1.0, 1.0);
-                    println!("[CHECK]   color is now: {:?}", sprite.color);
                 }
                 Err(e) => {
-                    println!("[CHECK]   sprite NOT found: {:?}", e);
+                    panic!("{:?}",e)
                 }
             }
 
@@ -240,10 +238,13 @@ pub fn charge_charge_bar(
 
 
 pub fn enter_arrow_code(
+    mut commands: Commands,
     mut arrow_resource : ResMut<InputtedArrowCode>,
     mut lock_pick_query : Query<&mut LockpickComponent>,
     mut start_hex_code_action: MessageReader<StartHexCodeInput>,
-    mut focused_tumbler_component: Query<(&mut TumblerComponent, &TumblerMagicComponent), With<FocusedTumblerComponent>>,
+    mut focused_tumbler_component: Query<(&mut TumblerComponent, &TumblerMagicComponent, &Children), With<FocusedTumblerComponent>>,
+    mut animated_sprite_query: Query<&mut Sprite, With<Animated>>,
+    //mut combo_code_query: Query<(&mut ImageNode,&ComboArrow)>,
     mut hex_actions: MessageReader<HexDirection>,
 
 ){
@@ -255,8 +256,8 @@ pub fn enter_arrow_code(
     }
 
     if arrow_resource.inputting {
-        println!("Entering Code!");
-        let Ok((mut focused_tumbler, tumbler_magic)) = focused_tumbler_component.single_mut() else {
+        //println!("Entering Code!");
+        let Ok((mut focused_tumbler, tumbler_magic, focused_children)) = focused_tumbler_component.single_mut() else {
             println!("No focused tumbler or not magic tumbler!");
             return
         };
@@ -281,12 +282,25 @@ pub fn enter_arrow_code(
                     arrow_resource.entered_code.push(Directions::Right);
                 }
             }
+
+            let entering_right_code: bool;
+
+            for (entered_code, expected_code) in arrow_resource.entered_code.iter().zip(tumbler_magic.arrow_code.iter()){
+                if entered_code != expected_code {
+                    arrow_resource.entered_code.clear();
+                    lockpick.is_moving = false;
+                    arrow_resource.inputting = false;
+                    shake_tumbler_help_function(focused_children,&mut animated_sprite_query, &mut commands);
+                    break;
+                }
+            }
+
             if arrow_resource.entered_code.len() > 4 {
                 arrow_resource.entered_code.remove(0);
             }
 
         }
-        println!("input: {:?}", arrow_resource.entered_code);
+        //println!("input: {:?}", arrow_resource.entered_code);
         if arrow_resource.entered_code == tumbler_magic.arrow_code {
             arrow_resource.entered_code.clear();
             arrow_resource.inputting = false;

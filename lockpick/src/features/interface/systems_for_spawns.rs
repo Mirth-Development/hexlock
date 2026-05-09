@@ -3,6 +3,7 @@ use bevy::prelude::*;
 use bevy::window::WindowResized;
 use crate::features::interface::definitions::*;
 use crate::features::game_controller::game_timer::definitions::*;
+use crate::features::game_controller::resources::InputtedArrowCode;
 use crate::features::interface::systems_for_states::*;
 use crate::features::lock::tumblers::components::*;
 use crate::features::lock::tumblers::resources::*;
@@ -27,6 +28,7 @@ pub fn spawn_ui_element(
     ui_button: Option<Buttons>,
     ui_container: Option<Containers>,
     ui_label: Option<Labels>,
+    image_color: Option<Color>,
     image_handle: Option<&Handle<Image>>,    // IMAGE_HANDLE : Takes in a handle for an image that has been loaded into the asset server.
     position: Vec3,                         // POSITION : Percentage based with origin centered at the top left of the window.  Z values should be discrete.
     size_of_element: f32,                   // SIZE_OF_ELEMENT : Size is based on the width of the window and is percentage based.
@@ -72,6 +74,7 @@ pub fn spawn_ui_element(
     if let Some(handle) = image_handle {
         entity.insert(ImageNode {
             image: handle.clone(),
+            color: image_color.unwrap_or(Color::WHITE),
             ..default()
         });
     }
@@ -151,6 +154,7 @@ pub fn spawn_confirmation(
         None,
         Some(Containers::Confirmation),
         None,
+        None,
         Some(&images.background_panel),
         Vec3::new(50.0, 40.0, 3.0),
         35.0,
@@ -166,6 +170,7 @@ pub fn spawn_confirmation(
         None,
         Some(Containers::Confirmation),
         Some(Labels::Confirmation),
+        None,
         None,
         Vec3::new(50.0, 35.0, 4.0),
         28.0,
@@ -186,6 +191,7 @@ pub fn spawn_confirmation(
         Some(Buttons::Yes),
         Some(Containers::Confirmation),
         None,
+        None,
         Some(&images.button),
         Vec3::new(42.5, 45.0, 4.0),
         12.5,
@@ -205,6 +211,7 @@ pub fn spawn_confirmation(
         window,
         Some(Buttons::No),
         Some(Containers::Confirmation),
+        None,
         None,
         Some(&images.button),
         Vec3::new(57.5, 45.0, 4.0),
@@ -237,6 +244,7 @@ pub fn spawn_level_title(
         None,
         Some(Labels::Level),
         None,
+        None,
         Vec3::new(21.5, 16.0, 1.0),
         30.0,
         None,
@@ -252,6 +260,7 @@ pub fn spawn_level_title(
     spawn_ui_element(
         commands, &asset_server, window,
         previous_level,
+        None,
         None,
         None,
         Some(&images.button),
@@ -270,6 +279,7 @@ pub fn spawn_level_title(
     spawn_ui_element(
         commands, &asset_server, window,
         next_level,
+        None,
         None,
         None,
         Some(&images.button),
@@ -300,6 +310,7 @@ pub fn spawn_countdown(
         None,
         Some(Containers::Timer),
         None,
+        None,
         Some(&images.background_panel),
         Vec3::new(89.0, 10.0, 3.0),
         20.0,
@@ -314,6 +325,7 @@ pub fn spawn_countdown(
         window,
         None,
         Some(Containers::Timer),
+        None,
         None,
         None,
         Vec3::new(89.0, 6.0, 4.0),
@@ -375,6 +387,7 @@ pub fn spawn_countdown_digits(
         None,
         Some(Containers::Timer),
         None,
+        None,
         Some(digit_images[hundreds]),
         Vec3::new(86.0, 12.0, 4.0),
         2.5,
@@ -390,6 +403,7 @@ pub fn spawn_countdown_digits(
         None,
         Some(Containers::Timer),
         None,
+        None,
         Some(digit_images[tens]),
         Vec3::new(89.0, 12.0, 4.0),
         2.5,
@@ -404,6 +418,7 @@ pub fn spawn_countdown_digits(
         window,
         None,
         Some(Containers::Timer),
+        None,
         None,
         Some(digit_images[ones]),
         Vec3::new(92.0, 12.0, 4.0),
@@ -438,6 +453,7 @@ pub fn spawn_cards(
             Some(Buttons::CardTimerIncrease),
             Some(Containers::Card),
             None,
+            None,
             Some(&images.card_increase_time),
             Vec3::new(35.0, 50.0, 3.0),
             25.0,
@@ -453,6 +469,7 @@ pub fn spawn_cards(
             Some(Buttons::CardTimerIncrease),
             Some(Containers::Card),
             Some(Labels::Card),
+            None,
             None,
             Vec3::new(35.25, 50.0, 4.0),
             20.0,
@@ -473,6 +490,7 @@ pub fn spawn_cards(
             Some(Buttons::CardTimerIncrease),
             Some(Containers::Card),
             Some(Labels::Card),
+            None,
             None,
             Vec3::new(35.25, 57.0, 4.0),
             20.0,
@@ -496,6 +514,7 @@ pub fn spawn_cards(
             Some(Buttons::CardSetTimeIncrease),
             Some(Containers::Card),
             None,
+            None,
             Some(&images.card_increase_set_time),
             Vec3::new(65.0, 50.0, 3.0),
             25.0,
@@ -511,6 +530,7 @@ pub fn spawn_cards(
             Some(Buttons::CardSetTimeIncrease),
             Some(Containers::Card),
             Some(Labels::Card),
+            None,
             None,
             Vec3::new(65.25, 50.0, 4.0),
             20.0,
@@ -532,6 +552,7 @@ pub fn spawn_cards(
             Some(Containers::Card),
             Some(Labels::Card),
             None,
+            None,
             Vec3::new(65.25, 59.0, 4.0),
             20.0,
             Some(100.0 / 20.0),
@@ -548,8 +569,9 @@ pub fn spawn_cards(
 pub fn spawn_combo(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
+    mut inputted_arrow_code: ResMut<InputtedArrowCode>,
     window_query: Query<&Window>,
-    tumbler_query: Query<(Entity, &TumblerMagicComponent), With<FocusedTumblerComponent>>,
+    tumbler_query: Query<(Entity, &TumblerMagicComponent),( With<FocusedTumblerComponent>)>,
     images: Res<InterfaceImages>,
 ) -> Result<()>
 {
@@ -576,6 +598,15 @@ pub fn spawn_combo(
         }
     }
 
+    let mut num_of_matched_arrows = 0;
+    for (x, dir) in inputted_arrow_code.entered_code.iter().enumerate(){
+        if x < tumbler.arrow_code.len() && *dir == tumbler.arrow_code[x] {
+            num_of_matched_arrows += 1;
+        } else {
+            break
+        }
+    }
+
     // Container
     let container = spawn_ui_element(
         &mut commands,
@@ -583,6 +614,7 @@ pub fn spawn_combo(
         window,
         None,
         Some(Containers::Combo),
+        None,
         None,
         Some(&images.background_panel),
         Vec3::new(27.5, 42.0, 3.0),
@@ -598,6 +630,7 @@ pub fn spawn_combo(
         window,
         None,
         Some(Containers::Combo),
+        None,
         None,
         None,
         Vec3::new(27.5, 37.0, 4.0),
@@ -619,6 +652,7 @@ pub fn spawn_combo(
         None,
         Some(Containers::Combo),
         None,
+        if 1 <= num_of_matched_arrows {Some(Color::srgb(0.0,1.0,0.0))} else {None},
         Some(list_of_images[0]),
         Vec3::new(20.0, 43.0, 4.0),
         4.0,
@@ -634,6 +668,7 @@ pub fn spawn_combo(
         None,
         Some(Containers::Combo),
         None,
+        if 2 <= num_of_matched_arrows {Some(Color::srgb(0.0,1.0,0.0))} else {None},
         Some(list_of_images[1]),
         Vec3::new(25.0, 43.0, 4.0),
         4.0,
@@ -649,6 +684,7 @@ pub fn spawn_combo(
         None,
         Some(Containers::Combo),
         None,
+        if 3 <= num_of_matched_arrows {Some(Color::srgb(0.0,1.0,0.0))} else {None},
         Some(list_of_images[2]),
         Vec3::new(30.0, 43.0, 4.0),
         4.0,
@@ -664,6 +700,7 @@ pub fn spawn_combo(
         None,
         Some(Containers::Combo),
         None,
+        if 4 <= num_of_matched_arrows {Some(Color::srgb(0.0,1.0,0.0))} else {None},
         Some(list_of_images[3]),
         Vec3::new(35.0, 43.0, 4.0),
         4.0,
@@ -672,12 +709,12 @@ pub fn spawn_combo(
     );
 
     // Marking combo UI so that they can be deleted by their despawner.
-    commands.entity(container).insert(ComboArrow);
-    commands.entity(label).insert(ComboArrow);
-    commands.entity(arrow_1).insert(ComboArrow);
-    commands.entity(arrow_2).insert(ComboArrow);
-    commands.entity(arrow_3).insert(ComboArrow);
-    commands.entity(arrow_4).insert(ComboArrow);
+    // commands.entity(container).insert(ComboArrow);
+    // commands.entity(label).insert(ComboArrow);
+    commands.entity(arrow_1).insert(ComboArrow{position: 1, code: tumbler.arrow_code[0]});
+    commands.entity(arrow_2).insert(ComboArrow{position: 2, code: tumbler.arrow_code[1]});
+    commands.entity(arrow_3).insert(ComboArrow{position: 3, code: tumbler.arrow_code[2]});
+    commands.entity(arrow_4).insert(ComboArrow{position: 4, code: tumbler.arrow_code[3]});
 
     Ok(())
 }

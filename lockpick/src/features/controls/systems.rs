@@ -48,26 +48,26 @@ pub fn user_control_system(
 
     if keyboard_input.just_pressed(KeyCode::KeyA){
         pick_event.write(LockpickAction::Left);
-        println!("Left Sent!");
+        //println!("Left Sent!");
     }
 
     if keyboard_input.just_pressed(KeyCode::KeyD){
         pick_event.write(LockpickAction::Right);
-        println!("Right Sent!");
+        //println!("Right Sent!");
     }
 
     if keyboard_input.just_pressed(KeyCode::KeyQ){
         pick_event.write(LockpickAction::SwitchLast);
-        println!("Switch Last");
+        //println!("Switch Last");
     }
 
     if keyboard_input.just_pressed(KeyCode::KeyE){
         pick_event.write(LockpickAction::SwitchNext);
-        println!("Switch Next");
+        //println!("Switch Next");
     }
 
     if keyboard_input.just_pressed(KeyCode::Space){
-        println!("Space Sent!");
+        //println!("Space Sent!");
         tumbler_event.write(CatchTumbler::Catch);
     }
 

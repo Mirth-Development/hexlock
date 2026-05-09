@@ -1,6 +1,7 @@
 
 // Imports
 use bevy::prelude::*;
+use crate::features::lock::tumblers::resources::Directions;
 
 // Plugin
 pub struct DefinitionsForUserInterface {}
@@ -56,7 +57,10 @@ pub enum Interfaces {
 
 /// Using this as a way to mark combo arrow spawns so that they can be deleted later.
 #[derive(Component, Reflect)]
-pub struct ComboArrow;
+pub struct ComboArrow {
+    pub position: u32,
+    pub code: Directions,
+}
 
 #[derive(Component, Reflect, PartialEq)]
 #[reflect(Component)]

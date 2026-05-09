@@ -14,7 +14,7 @@ pub enum TumblerSize{
     Large
 }
 
-# [derive(Copy, Clone, Debug, Eq, PartialEq)]
+# [derive(Copy, Clone, Debug, Eq, PartialEq, Reflect)]
 pub enum Directions{
     Up,
     Down,

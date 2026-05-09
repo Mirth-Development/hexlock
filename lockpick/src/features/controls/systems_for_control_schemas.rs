@@ -11,7 +11,7 @@ pub fn normal_pick_schema(
 
     if keyboard_input.just_pressed(KeyCode::KeyW) {
         pick_event.write(LockpickAction::Pick);
-        println!("Pick Sent!");
+        //println!("Pick Sent!");
     }
 }
 
