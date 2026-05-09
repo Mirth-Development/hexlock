@@ -5,7 +5,11 @@ use crate::features::lock::tumblers::resources::Directions;
 pub struct GameResourceHandles {
     pub charge_bar: Handle<Image>,
     pub charge: Handle<Image>,
-    pub magic_arrow: Handle<Image>,
+}
+
+#[derive(Resource)]
+pub struct NumberOfTumblers {
+    pub number_of_tumblers: u32,
 }
 
 #[derive(Resource)]

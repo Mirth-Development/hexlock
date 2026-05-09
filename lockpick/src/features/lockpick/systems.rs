@@ -284,7 +284,7 @@ pub fn handle_lockpick_message(
                                     top: focused_tumbler_transform.translation().y,
                                     bottom: lockpick_transform.translation().y});
                                 println!("Zapping! power:{}", lockpick_electric_charge.current_charge);
-                                focused_tumbler.velocity.y = (200.0 + variant_tumbler_spring_speed)*lockpick_electric_charge.current_charge;
+                                focused_tumbler.velocity.y = (400.0 + variant_tumbler_spring_speed)*lockpick_electric_charge.current_charge;
                             } else {
                                 shake_tumbler_help_function(focused_children, &mut animated_sprite_query, &mut commands);
                                 println!("Not enough force")

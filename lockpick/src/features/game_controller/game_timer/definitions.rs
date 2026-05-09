@@ -39,7 +39,7 @@ pub struct TheTimer {
 impl Default for TheTimer {
     fn default() -> Self {
         Self {
-            chronolog: Chronolog::new(Some(111.0)),
+            chronolog: Chronolog::new(Some(125.0)),
         }
     }
 }

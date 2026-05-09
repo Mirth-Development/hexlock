@@ -108,36 +108,6 @@ pub fn timer_tumbler_finished (
 
 
             }
-
-        // if tumbler.timer.is_finished(){
-        //     println!("Timer at {} Finished!", tumbler.position);
-        //     tumbler.timer.reset();
-        //     tumbler.timer.pause();
-        //     tumbler.velocity.y = TUMBLER_SET_RELEASE_VELOCITY;
-        //     println!("{}, {}",tumbler_ordering.order[(tumbler.position-1) as usize],  tumbler_ordering.current_position);
-        //     if tumbler_ordering.order[(tumbler.position-1) as usize] <= tumbler_ordering.current_position  {
-        //         println!("{} is less or equal to, {}",tumbler_ordering.order[(tumbler.position-1 ) as usize],  tumbler_ordering.current_position);
-        //         tumbler_ordering.current_position -= 1;
-        //         println!("current pos{}", tumbler_ordering.current_position);
-        //     }
-        //     commands.entity(tumbler_entity).remove::<SetTumblerComponent>();
-        //
-        // } else {
-        //     tumbler.timer.tick(time.delta());
-        //     if tumbler.timer.remaining_secs() < 4.0 && !tumbler.timer.is_finished(){
-        //         for child in tumbler_children.iter(){
-        //             if let Ok((_sprite, is_shaking)) = animated_sprite_query.get_mut(child) {
-        //                 //commands.entity(child).remove::<Sprite>(); //test - works
-        //                 if !is_shaking{
-        //                     commands.entity(child).insert(AnimationShake::new(0.5, Vec3::splat(0.0), TimerMode::Once));
-        //                 }
-        //
-        //             }
-        //         }
-        //     }
-        //
-        //
-        // }
     }
 }
 

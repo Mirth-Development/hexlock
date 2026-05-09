@@ -1,10 +1,12 @@
+use std::fmt::format;
 use bevy::prelude::*;
 use bevy::time::TimerMode::Once;
 use rand::prelude::{ SliceRandom};
 use crate::features::animation::components::Animated;
 use crate::features::game_controller::components::{ChargeBarMarker, ChargeLoadingMarker, TumblerChamberNumberComponent};
+use crate::features::game_controller::game_timer::definitions::TheTimer;
 use crate::features::game_controller::messages::GameStateMessage;
-use crate::features::game_controller::resources::{GameResourceHandles, InputtedArrowCode, TumblerOrdering};
+use crate::features::game_controller::resources::{GameResourceHandles, InputtedArrowCode, NumberOfTumblers, TumblerOrdering};
 use crate::features::interface::definitions::{ComboArrow, Interfaces, StateHistory};
 use crate::features::lock::components::{ LockComponent, TumblerChamberComponent};
 use crate::features::lock::tumblers::components::{FocusedTumblerComponent, SetTumblerComponent, TumblerComponent, TumblerMagicComponent};
@@ -30,14 +32,12 @@ pub fn load_game_controller_sprites(
 
     let charge_bar_handle: Handle<Image> = asset_server.load("images/Charge_Bar.png");
     let charge_handle: Handle<Image> = asset_server.load("images/Charge_Sprite.png");
-    let magic_arrow_handle: Handle<Image> = asset_server.load("images/Magic_Arrow.png");
 
 
     commands.insert_resource(
         GameResourceHandles {
             charge_bar: charge_bar_handle,
             charge: charge_handle,
-            magic_arrow: magic_arrow_handle
         });
 
 }
@@ -59,10 +59,15 @@ pub fn load_game_controller_resources(
         entered_code: Vec::new(),
     };
 
+    let number_of_tumblers = NumberOfTumblers{
+        number_of_tumblers: 4,
+    };
+
 
 
     commands.insert_resource(ordering);
     commands.insert_resource(code);
+    commands.insert_resource(number_of_tumblers);
 
 }
 
@@ -282,9 +287,6 @@ pub fn enter_arrow_code(
                     arrow_resource.entered_code.push(Directions::Right);
                 }
             }
-
-            let entering_right_code: bool;
-
             for (entered_code, expected_code) in arrow_resource.entered_code.iter().zip(tumbler_magic.arrow_code.iter()){
                 if entered_code != expected_code {
                     arrow_resource.entered_code.clear();
@@ -314,6 +316,15 @@ pub fn enter_arrow_code(
 
 }
 
+
+pub fn handle_lose_game(
+    game_timer: Res<TheTimer>,
+    mut game_state_message: MessageWriter<GameStateMessage>,
+){
+    if game_timer.chronolog.get_countdown_string(2,2) == "00.00".to_string() {
+        game_state_message.write(GameStateMessage::Lose);
+    }
+}
 
 
 
@@ -367,7 +378,7 @@ pub fn handle_game_state(
                         Interfaces::Level5
                     }
                     Interfaces::Level5 => {
-                        Interfaces::Won
+                        Interfaces::StartMenu
                     }
                     _ => {
                         panic!("You shouldnt be winning on this state")
@@ -383,6 +394,12 @@ pub fn handle_game_state(
 
         }
     }
+}
+
+pub fn increase_tumbler_amount_per_level(
+    mut number_of_tumblers_resource: ResMut <NumberOfTumblers>
+) {
+    number_of_tumblers_resource.number_of_tumblers += 1;
 }
 
 

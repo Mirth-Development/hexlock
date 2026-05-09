@@ -713,8 +713,8 @@ pub fn spawn_combo(
     );
 
     // Marking combo UI so that they can be deleted by their despawner.
-    // commands.entity(container).insert(ComboArrow);
-    // commands.entity(label).insert(ComboArrow);
+    commands.entity(container).insert(ComboPanel);
+    commands.entity(label).insert(ComboPanel);
     commands.entity(arrow_1).insert(ComboArrow{position: 1, code: tumbler.arrow_code[0]});
     commands.entity(arrow_2).insert(ComboArrow{position: 2, code: tumbler.arrow_code[1]});
     commands.entity(arrow_3).insert(ComboArrow{position: 3, code: tumbler.arrow_code[2]});

@@ -19,6 +19,7 @@ use crate::features::lock::tumblers::systems::{
 };
 use crate::features::rand::resources::RandomSeed;
 use crate::features::game_controller::game_effects::resources::EffectsSpriteHandles;
+use crate::features::game_controller::resources::NumberOfTumblers;
 
 //Hardcoded Sprite Sizes so that they don't have to be sought dynamically, async loading is a pain in the ass
 pub const TOP_OF_CHAMBER: f32 = 399.0;
@@ -70,6 +71,7 @@ pub fn load_lock_resources(
 //Spawn and Build Lock
 pub fn spawn_lock(
     lock_sprite_handles: Res<LockSpriteHandles>,
+    tumbler_amount_resource: Res<NumberOfTumblers>,
     effects_sprite_handles: Res<EffectsSpriteHandles>,
     mut lock_offset: ResMut<LockOffset>,
     mut rng: ResMut<RandomSeed>,
@@ -89,7 +91,7 @@ pub fn spawn_lock(
     offset += (LOCK_START_SPRITE_WIDTH / 2.0) + 10.0; //Extra pixel gap
 
     let lock = LockComponent {
-        num_of_tumblers: 8, //Max amount for our purposes
+        num_of_tumblers: tumbler_amount_resource.number_of_tumblers, //Max amount for our purposes
         ..default()
     };
 
