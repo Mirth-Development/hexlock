@@ -1,6 +1,4 @@
-use bevy::ecs::error::panic;
 use bevy::prelude::*;
-use bevy::ui::debug::print_ui_layout_tree;
 use crate::features::animation::components::{Animatable, Animated, AnimationShake};
 use crate::features::game_controller::game_effects::events::{Magic, Zap};
 use crate::features::lock::components::LockComponent;
@@ -86,9 +84,6 @@ pub fn move_to_focused_tumbler(
         if tumbler.position == lockpick.current_tumbler {
             if (lockpick_transform.translation.x - LOCKPICK_HEAD_OFFSET ) != global_position.translation().x {
                 //println!("Moving Pick!");
-                let target_point = global_position.translation() + Vec3::new(LOCKPICK_HEAD_OFFSET+ 10.0 , 0.0, 0.0);
-                let distance = lockpick_transform.translation.distance(target_point);
-                //println!("distance {}", distance);
                 lockpick_transform.translation.x = global_position.translation().x + (LOCKPICK_HEAD_OFFSET ) ;
             }
         }

@@ -1,4 +1,3 @@
-use std::fmt::format;
 use bevy::prelude::*;
 use bevy::time::TimerMode::Once;
 use rand::prelude::{ SliceRandom};
@@ -7,7 +6,7 @@ use crate::features::game_controller::components::{ChargeBarMarker, ChargeLoadin
 use crate::features::game_controller::game_timer::definitions::TheTimer;
 use crate::features::game_controller::messages::GameStateMessage;
 use crate::features::game_controller::resources::{GameResourceHandles, InputtedArrowCode, NumberOfTumblers, TumblerOrdering};
-use crate::features::interface::definitions::{ComboArrow, Interfaces, StateHistory};
+use crate::features::interface::definitions::{Interfaces, StateHistory};
 use crate::features::lock::components::{ LockComponent, TumblerChamberComponent};
 use crate::features::lock::tumblers::components::{FocusedTumblerComponent, SetTumblerComponent, TumblerComponent, TumblerMagicComponent};
 use crate::features::lock::tumblers::resources::Directions;
@@ -103,7 +102,7 @@ pub fn spawn_lock_order (
     mut tumbler_ordering: ResMut<TumblerOrdering>,
     lock_component: Query<&LockComponent>,
     mut tumblers: Query<(Entity, &mut TumblerComponent)>,
-    tumbler_chamber_query: Query<(Entity), With<TumblerChamberComponent>>
+    tumbler_chamber_query: Query<Entity, With<TumblerChamberComponent>>
 ) {
     let Ok(lock) = lock_component.single() else {
         println!("No Lock!");
@@ -307,7 +306,7 @@ pub fn enter_arrow_code(
             arrow_resource.entered_code.clear();
             arrow_resource.inputting = false;
             lockpick.is_moving = false;
-            focused_tumbler.velocity.y = (200.0 + tumbler_weights);
+            focused_tumbler.velocity.y = 200.0 + tumbler_weights;
         }
 
     }

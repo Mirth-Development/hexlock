@@ -234,7 +234,6 @@ pub fn spawn_level_title(
     commands: &mut Commands,
     asset_server: &AssetServer,
     window: &Window,
-    images: &InterfaceImages,
     title_text: &'static str,
 )
 {
@@ -573,9 +572,9 @@ pub fn spawn_cards(
 pub fn spawn_combo(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
-    mut inputted_arrow_code: ResMut<InputtedArrowCode>,
+    inputted_arrow_code: ResMut<InputtedArrowCode>,
     window_query: Query<&Window>,
-    tumbler_query: Query<(Entity, &TumblerMagicComponent),( With<FocusedTumblerComponent>)>,
+    tumbler_query: Query<(Entity, &TumblerMagicComponent), With<FocusedTumblerComponent>>,
     images: Res<InterfaceImages>,
 ) -> Result<()>
 {
@@ -588,7 +587,7 @@ pub fn spawn_combo(
     // for each and every frame.  I kind of doubt that's the problem, but I can't think of anything else.
     let Ok(window) = window_query.single()
     else { return Ok(()); };
-    let Ok((entity, tumbler)) = tumbler_query.single()
+    let Ok((_entity, tumbler)) = tumbler_query.single()
     else { return Ok(()); };
 
     // Creating a list of 4 images off of the queried tumbler's arrow codes.
@@ -811,7 +810,7 @@ pub fn resize_background(
         let Ok(window) = window_query.single()
         else { return; };
 
-        let aspect_ratio = window.width() / window.height();
+        let aspect_ratio: f32 = window.width() / window.height();
         let world_height = 1080.0 * 1.3;
         let world_width = world_height * aspect_ratio;
 

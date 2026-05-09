@@ -1,5 +1,3 @@
-use bevy::ecs::entity::Entities;
-use bevy::log::tracing::Instrument;
 use bevy::prelude::*;
 use crate::features::animation::components::{Animatable, Animated, AnimationFlip};
 use crate::features::game_controller::game_effects::components::{EffectKillMarker, EffectLifetimeTimer};
@@ -102,13 +100,10 @@ pub fn on_magic_effect(
     effects_sprite_handles: Res<EffectsSpriteHandles>
 )
 {
-    //let Ok(lockpick_transform) = lockpick_component.single() else {panic!("No Lockpick!")};
     let Ok((focused_tumbler_transform, focused_tumbler)) = tumbler_component.single() else {panic!("No Focused Tumbler!")};
 
     println!("Spawn Magic!");
     let midpoint = magic.top.midpoint(magic.bottom);
-
-    //let height = tumbler_size_helper_function(&focused_tumbler);
 
     let top_y = magic.top;
     let bottom_y = magic.bottom; //focused_tumbler_transform.translation().y + height / 2.0;
@@ -119,17 +114,14 @@ pub fn on_magic_effect(
     let mut entity_commands = commands.spawn((
         Sprite {
             image: effects_sprite_handles.magic_effect.clone(),
-            //color: Color::srgba(1.0, 1.0, 1.0, charge_intensity),
             ..default()
         },
         Animated,
         AnimationFlip::new(1.0, pos, TimerMode::Once),
-        EffectLifetimeTimer(magic.life_timer.clone()),//Timer::from_seconds(0.4, TimerMode::Once)),
+        EffectLifetimeTimer(magic.life_timer.clone()),
         Transform{
-            //(bottom_y + gap / 2.0) = midpoint?
             translation: pos,
-            // y =
-            scale: vec3(1.0, (gap / HEIGHT_OF_MAGIC_SPRITE), 1.0),
+            scale: vec3(1.0, gap / HEIGHT_OF_MAGIC_SPRITE, 1.0),
             ..default()
         }
     )

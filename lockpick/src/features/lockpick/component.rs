@@ -2,12 +2,6 @@ use bevy::prelude::*;
 use bevy::time::Stopwatch;
 use super::resources::LockpickType;
 
-//Amount of time before you can activate the lockpick again *unused*
-#[derive(Component)]
-pub struct LockpickTimer{
-    timer: Timer
-}
-
 #[derive(Component)]
 pub struct LockpickComponent{
     pub is_moving: bool,

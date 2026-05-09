@@ -38,8 +38,8 @@ pub fn electric_pick_schema(
 
 pub fn magic_pick_schema(
     keyboard_input: &ButtonInput<KeyCode>,
-    mut pick_event: &mut MessageWriter<LockpickAction>,
-    mut hex_event: &mut MessageWriter<HexDirection>
+    pick_event: &mut MessageWriter<LockpickAction>,
+    hex_event: &mut MessageWriter<HexDirection>
 ){
 
     if keyboard_input.just_pressed(KeyCode::KeyW){

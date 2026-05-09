@@ -168,7 +168,7 @@ fn setup_level_1(
     spawn_countdown(&mut commands, &asset_server, window, &images);
 
     // Spawning title related visuals and buttons.
-    spawn_level_title(&mut commands, &asset_server, window, &images, "LEVEL 1");
+    spawn_level_title(&mut commands, &asset_server, window, "LEVEL 1");
 
     Ok(())
 }
@@ -193,7 +193,7 @@ fn setup_level_2(
     spawn_countdown(&mut commands, &asset_server, window, &images);
 
     // Spawning title related visuals and buttons.
-    spawn_level_title(&mut commands, &asset_server, window, &images, "LEVEL 2");
+    spawn_level_title(&mut commands, &asset_server, window, "LEVEL 2");
 
     Ok(())
 }
@@ -218,7 +218,7 @@ fn setup_level_3(
     spawn_countdown(&mut commands, &asset_server, window, &images);
 
     // Spawning title related visuals and buttons.
-    spawn_level_title(&mut commands, &asset_server, window, &images, "LEVEL 3");
+    spawn_level_title(&mut commands, &asset_server, window, "LEVEL 3");
 
     Ok(())
 }
@@ -243,7 +243,7 @@ fn setup_level_4(
     spawn_countdown(&mut commands, &asset_server, window, &images);
 
     // Spawning title related visuals and buttons.
-    spawn_level_title(&mut commands, &asset_server, window, &images, "LEVEL 4");
+    spawn_level_title(&mut commands, &asset_server, window, "LEVEL 4");
 
     Ok(())
 }
@@ -268,7 +268,7 @@ fn setup_level_5(
     spawn_countdown(&mut commands, &asset_server, window, &images);
 
     // Spawning title related visuals and buttons.
-    spawn_level_title(&mut commands, &asset_server, window, &images, "LEVEL 5");
+    spawn_level_title(&mut commands, &asset_server, window, "LEVEL 5");
 
     Ok(())
 }
