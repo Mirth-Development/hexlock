@@ -12,10 +12,10 @@ use crate::features::game_controller::tumbler_randomizer::systems::gen_random_tu
 use crate::features::lock::messages::CatchTumbler;
 use crate::features::lock::spring::systems::{HEIGHT_OF_SPRING_SPRITE, gen_random_spring};
 use crate::features::lock::tumblers::messages::TumblerTimerMessage;
-use crate::features::lock::tumblers::resources::{TumblerSize, TumblerType};
+use crate::features::lock::tumblers::resources::*;
 use crate::features::lock::tumblers::systems::{
     HEIGHT_OF_LARGE_TUMBLER_SPRITE, HEIGHT_OF_MEDIUM_TUMBLER_SPRITE,
-    HEIGHT_OF_SMALL_TUMBLER_SPRITE, TUMBLER_DEFAULT_SET_TIME,
+    HEIGHT_OF_SMALL_TUMBLER_SPRITE,
 };
 use crate::features::rand::resources::RandomSeed;
 use crate::features::game_controller::game_effects::resources::EffectsSpriteHandles;
@@ -56,6 +56,7 @@ pub fn load_lock_sprite_resources(mut commands: Commands, asset_server: Res<Asse
 
 pub fn load_lock_resources(
     mut commands: Commands,
+    asset_server: Res<AssetServer>,
 ) {
     //Sanity code
     println!("Loading GameResources!");
@@ -74,13 +75,13 @@ pub fn spawn_lock(
     mut rng: ResMut<RandomSeed>,
     mut commands: Commands,
     mut tumbler_spring_pairings: ResMut<TumblerSpringPairings>,
-
+    tumbler_default_time: Res<TumblerTime>
 ) {
     //Sanity code
     println!("Building Locks");
     let mut offset: f32 = 0.0;
     //
-    let mut tumbler_set_timer = Timer::from_seconds(TUMBLER_DEFAULT_SET_TIME, TimerMode::Once);
+    let mut tumbler_set_timer = Timer::from_seconds(tumbler_default_time.set_time, TimerMode::Once);
     //Pause timer after creation
     tumbler_set_timer.pause();
 

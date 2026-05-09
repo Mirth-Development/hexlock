@@ -7,6 +7,7 @@ use crate::features::lock::messages::CatchTumbler;
 use crate::features::lock::tumblers::messages::TumblerTimerMessage;
 use crate::features::lock::tumblers::systems::on_break_rust;
 use crate::features::lockpick::messages::{ChargeLockpick, HexDirection, LockpickAction, StartHexCodeInput};
+use crate::features::lock::tumblers::resources::TumblerTime;
 use crate::features::lockpick::systems::load_lockpick_resources;
 use crate::features::rand::systems::load_random_seed;
 use super::camera::systems::spawn_camera;
@@ -17,6 +18,8 @@ use super::game_controller::game_timer::plugin::GameTimer;
 pub struct LockpickFeaturesPlugin;
 impl Plugin for LockpickFeaturesPlugin {
     fn build(&self, app: &mut App) {
+
+        app.init_resource::<TumblerTime>();
 
         app.add_plugins(GameTimer{});
 

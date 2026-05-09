@@ -62,6 +62,10 @@ pub struct ComboArrow {
     pub code: Directions,
 }
 
+/// Using this as a way to mark the elements of the combo panel (not the arrows).
+#[derive(Component, Reflect)]
+pub struct ComboPanel;
+
 #[derive(Component, Reflect, PartialEq)]
 #[reflect(Component)]
 pub enum Containers {
@@ -188,8 +192,8 @@ impl FromWorld for InterfaceImages {
             arrow_down:             asset_server.load("images/Direction_Down.png"),
             arrow_left:             asset_server.load("images/Direction_Left.png"),
             arrow_right:            asset_server.load("images/Direction_Right.png"),
-            card_increase_time:     asset_server.load("images/Direction_Left.png"),
-            card_increase_set_time: asset_server.load("images/Direction_Right.png"),
+            card_increase_time:     asset_server.load("images/Card_IT.png"),
+            card_increase_set_time: asset_server.load("images/Card_IST.png"),
             button:                 asset_server.load("images/Button.png"),
         }
     }
