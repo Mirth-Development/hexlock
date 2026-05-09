@@ -161,15 +161,7 @@ fn setup_level_1(
     spawn_countdown(&mut commands, &asset_server, window, &images);
 
     // Spawning title related visuals and buttons.
-    spawn_level_title(
-        &mut commands,
-        &asset_server,
-        window,
-        &images,
-        "LEVEL 1",
-        Some(Buttons::GoToLevel1),
-        Some(Buttons::GoToLevel2)
-    );
+    spawn_level_title(&mut commands, &asset_server, window, &images, "LEVEL 1");
 
     Ok(())
 }
@@ -194,15 +186,7 @@ fn setup_level_2(
     spawn_countdown(&mut commands, &asset_server, window, &images);
 
     // Spawning title related visuals and buttons.
-    spawn_level_title(
-        &mut commands,
-        &asset_server,
-        window,
-        &images,
-        "LEVEL 2",
-        Some(Buttons::GoToLevel1),
-        Some(Buttons::GoToLevel3)
-    );
+    spawn_level_title(&mut commands, &asset_server, window, &images, "LEVEL 2");
 
     Ok(())
 }
@@ -227,15 +211,7 @@ fn setup_level_3(
     spawn_countdown(&mut commands, &asset_server, window, &images);
 
     // Spawning title related visuals and buttons.
-    spawn_level_title(
-        &mut commands,
-        &asset_server,
-        window,
-        &images,
-        "LEVEL 3",
-        Some(Buttons::GoToLevel2),
-        Some(Buttons::GoToLevel4)
-    );
+    spawn_level_title(&mut commands, &asset_server, window, &images, "LEVEL 3");
 
     Ok(())
 }
@@ -260,15 +236,7 @@ fn setup_level_4(
     spawn_countdown(&mut commands, &asset_server, window, &images);
 
     // Spawning title related visuals and buttons.
-    spawn_level_title(
-        &mut commands,
-        &asset_server,
-        window,
-        &images,
-        "LEVEL 4",
-        Some(Buttons::GoToLevel3),
-        Some(Buttons::GoToLevel5)
-    );
+    spawn_level_title(&mut commands, &asset_server, window, &images, "LEVEL 4");
 
     Ok(())
 }
@@ -293,15 +261,7 @@ fn setup_level_5(
     spawn_countdown(&mut commands, &asset_server, window, &images);
 
     // Spawning title related visuals and buttons.
-    spawn_level_title(
-        &mut commands,
-        &asset_server,
-        window,
-        &images,
-        "LEVEL 5",
-        Some(Buttons::GoToLevel4),
-        Some(Buttons::GoToLevel5)
-    );
+    spawn_level_title(&mut commands, &asset_server, window, &images, "LEVEL 5");
 
     Ok(())
 }

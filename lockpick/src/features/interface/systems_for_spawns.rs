@@ -229,8 +229,6 @@ pub fn spawn_level_title(
     window: &Window,
     images: &InterfaceImages,
     title_text: &'static str,
-    previous_level: Option<Buttons>,
-    next_level: Option<Buttons>,
 )
 {
     // Label for Level #
@@ -247,42 +245,6 @@ pub fn spawn_level_title(
             content: title_text,
             font_path: "fonts/Cinzel_Decorative.ttf",
             font_size_scale: 0.055,
-            color: Color::WHITE,
-        })
-    );
-
-    // Button for Previous Level
-    spawn_ui_element(
-        commands, &asset_server, window,
-        previous_level,
-        None,
-        None,
-        Some(&images.button),
-        Vec3::new(16.0, 5.0, 2.0),
-        10.0,
-        Some(1115.0 / 200.0),
-        Some(TextSpawn {
-            content: "Previous",
-            font_path: "fonts/Spectral.ttf",
-            font_size_scale: 0.01,
-            color: Color::WHITE,
-        })
-    );
-
-    // Button for Next Level
-    spawn_ui_element(
-        commands, &asset_server, window,
-        next_level,
-        None,
-        None,
-        Some(&images.button),
-        Vec3::new(27.0, 5.0, 2.0),
-        10.0,
-        Some(1115.0 / 200.0),
-        Some(TextSpawn {
-            content: "Next",
-            font_path: "fonts/Spectral.ttf",
-            font_size_scale: 0.01,
             color: Color::WHITE,
         })
     );
@@ -304,8 +266,8 @@ pub fn spawn_countdown(
         Some(Containers::Timer),
         None,
         Some(&images.background_panel),
-        Vec3::new(89.0, 10.0, 11.0),
-        20.0,
+        Vec3::new(90.0, 10.0, 3.0),
+        15.0,
         Some(500.0 / 230.0),
         None
     );
@@ -319,13 +281,13 @@ pub fn spawn_countdown(
         Some(Containers::Timer),
         None,
         None,
-        Vec3::new(89.0, 6.0, 12.0),
+        Vec3::new(90.0, 6.0, 4.0),
         15.0,
         Some(100.0 / 20.0),
         Some(TextSpawn {
             content: "Time Until You Lose",
             font_path: "fonts/Cinzel_Decorative.ttf",
-            font_size_scale: 0.01,
+            font_size_scale: 0.0075,
             color: Color::WHITE,
         })
     );
@@ -379,8 +341,8 @@ pub fn spawn_countdown_digits(
         Some(Containers::Timer),
         None,
         Some(digit_images[hundreds]),
-        Vec3::new(86.0, 12.0, 12.0),
-        2.5,
+        Vec3::new(87.0, 11.0, 4.0),
+        2.25,
         Some(85.0 / 135.0),
         None
     );
@@ -394,8 +356,8 @@ pub fn spawn_countdown_digits(
         Some(Containers::Timer),
         None,
         Some(digit_images[tens]),
-        Vec3::new(89.0, 12.0, 12.0),
-        2.5,
+        Vec3::new(90.0, 11.0, 4.0),
+        2.25,
         Some(85.0 / 135.0),
         None
     );
@@ -409,8 +371,8 @@ pub fn spawn_countdown_digits(
         Some(Containers::Timer),
         None,
         Some(digit_images[ones]),
-        Vec3::new(92.0, 12.0, 12.0),
-        2.5,
+        Vec3::new(93.0, 11.0, 4.0),
+        2.25,
         Some(85.0 / 135.0),
         None
     );
