@@ -11,7 +11,7 @@ use crate::features::controls::systems::*;
 use crate::features::game_controller::components::{ChargeBarMarker};
 use crate::features::game_controller::game_effects::systems::handle_lifetime_timers;
 use crate::features::game_controller::systems::{charge_charge_bar, check_game_state, handle_game_state, spawn_charge_bar};
-
+use crate::features::game_controller::game_timer::definitions::TheTimer;
 
 
 pub struct SystemsForUserInterfaceStates {}
@@ -35,9 +35,6 @@ impl Plugin for SystemsForUserInterfaceStates {
 
         app.add_systems(OnEnter(Interfaces::Level5), (setup_level_5, load_lock_resources, spawn_lockpick, spawn_lock, spawn_charge_bar).chain());
         app.add_systems(OnExit(Interfaces::Level5), (record_level_5_exit, cleanup_entities).chain());
-
-        app.add_systems(OnEnter(Interfaces::Cards), setup_cards);
-        app.add_systems(OnExit(Interfaces::Cards), (record_cards_exit, cleanup_entities).chain());
 
         app.add_systems(OnEnter(Interfaces::Won), setup_won);
         app.add_systems(OnExit(Interfaces::Won), (record_won_exit, cleanup_entities).chain());
@@ -182,9 +179,13 @@ fn setup_level_2(
     asset_server: Res<AssetServer>,
     window_query: Query<&Window>,
     images: Res<InterfaceImages>,
+    mut game_timer: ResMut<TheTimer>,
 ) -> Result<()> {
 
     let window = window_query.single()?;
+
+    // Spawning card visuals.
+    spawn_cards(&mut commands, &asset_server, window, &images, &mut game_timer);
 
     // Spawning background visual.
     spawn_background(&mut commands, window, Some(&images.background_level));
@@ -211,9 +212,13 @@ fn setup_level_3(
     asset_server: Res<AssetServer>,
     window_query: Query<&Window>,
     images: Res<InterfaceImages>,
+    mut game_timer: ResMut<TheTimer>,
 ) -> Result<()> {
 
     let window = window_query.single()?;
+
+    // Spawning card visuals.
+    spawn_cards(&mut commands, &asset_server, window, &images, &mut game_timer);
 
     // Spawning background visual.
     spawn_background(&mut commands, window, Some(&images.background_level));
@@ -240,9 +245,13 @@ fn setup_level_4(
     asset_server: Res<AssetServer>,
     window_query: Query<&Window>,
     images: Res<InterfaceImages>,
+    mut game_timer: ResMut<TheTimer>,
 ) -> Result<()> {
 
     let window = window_query.single()?;
+
+    // Spawning card visuals.
+    spawn_cards(&mut commands, &asset_server, window, &images, &mut game_timer);
 
     // Spawning background visual.
     spawn_background(&mut commands, window, Some(&images.background_level));
@@ -269,9 +278,13 @@ fn setup_level_5(
     asset_server: Res<AssetServer>,
     window_query: Query<&Window>,
     images: Res<InterfaceImages>,
+    mut game_timer: ResMut<TheTimer>,
 ) -> Result<()> {
 
     let window = window_query.single()?;
+
+    // Spawning card visuals.
+    spawn_cards(&mut commands, &asset_server, window, &images, &mut game_timer);
 
     // Spawning background visual.
     spawn_background(&mut commands, window, Some(&images.background_level));
@@ -289,20 +302,6 @@ fn setup_level_5(
         Some(Buttons::GoToLevel4),
         Some(Buttons::GoToLevel5)
     );
-
-    Ok(())
-}
-
-fn setup_cards(
-    mut commands: Commands,
-    asset_server: Res<AssetServer>,
-    window_query: Query<&Window>,
-    images: Res<InterfaceImages>
-) -> Result<()> {
-
-    let window = window_query.single()?;
-
-    spawn_cards(&mut commands, &asset_server, window, &images);
 
     Ok(())
 }
@@ -372,7 +371,6 @@ fn record_level_2_exit(mut history: ResMut<StateHistory>) { history.push(Interfa
 fn record_level_3_exit(mut history: ResMut<StateHistory>) { history.push(Interfaces::Level3); }
 fn record_level_4_exit(mut history: ResMut<StateHistory>) { history.push(Interfaces::Level4); }
 fn record_level_5_exit(mut history: ResMut<StateHistory>) { history.push(Interfaces::Level5); }
-fn record_cards_exit(mut history: ResMut<StateHistory>) { history.push(Interfaces::Cards); }
 fn record_lost_exit(mut history: ResMut<StateHistory>) { history.push(Interfaces::Lost); }
 fn record_won_exit(mut history: ResMut<StateHistory>) { history.push(Interfaces::Won); }
 

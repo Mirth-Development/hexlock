@@ -21,3 +21,16 @@ pub enum Directions{
     Left,
     Right,
 }
+
+#[derive(Resource)]
+pub struct TumblerTime {
+    pub set_time: f32,
+}
+
+impl Default for TumblerTime {
+    fn default() -> Self {
+        Self {
+            set_time: 20.0,
+        }
+    }
+}

@@ -39,7 +39,7 @@ pub struct TheTimer {
 impl Default for TheTimer {
     fn default() -> Self {
         Self {
-            chronolog: Chronolog::new(None),
+            chronolog: Chronolog::new(Some(111.0)),
         }
     }
 }
@@ -123,6 +123,13 @@ impl Ticker {
 // #################################################################################################### //
 // CHRONOLOG DEFINITION
 
+#[derive(PartialEq, Reflect, Debug)]
+enum ChronologStates {
+    Dormant,
+    Paused,
+    Ticking
+}
+
 /// Used to create timers that can optionally store digits from the hundreds place to the thousandths
 /// place.  Digits can be preset by assigning values to digit properties and timers for each digit
 /// can be assigned independently for all the insanity that comes with declaring fancy clocks.
@@ -140,7 +147,9 @@ impl Ticker {
 /// if you'd like you can give a default Ticker custom timers to do countdown effects more intuitively.
 #[derive(Component, Reflect, Debug)]
 pub struct Chronolog {
-    pub start_value: Option<f32>,
+    start_value: Option<f32>,
+    countdown_value: f32,
+    state_of_log: ChronologStates,
     pub ticker_for_hundreds: Option<Ticker>,
     pub ticker_for_tens: Option<Ticker>,
     pub ticker_for_ones: Option<Ticker>,
@@ -153,6 +162,8 @@ impl Default for Chronolog {
     fn default() -> Self {
         Self {
             start_value: Some(0.0),
+            countdown_value: 0.0,
+            state_of_log: ChronologStates::Dormant,
             ticker_for_hundreds: Some(Ticker::default()),
             ticker_for_tens: Some(Ticker::default()),
             ticker_for_ones: Some(Ticker::default()),
@@ -175,6 +186,10 @@ impl Chronolog {
         Self {
 
             start_value: Some(starting_value.unwrap_or(0.0)),
+
+            countdown_value: starting_value.unwrap_or(0.0),
+
+            state_of_log: ChronologStates::Ticking,
 
             ticker_for_hundreds: Some(Ticker{
                 number: Some(0),
@@ -209,9 +224,10 @@ impl Chronolog {
     }
 
     /// This type of reset will cause for the Chronolog to continue ticking immediately after reset
-    /// in the same way that a Chronolog will tick when created using the "new" method.
+    /// in the same way that a Chronolog will tick when created using the "new" method.  It will cause
+    /// a Chronolog to start off with the start_value it was initially assigned with.
     pub fn reset(&mut self) {
-        *self = Chronolog::new(None);
+        *self = Chronolog::new(self.start_value);
     }
 
     /// Will wipe out all the tickers in the Chronolog.  Can be used to create a blank slate to add new
@@ -220,24 +236,55 @@ impl Chronolog {
         *self = Chronolog::default();
     }
 
-    /// Returns how long a Chronolog has until it hits the zero value.
+    /// Pauses all tickers within the Chronolog.
+    pub fn pause(&mut self) {
+        if let Some(ticker) = &mut self.ticker_for_hundreds    { ticker.pause(); }
+        if let Some(ticker) = &mut self.ticker_for_tens        { ticker.pause(); }
+        if let Some(ticker) = &mut self.ticker_for_ones        { ticker.pause(); }
+        if let Some(ticker) = &mut self.ticker_for_tenths      { ticker.pause(); }
+        if let Some(ticker) = &mut self.ticker_for_hundredths  { ticker.pause(); }
+        if let Some(ticker) = &mut self.ticker_for_thousandths { ticker.pause(); }
+
+        self.state_of_log = ChronologStates::Paused;
+    }
+
+    /// Unpauses all tickers within the Chronolog.
+    pub fn unpause(&mut self) {
+        if let Some(ticker) = &mut self.ticker_for_hundreds    { ticker.unpause(); }
+        if let Some(ticker) = &mut self.ticker_for_tens        { ticker.unpause(); }
+        if let Some(ticker) = &mut self.ticker_for_ones        { ticker.unpause(); }
+        if let Some(ticker) = &mut self.ticker_for_tenths      { ticker.unpause(); }
+        if let Some(ticker) = &mut self.ticker_for_hundredths  { ticker.unpause(); }
+        if let Some(ticker) = &mut self.ticker_for_thousandths { ticker.unpause(); }
+
+        self.state_of_log = ChronologStates::Ticking;
+    }
+
+    /// This is for an update on frame system to adjust countdown_value with each frame's passing.
+    /// Will only update if the chronolog is in the Ticking state.
     ///
-    /// The start_value of a Chronolog dictates the top of the countdown and the constant increasing
-    /// values of the Chronolog are reversed through subtraction in this method to create a countdown effect.
-    pub fn get_countdown_number(&self) -> f32 {
+    /// Not calling this inside an update system will prevent the countdown_value from ever moving.
+    pub fn update_countdown(&mut self, delta: std::time::Duration) {
 
-        let start = self.start_value.unwrap_or(0.0);
-        let elapsed = start - self.get_number();
+        if self.state_of_log == ChronologStates::Ticking {
 
-        // Prevents the countdown number from returning a negative value.
-        // Will return the elapsed time if it's greater than 1.0.
-        // Will return 0.0 if the elapsed time comes out as negative.
-        if elapsed > 0.0 {
-            elapsed
+            self.countdown_value -= delta.as_secs_f32();
+
+            if self.countdown_value < 0.0 {
+                self.countdown_value = 0.0;
+            }
         }
-        else {
-            0.0
-        }
+    }
+
+    /// Adds time in seconds to the countdown value.
+    pub fn add_to_countdown(&mut self, seconds: f32) {
+        self.countdown_value += seconds;
+    }
+
+    /// Returns the start value of the Chronolog.
+    /// Will return 0.0 if no start value is set.
+    pub fn get_start_value(&self) -> f32 {
+        self.start_value.unwrap_or(0.0)
     }
 
     /// Returns a string for the current countdown value, the number of digits is based on how many
@@ -251,12 +298,11 @@ impl Chronolog {
         number_of_floating_places: usize
     ) -> String {
 
-        let countdown = self.get_countdown_number();
         let character_count = number_of_whole_places + number_of_floating_places + 1;
 
         // Left side of printout is dictated implicitly by (number_of_characters - floating).
         format!("{:0>number_of_characters$.floating$}",
-                countdown,
+                self.countdown_value,
                 number_of_characters = character_count,
                 floating = number_of_floating_places
         )
@@ -267,7 +313,7 @@ impl Chronolog {
     /// Something to keep in mind is that a ticker could exist for the hundreds place and also have
     /// a value of 0 for its number.  This means that 0 doesn't ALWAYS mean that a ticker doesn't exist for
     /// the given digit.
-    pub fn digit_for_hundreds(&self) -> u32 {
+    pub fn get_hundreds_digit(&self) -> u32 {
         self.ticker_for_hundreds.as_ref().and_then(|ticker| ticker.number).unwrap_or(0)
     }
 
@@ -276,7 +322,7 @@ impl Chronolog {
     /// Something to keep in mind is that a ticker could exist for the tens place and also have
     /// a value of 0 for its number.  This means that 0 doesn't ALWAYS mean that a ticker doesn't exist for
     /// the given digit.
-    pub fn digit_for_tens(&self) -> u32 {
+    pub fn get_tens_digit(&self) -> u32 {
         self.ticker_for_tens.as_ref().and_then(|ticker| ticker.number).unwrap_or(0)
     }
 
@@ -285,7 +331,7 @@ impl Chronolog {
     /// Something to keep in mind is that a ticker could exist for the ones place and also have
     /// a value of 0 for its number.  This means that 0 doesn't ALWAYS mean that a ticker doesn't exist for
     /// the given digit.
-    pub fn digit_for_ones(&self) -> u32 {
+    pub fn get_ones_digit(&self) -> u32 {
         self.ticker_for_ones.as_ref().and_then(|ticker| ticker.number).unwrap_or(0)
     }
 
@@ -294,7 +340,7 @@ impl Chronolog {
     /// Something to keep in mind is that a ticker could exist for the tenths place and also have
     /// a value of 0 for its number.  This means that 0 doesn't ALWAYS mean that a ticker doesn't exist for
     /// the given digit.
-    pub fn digit_for_tenths(&self) -> u32 {
+    pub fn get_tenths_digit(&self) -> u32 {
         self.ticker_for_tenths.as_ref().and_then(|ticker| ticker.number).unwrap_or(0)
     }
 
@@ -303,7 +349,7 @@ impl Chronolog {
     /// Something to keep in mind is that a ticker could exist for the hundredths place and also have
     /// a value of 0 for its number.  This means that 0 doesn't ALWAYS mean that a ticker doesn't exist for
     /// the given digit.
-    pub fn digit_for_hundredths(&self) -> u32 {
+    pub fn get_hundredths_digit(&self) -> u32 {
         self.ticker_for_hundredths.as_ref().and_then(|ticker| ticker.number).unwrap_or(0)
     }
 
@@ -312,7 +358,7 @@ impl Chronolog {
     /// Something to keep in mind is that a ticker could exist for the thousandths place and also have
     /// a value of 0 for its number.  This means that 0 doesn't ALWAYS mean that a ticker doesn't exist for
     /// the given digit.
-    pub fn digit_for_thousandths(&self) -> u32 {
+    pub fn get_thousandths_digit(&self) -> u32 {
         self.ticker_for_thousandths.as_ref().and_then(|ticker| ticker.number).unwrap_or(0)
     }
 

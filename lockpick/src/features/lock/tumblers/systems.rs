@@ -14,7 +14,6 @@ pub const HEIGHT_OF_LARGE_TUMBLER_SPRITE: f32= 220.0;
 
 pub const TUMBLER_SET_RELEASE_VELOCITY: f32= -150.0;
 
-pub const TUMBLER_DEFAULT_SET_TIME: f32= 20.0;
 
 pub fn tumbler_movement(
     time: Res<Time>,

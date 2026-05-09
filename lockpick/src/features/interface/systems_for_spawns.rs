@@ -7,6 +7,9 @@ use crate::features::interface::systems_for_states::*;
 use crate::features::lock::tumblers::components::*;
 use crate::features::lock::tumblers::resources::*;
 
+const TIME_TO_ADD_TO_CLOCK: f32 = 10.0;
+const TIME_TO_ADD_TO_SET_TUMBLERS: f32 = 2.0;
+
 pub struct SystemsForUserInterfaceSpawns {}
 impl Plugin for SystemsForUserInterfaceSpawns {
     fn build(&self, app: &mut App) {
@@ -301,7 +304,7 @@ pub fn spawn_countdown(
         Some(Containers::Timer),
         None,
         Some(&images.background_panel),
-        Vec3::new(89.0, 10.0, 3.0),
+        Vec3::new(89.0, 10.0, 11.0),
         20.0,
         Some(500.0 / 230.0),
         None
@@ -316,7 +319,7 @@ pub fn spawn_countdown(
         Some(Containers::Timer),
         None,
         None,
-        Vec3::new(89.0, 6.0, 4.0),
+        Vec3::new(89.0, 6.0, 12.0),
         15.0,
         Some(100.0 / 20.0),
         Some(TextSpawn {
@@ -376,7 +379,7 @@ pub fn spawn_countdown_digits(
         Some(Containers::Timer),
         None,
         Some(digit_images[hundreds]),
-        Vec3::new(86.0, 12.0, 4.0),
+        Vec3::new(86.0, 12.0, 12.0),
         2.5,
         Some(85.0 / 135.0),
         None
@@ -391,7 +394,7 @@ pub fn spawn_countdown_digits(
         Some(Containers::Timer),
         None,
         Some(digit_images[tens]),
-        Vec3::new(89.0, 12.0, 4.0),
+        Vec3::new(89.0, 12.0, 12.0),
         2.5,
         Some(85.0 / 135.0),
         None
@@ -406,7 +409,7 @@ pub fn spawn_countdown_digits(
         Some(Containers::Timer),
         None,
         Some(digit_images[ones]),
-        Vec3::new(92.0, 12.0, 4.0),
+        Vec3::new(92.0, 12.0, 12.0),
         2.5,
         Some(85.0 / 135.0),
         None
@@ -426,8 +429,47 @@ pub fn spawn_cards(
     asset_server: &AssetServer,
     window: &Window,
     images: &InterfaceImages,
+    timer: &mut TheTimer,
 )
 {
+    // Cards have spawned, hence we pause timer for buff selection.
+    timer.chronolog.pause();
+
+    // Container
+    spawn_ui_element(
+        commands,
+        asset_server,
+        window,
+        None,
+        Some(Containers::Card),
+        None,
+        Some(&images.background_panel),
+        Vec3::new(50.0, 50.0, 5.0),
+        80.0,
+        Some(530.0 / 330.0),
+        None
+    );
+
+    // Label
+    spawn_ui_element(
+        commands,
+        asset_server,
+        window,
+        None,
+        Some(Containers::Card),
+        Some(Labels::Card),
+        None,
+        Vec3::new(50.0, 20.0, 6.0),
+        50.0,
+        Some(200.0 / 20.0),
+        Some(TextSpawn {
+            content: "Click a Card",
+            font_path: "fonts/Cinzel_Decorative.ttf",
+            font_size_scale: 0.03,
+            color: Color::WHITE,
+        })
+    );
+
     // Card for Timer Increase
     {
         // Container
@@ -439,8 +481,8 @@ pub fn spawn_cards(
             Some(Containers::Card),
             None,
             Some(&images.card_increase_time),
-            Vec3::new(35.0, 50.0, 3.0),
-            25.0,
+            Vec3::new(35.0, 55.0, 6.0),
+            20.0,
             Some(560.0 / 920.0),
             None
         );
@@ -454,7 +496,7 @@ pub fn spawn_cards(
             Some(Containers::Card),
             Some(Labels::Card),
             None,
-            Vec3::new(35.25, 50.0, 4.0),
+            Vec3::new(35.25, 55.0, 7.0),
             20.0,
             Some(100.0 / 20.0),
             Some(TextSpawn {
@@ -474,11 +516,11 @@ pub fn spawn_cards(
             Some(Containers::Card),
             Some(Labels::Card),
             None,
-            Vec3::new(35.25, 57.0, 4.0),
-            20.0,
-            Some(100.0 / 20.0),
+            Vec3::new(35.25, 63.0, 7.0),
+            15.0,
+            Some(80.0 / 20.0),
             Some(TextSpawn {
-                content: "Clicking this card will add X amount of seconds to your timer.",
+                content: format!("Clicking this card will add {} seconds to your timer.", TIME_TO_ADD_TO_CLOCK).leak(), // Probably shouldn't be using leak on this, but I need it to work with my crappy spawn_ui_element function (definitely gotta improve the spawn_ui_element after the jam.)
                 font_path: "fonts/Spectral.ttf",
                 font_size_scale: 0.01,
                 color: Color::WHITE,
@@ -497,8 +539,8 @@ pub fn spawn_cards(
             Some(Containers::Card),
             None,
             Some(&images.card_increase_set_time),
-            Vec3::new(65.0, 50.0, 3.0),
-            25.0,
+            Vec3::new(65.0, 55.0, 6.0),
+            20.0,
             Some(560.0 / 920.0),
             None
         );
@@ -512,7 +554,7 @@ pub fn spawn_cards(
             Some(Containers::Card),
             Some(Labels::Card),
             None,
-            Vec3::new(65.25, 50.0, 4.0),
+            Vec3::new(65.25, 55.0, 7.0),
             20.0,
             Some(100.0 / 20.0),
             Some(TextSpawn {
@@ -532,11 +574,11 @@ pub fn spawn_cards(
             Some(Containers::Card),
             Some(Labels::Card),
             None,
-            Vec3::new(65.25, 59.0, 4.0),
-            20.0,
-            Some(100.0 / 20.0),
+            Vec3::new(65.25, 65.0, 7.0),
+            15.0,
+            Some(80.0 / 20.0),
             Some(TextSpawn {
-                content: "Clicking this card will add X amount of seconds to how long your tumblers stay in the set position.",
+                content: format!("Clicking this card will add {} seconds to how long your tumblers stay in the set position.", TIME_TO_ADD_TO_SET_TUMBLERS).leak(),  // Probably shouldn't be using leak on this, but I need it to work with my crappy spawn_ui_element function (definitely gotta improve the spawn_ui_element after the jam.)
                 font_path: "fonts/Spectral.ttf",
                 font_size_scale: 0.01,
                 color: Color::WHITE,
@@ -672,8 +714,8 @@ pub fn spawn_combo(
     );
 
     // Marking combo UI so that they can be deleted by their despawner.
-    commands.entity(container).insert(ComboArrow);
-    commands.entity(label).insert(ComboArrow);
+    commands.entity(container).insert(ComboPanel);
+    commands.entity(label).insert(ComboPanel);
     commands.entity(arrow_1).insert(ComboArrow);
     commands.entity(arrow_2).insert(ComboArrow);
     commands.entity(arrow_3).insert(ComboArrow);
@@ -686,9 +728,14 @@ pub fn spawn_combo(
 pub fn despawn_combo(
     mut commands: Commands,
     arrow_query: Query<Entity, With<ComboArrow>>,
+    panel_query: Query<Entity, With<ComboPanel>>,
 ) {
     for arrow in arrow_query.iter() {
         commands.entity(arrow).despawn();
+    }
+
+    for panel in panel_query.iter() {
+        commands.entity(panel).despawn();
     }
 }
 
@@ -790,10 +837,11 @@ pub fn handle_button_interactions(
     mut state_history: ResMut<StateHistory>,
     mut app_exit: MessageWriter<AppExit>,
     mut the_timer: ResMut<TheTimer>,
+    mut tumbler_time: ResMut<TumblerTime>,
 ) -> Result<()>
 {
     for (interaction, button) in interaction_query.iter() {
-        println!("Button clicked: {:?}", button);
+
         if *interaction == Interaction::Pressed {
 
             match (button_chain.as_slice(), button) {
@@ -832,7 +880,37 @@ pub fn handle_button_interactions(
                     button_chain.clear();
                     next_state.set(Interfaces::Level1);
                     the_timer.chronolog.reset();
-                    the_timer.chronolog.start_value = Some(111.0);
+                },
+
+                (_, Buttons::CardTimerIncrease) => {
+                    button_chain.clear();
+
+                    // Deleting cards.
+                    for (entity, container) in container_query.iter() {
+                        if *container == Containers::Card {
+                            commands.entity(entity).despawn();
+                        }
+                    }
+
+                    the_timer.chronolog.add_to_countdown(TIME_TO_ADD_TO_CLOCK);
+
+                    the_timer.chronolog.unpause();
+                },
+
+                (_, Buttons::CardSetTimeIncrease) => {
+                    button_chain.clear();
+
+                    // Deleting cards.
+                    for (entity, container) in container_query.iter() {
+                        if *container == Containers::Card {
+                            commands.entity(entity).despawn();
+                        }
+                    }
+
+                    tumbler_time.set_time += TIME_TO_ADD_TO_SET_TUMBLERS;
+
+                    println!("tumbler time: {}", tumbler_time.set_time);
+                    the_timer.chronolog.unpause();
                 },
 
                 (_, Buttons::GoToLevel1) => {
