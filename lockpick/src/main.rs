@@ -1,4 +1,5 @@
-
+#![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
+//Run it in a window!
 mod features;
 
 use features::plugin::LockpickFeaturesPlugin;
