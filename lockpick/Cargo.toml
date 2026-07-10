@@ -5,4 +5,5 @@ edition = "2024"
 
 [dependencies]
 bevy = { version = "0.19.0", features = ["debug"] }
+mirth_engine_counters = "0.0.4"
 rand = "0.10.1"
