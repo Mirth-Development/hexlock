@@ -144,6 +144,7 @@ pub fn spawn_lock(
                             // gen_random_tumbler(tumbler_translation,x, tumbler_set_timer.clone(), &mut rng.RandomNumberGenerator, &lock_sprite_handles,),
                             //Spawn sprite as a child with its own transform
                             children![(spawn_animatable_sprite_child(
+                            children![(spawn_animatable_sprite_child_helper_function(
                                 sprites.0.clone(), //image
                                 sprites.1, //color
                             ),)],
@@ -161,6 +162,7 @@ pub fn spawn_lock(
                         .spawn((
                             //Spawn sprite as a child with its own transform
                             children![(spawn_animatable_sprite_child(
+                            children![(spawn_animatable_sprite_child_helper_function(
                                 sprites.0.clone(),
                                 sprites.1,
                             ),)],
@@ -299,7 +301,7 @@ pub fn handle_catching_tumblers(
     }
 }
 
-pub fn spawn_animatable_sprite_child(
+pub fn spawn_animatable_sprite_child_helper_function(
     tumbler_sprite: Handle<Image>,
     tumbler_color: Color,
 ) -> (Sprite, Animated, Transform, Visibility) {
