@@ -8,6 +8,7 @@ use bevy::prelude::*;
 fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
+        //Load Lockpick Game system into Bevy App
         .add_plugins(LockpickFeaturesPlugin)
         .run();
 }

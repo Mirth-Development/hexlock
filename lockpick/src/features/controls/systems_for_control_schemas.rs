@@ -3,7 +3,9 @@ use bevy::input::ButtonInput;
 use bevy::prelude::{KeyCode, MessageWriter};
 use crate::features::lockpick::messages::{HexDirection, LockpickAction};
 
+//This file contains multiple "schemas" for pick movement which swap out when the pick is changed.
 
+///System which picks the default pick based on player input.
 pub fn normal_pick_schema(
     keyboard_input: &ButtonInput<KeyCode>,
     pick_event: &mut MessageWriter<LockpickAction>,
@@ -15,6 +17,7 @@ pub fn normal_pick_schema(
     }
 }
 
+///System which picks the electric pick based on player input.
 pub fn electric_pick_schema(
     keyboard_input: &ButtonInput<KeyCode>,
     pick_event: &mut MessageWriter<LockpickAction>
@@ -36,6 +39,7 @@ pub fn electric_pick_schema(
 
 }
 
+///System which picks the magic pick based on player input. Captures arrow key input for magic arrow game.
 pub fn magic_pick_schema(
     keyboard_input: &ButtonInput<KeyCode>,
     pick_event: &mut MessageWriter<LockpickAction>,

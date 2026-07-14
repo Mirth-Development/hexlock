@@ -34,11 +34,14 @@ pub struct AnimationFlip{
 // }
 
 pub trait Animatable {
+    ///Creates a new animatable component
     fn new(duration_seconds: f32, original_translation: Vec3, timer_mode: TimerMode) -> Self;
+    ///Ticks the animation timer
     fn animate_step(&mut self, time: Duration, transform: &mut Transform);
-
+    ///Boolean that determines if the animation repeats
     fn repeats(&mut self) -> bool;
-
+    ///Resets the transform to the original transform
     fn reset_animation_transform(&mut self, transform: &mut Transform);
+    ///Boolean that determines if the animation has finished
     fn animation_has_finished(&mut self) -> bool;
 }

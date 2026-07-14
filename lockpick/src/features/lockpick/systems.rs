@@ -19,13 +19,13 @@ pub const LOCKPICK_HEAD_OFFSET: f32 = -1041.0;
 const LOCKPICK_MAX_HEIGHT: f32 = TOP_OF_CHAMBER - (HEIGHT_OF_MEDIUM_TUMBLER_SPRITE / 2.0 + HEIGHT_OF_SPRING_SPRITE);
 const LOCKPICK_LOWER_BOUND: f32 = -200.0;
 
-
+///Load and insert resources for lockpick. Run at startup.
 pub fn load_lockpick_resources(
     mut commands: Commands,)
 {
         //Sanity code
         println!("Loading Lockpick Resources!");
-
+        //Resource for electric lockpick gameplay and visuals
         commands.insert_resource(LockpickElectricCharge {
             is_charging: false,
             max_charge: 2.0,
@@ -35,6 +35,7 @@ pub fn load_lockpick_resources(
 }
 
 //Spawn Systems
+///Spawn the lockpick component and its Animated Sprite. Run at startup.
 pub fn spawn_lockpick (
     mut commands: Commands,
     lock_offset: Res<LockOffset>,
@@ -50,6 +51,7 @@ pub fn spawn_lockpick (
             translation: Vec3::new(-(lock_offset.offset as f32), LOCKPICK_LOWER_BOUND, 0.0),
             ..Default::default()
         }
+        //Spawn a child node with a Transform and a sprite that can be manipulated separate from the parents transform i. e. local transform.
     )).with_children(| parent_node| {
         parent_node.spawn(
             (
@@ -70,7 +72,7 @@ pub fn spawn_lockpick (
 
 //Movement Systems
 
-///Automatically Moves pick to focused chamber
+///Automatically Moves lockpick to "Focused" chamber
 pub fn move_to_focused_tumbler(
     mut lockpick_query: Query<(&mut Transform, &LockpickComponent)>,
     tumbler_query: Query<(&GlobalTransform, &TumblerComponent), With<FocusedTumblerComponent>>,
@@ -90,7 +92,7 @@ pub fn move_to_focused_tumbler(
     }
 }
 
-
+///This function moves and locks the lockpick's movement over time, such as the effect of gravity on the normal pick. *REWORK*
 pub fn lockpick_movement( //NORMAL PICK ONLY?
     time: Res<Time>,
     mut lockpick_electric_charge: MessageReader<LockpickAction>,
@@ -101,6 +103,7 @@ pub fn lockpick_movement( //NORMAL PICK ONLY?
 
     match lockpick.lockpick_type{
         LockpickType::Normal => {
+            //applies "picking" effect and gravity
             if lockpick_transform.translation.y > LOCKPICK_MAX_HEIGHT {
                 lockpick_transform.translation.y = LOCKPICK_MAX_HEIGHT;
                 lockpick.velocity.y *= -1.0;
@@ -116,7 +119,7 @@ pub fn lockpick_movement( //NORMAL PICK ONLY?
         LockpickType::Electric => {
             for action in lockpick_electric_charge.read(){
                 match action {
-
+                    //lock lockpick movement
                     LockpickAction::Charge => {lockpick.is_moving = true}
                     LockpickAction::Release => {lockpick.is_moving = false}
                     _ => {}
@@ -130,6 +133,7 @@ pub fn lockpick_movement( //NORMAL PICK ONLY?
 
 }
 
+///Function which handles the charge bar effect for Electric lockpick
 pub fn handle_lockpick_charge(
 
     time: Res<Time>,
@@ -140,6 +144,7 @@ pub fn handle_lockpick_charge(
     let Ok(mut lockpick) = lockpick_query.single_mut() else {return};
     for action in actions.read() {
         match action {
+            //These actions only exist for the electric lockpick
             ChargeLockpick::Charge => {
                 lockpick_electric_charge.is_charging = true;
                 lockpick.charge_timer.unpause()
@@ -167,6 +172,7 @@ pub fn handle_lockpick_charge(
 
 
 //Handle Pick Event
+///Function which handles each of the Tumbler's event Messages *Rework*
 pub fn handle_lockpick_message(
     check_set: Query<(), With<SetTumblerComponent>>, //Call all set elements
     check_rust: Query<(Entity,&TumblerRustComponent)>,
@@ -186,6 +192,7 @@ pub fn handle_lockpick_message(
 
 ){
 
+    //Sanity Code
     //let Ok((tumbler_entity, mut tumbler)) = focused_tumbler_query.single_mut() else {return};
     let Ok((focused_tumbler_entity, focused_tumbler_transform, mut focused_tumbler, focused_children)) = focused_tumbler_query.single_mut() else {
         println!("Tumbler check!");
@@ -204,7 +211,7 @@ pub fn handle_lockpick_message(
 
 
 
-
+    //is_moving flag prevents further action from happening
     if !lockpick.is_moving {
         let mut spring = None;
         for (tumbler_index, spring_index) in tumbler_spring_pairings.array.iter(){
@@ -222,6 +229,8 @@ pub fn handle_lockpick_message(
 
 
         //println!("Lockpick isnt moving!");
+
+        //Tumbler and Spring size should be handled elsewhere
         for action in actions.read(){
             println!("Lockpick received Message");
             let tumbler_speed = match focused_tumbler.size {
@@ -468,6 +477,7 @@ pub fn handle_lockpick_message(
 
 //Helper Function
 
+///Helper function which shakes any sprite's in the children entity passed to the function.
 pub fn shake_tumbler_help_function(
     tumbler_children: &Children,
     sprite_query: &mut Query<&mut Sprite, With<Animated>>,

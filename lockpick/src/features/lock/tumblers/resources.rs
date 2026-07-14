@@ -23,6 +23,7 @@ pub enum Directions{
 }
 
 #[derive(Resource)]
+///Resource which holds how many seconds the tumbler stays set for.
 pub struct TumblerTime {
     pub set_time: f32,
 }

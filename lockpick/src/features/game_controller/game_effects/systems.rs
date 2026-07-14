@@ -12,6 +12,7 @@ pub const HEIGHT_OF_RUST_SPRITE: f32 = 150.0;
 
 
 //Load Resources
+///Loads images from asset server and attaches their handles to a resource used for the effect sprites.
 pub fn load_effects_sprite_resources(mut commands: Commands, asset_server: Res<AssetServer>) {
     //Sanity code
     println!("Loading EffectSprites!");
@@ -39,6 +40,8 @@ pub fn load_effects_sprite_resources(mut commands: Commands, asset_server: Res<A
 
 
 //Triggers
+///System which observes if a Zap Event occurs and spawns a temporary lightning entity between the pick and tumbler.
+//Handle as a message? Rework this system, and potentially merge it into the folder for the lockpick. *FIX THIS*
 pub fn on_lightning_effect(
     zap: On<Zap>,
     mut commands: Commands,
@@ -72,7 +75,7 @@ pub fn on_lightning_effect(
     let pos = vec3(focused_tumbler_transform.translation().x, midpoint, 1.0);
     let charge_intensity = lockpick_electric_charge.current_charge / lockpick_electric_charge.max_charge;
 
-
+    //Spawn lightning with Animation Component
     commands.spawn((
         Sprite {
             image: effects_sprite_handles.lightning_effect.clone(),
@@ -93,6 +96,9 @@ pub fn on_lightning_effect(
     );
 
 }
+
+///System which observes if a Magic Event occurs and spawns a temporary magical entity between the pick and tumbler.
+//Handle as a message? Rework this system, and potentially merge it into the folder for the lockpick. *FIX THIS*
 pub fn on_magic_effect(
     magic: On<Magic>,
     mut commands: Commands,
@@ -136,7 +142,7 @@ pub fn on_magic_effect(
 
 
 //Tick Lifettime timers
-
+///System which ticks all EffectLifetimeTimers and then despawns them once finished.
 pub fn handle_lifetime_timers(
     mut commands: Commands,
     time: Res<Time>,
@@ -146,12 +152,15 @@ pub fn handle_lifetime_timers(
     for (timed_entity, mut lifetime_timer) in &mut timed_entity_query.iter_mut(){
         lifetime_timer.0.tick(time.delta());
         if lifetime_timer.0.just_finished(){
+            //This removes the object and its children
             commands.entity(timed_entity).despawn();
         }
     }
 
 }
 
+///Helper function to despawn components marked with the kill marker
+//Unused, rework or remove *FIX THIS*
 pub fn helper_find_and_kill_marker(commands: &mut Commands, entities: &Query<(Entity, &mut EffectKillMarker)> , target_entity: Entity, ){
     for (entity, marker) in entities{
         if marker.0 == target_entity{

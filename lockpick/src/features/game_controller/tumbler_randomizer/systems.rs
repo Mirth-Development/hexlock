@@ -5,6 +5,7 @@ use crate::features::lock::resource::LockSpriteHandles;
 use crate::features::lock::tumblers::components::TumblerComponent;
 use crate::features::lock::tumblers::resources::{TumblerSize, TumblerType};
 
+///Function which returns a tumbler with Randomized attributes.
 pub fn gen_random_tumbler(
     pos: u32,
     timer: Timer,

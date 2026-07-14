@@ -25,6 +25,7 @@ pub struct InputtedArrowCode{
 }
 
 
+//Requires implementation *FIX THIS*
 #[derive(Resource)]
 pub struct PlayerAttributes{
     //Effects the player can choose at the end of each round

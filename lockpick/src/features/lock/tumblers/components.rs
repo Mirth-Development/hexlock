@@ -13,17 +13,21 @@ pub struct TumblerComponent{
 }
 
 #[derive(Component)]
+///Marker Component which determines if the tumbler is focused by the lockpick.
 pub struct FocusedTumblerComponent;
 
 #[derive(Component)]
+///Marker Component which determines if the tumbler is set.
 pub struct SetTumblerComponent;
 
 #[derive(Component)]
+///Component which holds the random amount of hits it takes to break the corresponding rust.
 pub struct TumblerRustComponent{
     pub hits: u32,
 }
 
 #[derive(Component)]
+///Component which holds the vec of random directions for the magic tumbler.
 pub struct TumblerMagicComponent{
     pub arrow_code: Vec<Directions>
 }

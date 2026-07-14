@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 use rand::RngExt;
-use super::components::{GameObjectAnchorMarker, LockComponent, TumblerChamberComponent};
+use super::components::{LockComponent, TumblerChamberComponent};
 use super::resource::{LockOffset, LockSpriteHandles, TumblerSpringPairings};
 use super::tumblers::components::{FocusedTumblerComponent, TumblerComponent, TumblerMagicComponent};
 use super::tumblers::resources::Directions;
@@ -29,7 +29,7 @@ const TUMBLER_SET_THRESHOLD: f32 = 10.0;
 const LOCK_START_OFFSET: f32 = -170.0;
 const LOCK_END_OFFSET: f32 = -80.0;
 
-//Load Resources
+///Loads images from asset server and attaches their handles to a resource used for the sprites.
 pub fn load_lock_sprite_resources(mut commands: Commands, asset_server: Res<AssetServer>) {
     //Sanity code
     println!("Loading LockSprites!");
@@ -54,6 +54,7 @@ pub fn load_lock_sprite_resources(mut commands: Commands, asset_server: Res<Asse
 }
 
 
+///Loads Game Resources for construction of the lockpick Game Object.
 pub fn load_lock_resources(
     mut commands: Commands,
 ) {
@@ -66,7 +67,7 @@ pub fn load_lock_resources(
 
 }
 
-//Spawn and Build Lock
+///Spawns and builds a Lock object of varying tumbler amount dynamically from parameters held in Resources
 pub fn spawn_lock(
     lock_sprite_handles: Res<LockSpriteHandles>,
     tumbler_amount_resource: Res<NumberOfTumblers>,
@@ -103,7 +104,7 @@ pub fn spawn_lock(
             //Start of Lock
             parent_node.spawn((
                 Sprite::from_image(lock_sprite_handles.start_sprite.clone()),
-                GameObjectAnchorMarker,
+                //GameObjectAnchorMarker,
                 Transform::from_xyz(offset, LOCK_START_OFFSET, 0.0),
                 Visibility::default(),
             ));
@@ -143,7 +144,6 @@ pub fn spawn_lock(
                         .spawn((
                             // gen_random_tumbler(tumbler_translation,x, tumbler_set_timer.clone(), &mut rng.RandomNumberGenerator, &lock_sprite_handles,),
                             //Spawn sprite as a child with its own transform
-                            children![(spawn_animatable_sprite_child(
                             children![(spawn_animatable_sprite_child_helper_function(
                                 sprites.0.clone(), //image
                                 sprites.1, //color
@@ -161,7 +161,6 @@ pub fn spawn_lock(
                     tumbler_entity_commands = parent_node
                         .spawn((
                             //Spawn sprite as a child with its own transform
-                            children![(spawn_animatable_sprite_child(
                             children![(spawn_animatable_sprite_child_helper_function(
                                 sprites.0.clone(),
                                 sprites.1,
@@ -173,7 +172,7 @@ pub fn spawn_lock(
                                 ..default()
                             },
                         ));
-
+                    //Get the entity commands from the id function
                     tumbler_entity_id = tumbler_entity_commands.id();
                 }
 
@@ -258,7 +257,7 @@ pub fn spawn_lock(
         lock_offset.offset = offset as u32;
 }
 
-
+///System which handles the setting action of the tumbler when the player hits space.
 pub fn handle_catching_tumblers(
     check_set: Query<(), With<SetTumblerComponent>>, //Call all set elements
     //mut tumbler_ordering: ResMut<TumblerOrdering>,
@@ -301,6 +300,7 @@ pub fn handle_catching_tumblers(
     }
 }
 
+///Helper function which returns a Sprite bundle with an Animated component.
 pub fn spawn_animatable_sprite_child_helper_function(
     tumbler_sprite: Handle<Image>,
     tumbler_color: Color,
@@ -322,6 +322,7 @@ pub fn spawn_animatable_sprite_child_helper_function(
     )
 }
 
+///Helper function to get the pixel height of the tumbler based on its enum.
 pub fn tumbler_size_helper_function(tumbler: &TumblerComponent) -> f32{
     let height = match tumbler.size {
         TumblerSize::Small => HEIGHT_OF_SMALL_TUMBLER_SPRITE,

@@ -17,17 +17,19 @@ pub const HEIGHT_OF_LARGE_TUMBLER_SPRITE: f32= 220.0;
 pub const TUMBLER_SET_RELEASE_VELOCITY: f32= -150.0;
 
 
+///System which restricts and moves the tumbler within the bounds of the lock.
 pub fn tumbler_movement(
     time: Res<Time>,
     // tumbler_spring_pairings: Res<TumblerSpringPairings>,
     // springs: Query<(&SpringComponent)>,
     mut tumblers: Query<(Entity, &mut Transform, &mut TumblerComponent)>,
 ) {
-
+    //This should be held within the component, this is setting the parameters to the tumblers every frame unnecessarily *FIX THIS*
     for (_entity, mut transform, mut tumbler) in &mut tumblers {
 
         let top = TOP_OF_CHAMBER;
         let bottom: f32;
+        //Need to handle this process with a variable
         let height = match tumbler.size {
             TumblerSize::Small =>{
                 bottom = TOP_OF_CHAMBER - (HEIGHT_OF_SMALL_TUMBLER_SPRITE / 2.0) - (HEIGHT_OF_SPRING_SPRITE / 2.0) - 105.0; //Add offset to get each equal to medium
@@ -59,7 +61,7 @@ pub fn tumbler_movement(
 
 }
 
-
+///System that checks the tumbler's timer and animates and releases it.
 pub fn timer_tumbler_finished (
     time: Res<Time>,
     mut tumbler_ordering : ResMut <TumblerOrdering>,
@@ -98,6 +100,7 @@ pub fn timer_tumbler_finished (
                     for child in tumbler_children.iter(){
                         if let Ok((_sprite, is_shaking)) = animated_sprite_query.get_mut(child) {
                             //commands.entity(child).remove::<Sprite>(); //test - works
+                            //Check that this is acting correctly *FIX THIS*
                             if !is_shaking{
                                 commands.entity(child).insert(AnimationShake::new(0.5, Vec3::splat(0.0), TimerMode::Once));
                             }
@@ -111,6 +114,7 @@ pub fn timer_tumbler_finished (
     }
 }
 
+///System which
  pub fn handle_tumbler_set (
      check_set: Query<(), With<SetTumblerComponent>>, //Call all set elements
      mut tumbler_ordering: ResMut<TumblerOrdering>,

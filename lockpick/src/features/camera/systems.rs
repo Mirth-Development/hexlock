@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 use bevy::camera::*;
-
+///Spawns 2D Orthographic game camera.
 pub fn spawn_camera(
     mut commands: Commands,
     camera: Query<Entity, With<Camera>>,

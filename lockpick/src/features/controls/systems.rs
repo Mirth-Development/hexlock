@@ -8,6 +8,7 @@ use crate::features::lockpick::resources::LockpickType;
 
 
 //Move chamber focus
+///System which takes player input and translates it to actions within the game. Controls pick movements and actions as well as exiting to menu.
 pub fn user_control_system(
     lockpick_query: Query<&LockpickComponent>,
     keyboard_input: Res<ButtonInput<KeyCode>>,
@@ -18,7 +19,7 @@ pub fn user_control_system(
     mut state_history: ResMut<StateHistory>,
 
 ) {
-
+    //Swap out the control schema based on the current pick type
     if let Ok(lockpick) = lockpick_query.single() {
         match lockpick.lockpick_type {
             LockpickType::Normal => {

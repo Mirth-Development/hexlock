@@ -7,6 +7,7 @@ use crate::features::animation::components::{Animated, Animatable, AnimationShak
 //this function will check all Animatable objects and activate their animation
 
 
+///System which ticks and controls each the animation on each Animatable component depending on parameters.
 pub fn animation_controller<T: Component<Mutability = Mutable> + Animatable>(
     //Generics have to declare their mutability in Bevy 18 ~<~
     mut commands: Commands,

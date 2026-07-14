@@ -19,6 +19,7 @@ pub struct LockpickFeaturesPlugin;
 impl Plugin for LockpickFeaturesPlugin {
     fn build(&self, app: &mut App) {
 
+        //Resource
         app.init_resource::<TumblerTime>();
 
         app.add_plugins(GameTimer{});
@@ -32,12 +33,16 @@ impl Plugin for LockpickFeaturesPlugin {
             load_lockpick_resources,
             load_effects_sprite_resources
         ).chain());
-
+        //Observers for effects triggered by user input
         app.add_observer(on_lightning_effect);
         app.add_observer(on_break_rust);
         app.add_observer(on_magic_effect);
+
+        //Subplugins
         app.add_plugins(AnimationFeaturesPlugin);
         app.add_plugins(UserInterface{});
+
+        //Message's Declaration
         app.add_message::<LockpickAction>();
         app.add_message::<CatchTumbler>();
         app.add_message::<TumblerTimerMessage>();
