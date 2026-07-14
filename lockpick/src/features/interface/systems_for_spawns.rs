@@ -100,10 +100,14 @@ pub fn spawn_ui_element(
                 Visibility::default(),
                 Text::new(text_spawn.content),
                 TextColor(text_spawn.color),
-                TextLayout::new_with_justify(Justify::Center),
+                //Bevy 0.19 Changes
+                TextLayout {
+                    justify: Justify::Center,
+                    ..default()
+                },
                 TextFont {
-                    font: asset_server.load(text_spawn.font_path),
-                    font_size: window.width() * text_spawn.font_size_scale,
+                    font: asset_server.load(text_spawn.font_path).into(), //Bevy 0.19 change
+                    font_size: FontSize::Px(window.width() * text_spawn.font_size_scale),
                     ..default()
                 },
                 text_spawn,
@@ -793,7 +797,7 @@ pub fn resize(
 
         // Resize all text.
         for (mut text_font, text_spawn) in text_query.iter_mut() {
-            text_font.font_size = window.width() * text_spawn.font_size_scale;
+            text_font.font_size = FontSize::from(window.width() * text_spawn.font_size_scale);
         }
     }
 
