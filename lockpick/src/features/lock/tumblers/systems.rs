@@ -18,13 +18,14 @@ pub const TUMBLER_SET_RELEASE_VELOCITY: f32= -150.0;
 
 pub const TUMBLER_DEFAULT_SET_TIME: f32= 20.0;
 
+///System which restricts and moves the tumbler within the bounds of the lock.
 pub fn tumbler_movement(
     time: Res<Time>,
     // tumbler_spring_pairings: Res<TumblerSpringPairings>,
     // springs: Query<(&SpringComponent)>,
     mut tumblers: Query<(Entity, &mut Transform, &mut TumblerComponent)>,
 ) {
-
+    //This should be held within the component, this is setting the parameters to the tumblers every frame unnecessarily *FIX THIS*
     for (_entity, mut transform, mut tumbler) in &mut tumblers {
 
         let top = TOP_OF_CHAMBER;
@@ -60,7 +61,7 @@ pub fn tumbler_movement(
 
 }
 
-
+///System that checks the tumbler's timer and animates and releases it.
 pub fn timer_tumbler_finished (
     time: Res<Time>,
     mut tumbler_ordering : ResMut <TumblerOrdering>,
@@ -99,6 +100,7 @@ pub fn timer_tumbler_finished (
                     for child in tumbler_children.iter(){
                         if let Ok((_sprite, is_shaking)) = animated_sprite_query.get_mut(child) {
                             //commands.entity(child).remove::<Sprite>(); //test - works
+                            //Check that this is acting correctly *FIX THIS*
                             if !is_shaking{
                                 commands.entity(child).insert(AnimationShake::new(0.5, Vec3::splat(0.0), TimerMode::Once));
                             }
@@ -109,39 +111,10 @@ pub fn timer_tumbler_finished (
 
 
             }
-
-        // if tumbler.timer.is_finished(){
-        //     println!("Timer at {} Finished!", tumbler.position);
-        //     tumbler.timer.reset();
-        //     tumbler.timer.pause();
-        //     tumbler.velocity.y = TUMBLER_SET_RELEASE_VELOCITY;
-        //     println!("{}, {}",tumbler_ordering.order[(tumbler.position-1) as usize],  tumbler_ordering.current_position);
-        //     if tumbler_ordering.order[(tumbler.position-1) as usize] <= tumbler_ordering.current_position  {
-        //         println!("{} is less or equal to, {}",tumbler_ordering.order[(tumbler.position-1 ) as usize],  tumbler_ordering.current_position);
-        //         tumbler_ordering.current_position -= 1;
-        //         println!("current pos{}", tumbler_ordering.current_position);
-        //     }
-        //     commands.entity(tumbler_entity).remove::<SetTumblerComponent>();
-        //
-        // } else {
-        //     tumbler.timer.tick(time.delta());
-        //     if tumbler.timer.remaining_secs() < 4.0 && !tumbler.timer.is_finished(){
-        //         for child in tumbler_children.iter(){
-        //             if let Ok((_sprite, is_shaking)) = animated_sprite_query.get_mut(child) {
-        //                 //commands.entity(child).remove::<Sprite>(); //test - works
-        //                 if !is_shaking{
-        //                     commands.entity(child).insert(AnimationShake::new(0.5, Vec3::splat(0.0), TimerMode::Once));
-        //                 }
-        //
-        //             }
-        //         }
-        //     }
-        //
-        //
-        // }
     }
 }
 
+///System which checks if a tumbler is valid to be "set" at the top of the chamber on hitting the spacebar
  pub fn handle_tumbler_set (
      check_set: Query<(), With<SetTumblerComponent>>, //Call all set elements
      mut tumbler_ordering: ResMut<TumblerOrdering>,

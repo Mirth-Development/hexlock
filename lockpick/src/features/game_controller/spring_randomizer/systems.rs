@@ -6,6 +6,8 @@ use crate::features::lock::resource::LockSpriteHandles;
 use crate::features::lock::tumblers::components::TumblerComponent;
 use crate::features::lock::tumblers::resources::{TumblerSize, TumblerType};
 
+///Function which returns a spring with Randomized attributes.
+//This is never used! I think it is handled elsewhere *FIX THIS*
 pub fn get_random_spring(
     pos: u32,
     timer: Timer,

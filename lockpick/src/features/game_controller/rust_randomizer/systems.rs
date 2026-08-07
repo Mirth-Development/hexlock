@@ -6,6 +6,7 @@ use crate::features::game_controller::game_effects::resources::EffectsSpriteHand
 use crate::features::game_controller::game_effects::systems::HEIGHT_OF_RUST_SPRITE;
 use crate::features::lock::tumblers::components::TumblerRustComponent;
 
+///Helper function run on a regular tumbler at creation. 30% chance if it gets a rust entity overlay, and the random number of hits to break it.
 pub fn chance_to_add_rust(
     random_seed: &mut StdRng,
     tumbler_entity_commands: &mut EntityCommands,
@@ -18,6 +19,7 @@ pub fn chance_to_add_rust(
     let scale = tumbler_size/HEIGHT_OF_RUST_SPRITE;
 
     if random_chance{
+        //Adds a child with an animated Marker and TumblerRustComponent Marker
         tumbler_entity_commands.with_child(
             (
                     Sprite{

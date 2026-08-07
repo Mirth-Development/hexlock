@@ -21,6 +21,7 @@ const CHARGE_BAR_SPRITE_HEIGHT: f32 = 32.0;
 
 const CHARGE_LOADING_SPRITE_WIDTH: f32 = 17.0;
 
+///Insert all sprite resources for the charge bar into system
 pub fn load_game_controller_sprites(
 
     mut commands: Commands, asset_server: Res<AssetServer>
@@ -42,6 +43,7 @@ pub fn load_game_controller_sprites(
 
 }
 
+///Insert all resources responsible for game logic into system
 pub fn load_game_controller_resources(
 
     mut commands: Commands
@@ -67,6 +69,8 @@ pub fn load_game_controller_resources(
 }
 
 //Must spawn after Lockpick
+
+///Spawn the charge bar entity
 pub fn spawn_charge_bar (
     mut commands: Commands,
     game_resource_handles: Res<GameResourceHandles>,
@@ -91,6 +95,7 @@ pub fn spawn_charge_bar (
 
 }
 
+///System which spawns the number sprites and randomizes and assigns the tumbler set order
 pub fn spawn_lock_order (
     mut commands: Commands,
     mut random_seed: ResMut<RandomSeed>,
@@ -154,6 +159,7 @@ pub fn spawn_lock_order (
     }
 }
 
+///System which resets and releases tumblers that are set but out of order. Restricts tumbler progression to be in number order.
 pub fn check_tumbler_order(
     mut commands: Commands,
     set_tumbler_component: Query<(), With<SetTumblerComponent>>,
@@ -190,7 +196,7 @@ pub fn check_tumbler_order(
 
 }
 
-
+///System which handles the charge bar visual for the electric lockpick
 pub fn charge_charge_bar(
     //mut commands: Commands,
     mut charge_bar_query: Query<( &mut Transform,  &mut Visibility,), With<ChargeBarMarker>>,
@@ -208,6 +214,7 @@ pub fn charge_charge_bar(
     let Ok((mut charge_bar_transform, mut charge_loading_bar_visibility)) = charge_bar_query.single_mut() else {
         println!("No Charge Loading Sprite");
         return};
+    //Positional offset to center charge bar
     let charge_offset = vec3(-LOCKPICK_HEAD_OFFSET - CHARGE_BAR_SPRITE_WIDTH - 30.0, CHARGE_BAR_SPRITE_HEIGHT + 30.0, 100.0);
 
     let scale = (CHARGE_BAR_SPRITE_WIDTH/CHARGE_LOADING_SPRITE_WIDTH)*(lockpick_electric_charge.current_charge/lockpick_electric_charge.max_charge);
@@ -236,7 +243,7 @@ pub fn charge_charge_bar(
     charge_loading_bar_transform.scale.x = scale;
 }
 
-
+///System which takes player input minigame for the Magic Lockpick. On completion the lockpick moves upward.
 pub fn enter_arrow_code(
     mut commands: Commands,
     mut arrow_resource : ResMut<InputtedArrowCode>,
@@ -318,7 +325,7 @@ pub fn enter_arrow_code(
 
 
 //Message
-
+///System that runs each system iteration and checks if all the Tumblers are set or if the timer is out and then sends a GameStateMessage.
 pub fn check_game_state (
     //remove this and add in the Game timer
 
@@ -327,7 +334,7 @@ pub fn check_game_state (
     set_tumblers: Query<(), With<SetTumblerComponent>>
 
 ){
-    //REPLACE WITH THE GAME TIMER ASSET! The following timer doesnt tick
+    //REPLACE WITH THE GAME TIMER ASSET! The following timer doesnt tick *FIX THIS*
     let game_timer = Timer::from_seconds(1.0, Once);
 
 
@@ -340,6 +347,7 @@ pub fn check_game_state (
     }
 }
 
+///System which handles level progression on win or loss. Changes the state on receiving a GameStateMessage.
 pub fn handle_game_state(
     mut actions: MessageReader<GameStateMessage>,
     get_state: Res<State<Interfaces>>,
@@ -386,6 +394,8 @@ pub fn handle_game_state(
 }
 
 
+
+///Helper function to get the path for the image of the numbers 0-9 for the asset server.
 pub fn helper_get_number_handle (num: u32) -> String{
     if num > 9 {
         panic!("Should never go higher than 9 or lower than 0")

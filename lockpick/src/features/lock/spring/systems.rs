@@ -11,6 +11,8 @@ use crate::features::lock::resource::LockSpriteHandles;
 use crate::features::lock::spring::resources::SpringSize;
 
 pub const HEIGHT_OF_SPRING_SPRITE: f32= 440.0;
+///Function which stretches and squashes the spring between
+/// the top of the chamber and the tumbler.
 pub fn stretch_to_tumbler(
     tumbler_spring_pairings: Res<TumblerSpringPairings>,
     transforms: Query<&Transform, Without<SpringComponent>>,
@@ -41,7 +43,7 @@ pub fn stretch_to_tumbler(
     }
 }
 
-
+///Returns a randomized spring, colored to the type of spring.
 pub fn gen_random_spring(
     pos: u32,
     rng : &mut StdRng,

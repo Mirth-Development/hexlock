@@ -1,6 +1,7 @@
 use bevy::prelude::*;
 
 #[derive(Message)]
+///Contains all actions the lockpick can perform, including actions for different pick types.
 pub enum LockpickAction {
     Pick,
     Left,

@@ -29,7 +29,7 @@ const TUMBLER_SET_THRESHOLD: f32 = 10.0;
 const LOCK_START_OFFSET: f32 = -170.0;
 const LOCK_END_OFFSET: f32 = -80.0;
 
-//Load Resources
+///Loads images from asset server and attaches their handles to a resource used for the sprites.
 pub fn load_lock_sprite_resources(mut commands: Commands, asset_server: Res<AssetServer>) {
     //Sanity code
     println!("Loading LockSprites!");
@@ -54,6 +54,7 @@ pub fn load_lock_sprite_resources(mut commands: Commands, asset_server: Res<Asse
 }
 
 
+///Loads Game Resources for construction of the lockpick Game Object.
 pub fn load_lock_resources(
     mut commands: Commands,
 ) {
@@ -66,7 +67,7 @@ pub fn load_lock_resources(
 
 }
 
-//Spawn and Build Lock
+///Spawns and builds a Lock object of varying tumbler amount dynamically from parameters held in Resources
 pub fn spawn_lock(
     lock_sprite_handles: Res<LockSpriteHandles>,
     effects_sprite_handles: Res<EffectsSpriteHandles>,
@@ -170,7 +171,7 @@ pub fn spawn_lock(
                                 ..default()
                             },
                         ));
-
+                    //Get the entity commands from the id function
                     tumbler_entity_id = tumbler_entity_commands.id();
                 }
 
@@ -255,7 +256,7 @@ pub fn spawn_lock(
         lock_offset.offset = offset as u32;
 }
 
-
+///System which handles the setting action of the tumbler when the player hits space.
 pub fn handle_catching_tumblers(
     check_set: Query<(), With<SetTumblerComponent>>, //Call all set elements
     //mut tumbler_ordering: ResMut<TumblerOrdering>,
@@ -299,6 +300,7 @@ pub fn handle_catching_tumblers(
 }
 
 pub fn spawn_animatable_sprite_child(
+///Helper function which returns a Sprite bundle with an Animated component.
     tumbler_sprite: Handle<Image>,
     tumbler_color: Color,
 ) -> (Sprite, Animated, Transform, Visibility) {
@@ -319,6 +321,7 @@ pub fn spawn_animatable_sprite_child(
     )
 }
 
+///Helper function to get the pixel height of the tumbler based on its enum.
 pub fn tumbler_size_helper_function(tumbler: &TumblerComponent) -> f32{
     let height = match tumbler.size {
         TumblerSize::Small => HEIGHT_OF_SMALL_TUMBLER_SPRITE,

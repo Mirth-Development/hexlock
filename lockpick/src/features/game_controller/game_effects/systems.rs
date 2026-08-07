@@ -14,6 +14,7 @@ pub const HEIGHT_OF_RUST_SPRITE: f32 = 150.0;
 
 
 //Load Resources
+///Loads images from asset server and attaches their handles to a resource used for the effect sprites.
 pub fn load_effects_sprite_resources(mut commands: Commands, asset_server: Res<AssetServer>) {
     //Sanity code
     println!("Loading EffectSprites!");
@@ -43,6 +44,8 @@ pub fn load_effects_sprite_resources(mut commands: Commands, asset_server: Res<A
 //Triggers
 pub fn on_lightning_effect(
     zap: On<Zap>,
+///System which observes if a Zap Event occurs and spawns a temporary lightning entity between the pick and tumbler.
+//Handle as a message? Rework this system, and potentially merge it into the folder for the lockpick. *FIX THIS*
     mut commands: Commands,
     lockpick_electric_charge: Res<LockpickElectricCharge>,
     tumbler_component: Query<&GlobalTransform, With<FocusedTumblerComponent>>,
@@ -97,6 +100,8 @@ pub fn on_lightning_effect(
 }
 pub fn on_magic_effect(
     magic: On<Magic>,
+///System which observes if a Magic Event occurs and spawns a temporary magical entity between the pick and tumbler.
+//Handle as a message? Rework this system, and potentially merge it into the folder for the lockpick. *FIX THIS*
     mut commands: Commands,
     tumbler_component: Query<(&GlobalTransform, &TumblerComponent),With<FocusedTumblerComponent>>,
     effects_sprite_handles: Res<EffectsSpriteHandles>
@@ -145,6 +150,7 @@ pub fn on_magic_effect(
 
 //Tick Lifettime timers
 
+///System which ticks all EffectLifetimeTimers and then despawns them once finished.
 pub fn handle_lifetime_timers(
     mut commands: Commands,
     time: Res<Time>,
@@ -154,6 +160,7 @@ pub fn handle_lifetime_timers(
     for (timed_entity, mut lifetime_timer) in &mut timed_entity_query.iter_mut(){
         lifetime_timer.0.tick(time.delta());
         if lifetime_timer.0.just_finished(){
+            //This removes the object and its children
             commands.entity(timed_entity).despawn();
         }
     }
