@@ -1,4 +1,6 @@
 use std::time::Duration;
+use bevy::ecs::lifecycle::HookContext;
+use bevy::ecs::world::DeferredWorld;
 use bevy::prelude::*;
 
 
@@ -7,7 +9,14 @@ use bevy::prelude::*;
 
 
 #[derive(Component, Default)]
+#[component(on_add)]
 pub struct Animated;
+
+impl Animated {
+    fn on_add(world: DeferredWorld, context: HookContext){
+        println!("Added Animated Marker!")
+    }
+}
 
 
 #[derive(Component)]

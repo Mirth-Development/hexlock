@@ -30,6 +30,7 @@ pub fn tumbler_movement(
 
         let top = TOP_OF_CHAMBER;
         let bottom: f32;
+        //Need to handle this process with a variable
         let height = match tumbler.size {
             TumblerSize::Small =>{
                 bottom = TOP_OF_CHAMBER - (HEIGHT_OF_SMALL_TUMBLER_SPRITE / 2.0) - (HEIGHT_OF_SPRING_SPRITE / 2.0) - 105.0; //Add offset to get each equal to medium

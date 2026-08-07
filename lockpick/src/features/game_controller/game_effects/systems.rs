@@ -1,9 +1,8 @@
-use bevy::ecs::entity::Entities;
-use bevy::log::tracing::Instrument;
 use bevy::prelude::*;
+use bevy::ui_render::ui_texture_slice_pipeline::init_ui_texture_slice_pipeline;
 use crate::features::animation::components::{Animatable, Animated, AnimationFlip};
-use crate::features::game_controller::game_effects::components::{EffectKillMarker, EffectLifetimeTimer};
-use crate::features::game_controller::game_effects::events::{Magic, Zap};
+use crate::features::game_controller::game_effects::components::{ EffectLifetimeTimer};
+use crate::features::game_controller::game_effects::events::{EffectEvent, EffectList};
 use crate::features::game_controller::game_effects::resources::{EffectsSpriteHandles};
 use crate::features::lock::tumblers::components::{FocusedTumblerComponent, TumblerComponent};
 use crate::features::lockpick::resources::LockpickElectricCharge;
@@ -30,126 +29,111 @@ pub fn load_effects_sprite_resources(mut commands: Commands, asset_server: Res<A
     });
 }
 
-// pub fn load_effects_resources(mut commands: Commands) {
-//     //Sanity code
-//     println!("Loading EffectResources!");
-//     commands.insert_resource(LightningTimer(Timer::from_seconds(0.3, TimerMode::Once)));
-// }
 
+pub fn handle_game_effects(
+    effect_event: On<EffectEvent>,
+    mut commands: Commands,
+    effects_sprite_handles: Res<EffectsSpriteHandles>,
+) {
 
-//Process Effects
+    let event_data = effect_event.event();
 
+    match effect_event.effect_type {
+        EffectList::MagicalPick => {
+            on_magical_effect(commands, effects_sprite_handles, event_data);
+        }
+        EffectList::ElectricalPick { intensity: _ } => {
+            on_electrical_effect(commands, effects_sprite_handles, event_data);
+        }
+        EffectList::RustDustPick => {
+            //on_rust_effect();
+        }
+    }
 
+}
 
 //Triggers
-pub fn on_lightning_effect(
-    zap: On<Zap>,
 ///System which observes if a Zap Event occurs and spawns a temporary lightning entity between the pick and tumbler.
 //Handle as a message? Rework this system, and potentially merge it into the folder for the lockpick. *FIX THIS*
+pub fn on_electrical_effect(
     mut commands: Commands,
-    lockpick_electric_charge: Res<LockpickElectricCharge>,
-    tumbler_component: Query<&GlobalTransform, With<FocusedTumblerComponent>>,
-    effects_sprite_handles: Res<EffectsSpriteHandles>
+    effects_sprite_handles: Res<EffectsSpriteHandles>,
+    event: &EffectEvent,
 )
 {
-    //let Ok(lockpick_transform) = lockpick_component.single() else {panic!("No Lockpick!")};
-    let Ok(focused_tumbler_transform) = tumbler_component.single() else { panic!("No Focused Tumbler!") };
 
     println!("Spawn Lightning!");
-    //THERE IS A MIDPOINT FUNCTION DEAR FUCKING LORD
-    let midpoint = zap.top.midpoint(zap.bottom);
-
-
-    // let height = match focused_tumbler.size {
-    //     TumblerSize::Small => {
-    //         HEIGHT_OF_SMALL_TUMBLER_SPRITE
-    //     },
-    //     TumblerSize::Medium => {
-    //         HEIGHT_OF_MEDIUM_TUMBLER_SPRITE
-    //     },
-    //     TumblerSize::Large => {
-    //         HEIGHT_OF_LARGE_TUMBLER_SPRITE
-    //     }
-    // };
-    let top_y = zap.top;
-    let bottom_y = zap.bottom; //focused_tumbler_transform.translation().y + height / 2.0;
-    let gap = top_y - bottom_y; //TOP_OF_CHAMBER - bottom_y;
-    let pos = vec3(focused_tumbler_transform.translation().x, midpoint, 1.0);
-    let charge_intensity = lockpick_electric_charge.current_charge / lockpick_electric_charge.max_charge;
-
-
+    let midpoint = event.start.midpoint(event.end).extend(0.0);
+    let EffectList::ElectricalPick { intensity} = event.effect_type else { return };
+    let target_pos = event.end.trunc();
+    let start_pos = event.start.trunc();
+    let dir = target_pos - start_pos;
+    //println!("rotate {0}", );
+    let rotation = Quat::from_rotation_z(Vec2::Y.angle_to(dir));
+    println!("rotation {0}", rotation);
     commands.spawn((
         Sprite {
             image: effects_sprite_handles.lightning_effect.clone(),
-            color: Color::srgba(1.0, 1.0, 1.0, charge_intensity),
+            color: Color::srgba(1.0, 1.0, 1.0, intensity),
             ..default()
         },
         Animated,
-        AnimationFlip::new(0.3, pos, TimerMode::Once),
-        EffectLifetimeTimer(zap.life_timer.clone()), //Timer::from_seconds(0.4, TimerMode::Once)),
+        AnimationFlip::new(0.3, midpoint, TimerMode::Once),
+        EffectLifetimeTimer(event.life_timer.clone()), //Timer::from_seconds(0.4, TimerMode::Once)),
         Transform {
             //(bottom_y + gap / 2.0) = midpoint?
-            translation: pos,
+            translation: midpoint,
+            rotation,
             // y =
-            scale: vec3(1.0, gap / HEIGHT_OF_LIGHTNING_SPRITE, 1.0),
+            scale: vec3(1.0, (event.end.y-event.start.y) / HEIGHT_OF_LIGHTNING_SPRITE, 1.0),
             ..default()
         }
     )
     );
 
 }
-pub fn on_magic_effect(
-    magic: On<Magic>,
+
 ///System which observes if a Magic Event occurs and spawns a temporary magical entity between the pick and tumbler.
 //Handle as a message? Rework this system, and potentially merge it into the folder for the lockpick. *FIX THIS*
+pub fn on_magical_effect(
     mut commands: Commands,
-    tumbler_component: Query<(&GlobalTransform, &TumblerComponent),With<FocusedTumblerComponent>>,
-    effects_sprite_handles: Res<EffectsSpriteHandles>
+    effects_sprite_handles: Res<EffectsSpriteHandles>,
+    event: &EffectEvent,
 )
 {
-    //let Ok(lockpick_transform) = lockpick_component.single() else {panic!("No Lockpick!")};
-    let Ok((focused_tumbler_transform, focused_tumbler)) = tumbler_component.single() else {panic!("No Focused Tumbler!")};
-
-    println!("Spawn Magic!");
-    let midpoint = magic.top.midpoint(magic.bottom);
-
-    //let height = tumbler_size_helper_function(&focused_tumbler);
-
-    let top_y = magic.top;
-    let bottom_y = magic.bottom; //focused_tumbler_transform.translation().y + height / 2.0;
-    let gap = top_y - bottom_y;//TOP_OF_CHAMBER - bottom_y;
-    let pos = vec3(focused_tumbler_transform.translation().x, midpoint, 1.0 );
-
-
-    let mut entity_commands = commands.spawn((
+    println!("Spawn Lightning!");
+    let midpoint = event.start.midpoint(event.end).extend(0.0);
+    let target_pos = event.end.trunc();
+    let start_pos = event.start.trunc();
+    let dir = target_pos - start_pos;
+    //println!("rotate {0}", );
+    let rotation = Quat::from_rotation_z(Vec2::Y.angle_to(dir));
+    println!("rotation {0}", rotation);
+    commands.spawn((
         Sprite {
             image: effects_sprite_handles.magic_effect.clone(),
-            //color: Color::srgba(1.0, 1.0, 1.0, charge_intensity),
+            color: Color::srgba(1.0, 1.0, 1.0, 1.0),
             ..default()
         },
         Animated,
-        AnimationFlip::new(1.0, pos, TimerMode::Once),
-        EffectLifetimeTimer(magic.life_timer.clone()),//Timer::from_seconds(0.4, TimerMode::Once)),
-        Transform{
+        AnimationFlip::new(0.3, midpoint, TimerMode::Once),
+        EffectLifetimeTimer(event.life_timer.clone()), //Timer::from_seconds(0.4, TimerMode::Once)),
+        Transform {
             //(bottom_y + gap / 2.0) = midpoint?
-            translation: pos,
+            translation: midpoint,
+            rotation,
             // y =
-            scale: vec3(1.0, (gap / HEIGHT_OF_MAGIC_SPRITE), 1.0),
+            scale: vec3(1.0, (event.end.y-event.start.y) / HEIGHT_OF_MAGIC_SPRITE, 1.0),
             ..default()
         }
     )
-
-
     );
-    let entity = entity_commands.id();
-    entity_commands.insert(EffectKillMarker { 0: entity });
 
 }
 
 
 
 //Tick Lifettime timers
-
 ///System which ticks all EffectLifetimeTimers and then despawns them once finished.
 pub fn handle_lifetime_timers(
     mut commands: Commands,
@@ -162,16 +146,6 @@ pub fn handle_lifetime_timers(
         if lifetime_timer.0.just_finished(){
             //This removes the object and its children
             commands.entity(timed_entity).despawn();
-        }
-    }
-
-}
-
-pub fn helper_find_and_kill_marker(commands: &mut Commands, entities: &Query<(Entity, &mut EffectKillMarker)> , target_entity: Entity, ){
-    for (entity, marker) in entities{
-        if marker.0 == target_entity{
-            commands.entity(entity).despawn();
-            break;
         }
     }
 
