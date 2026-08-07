@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 use crate::features::animation::plugin::AnimationFeaturesPlugin;
-use crate::features::game_controller::game_effects::systems::{load_effects_sprite_resources, on_lightning_effect, on_magic_effect};
+use crate::features::game_controller::game_effects::systems::{load_effects_sprite_resources, handle_game_effects};
 use crate::features::game_controller::messages::GameStateMessage;
 use crate::features::game_controller::systems::{load_game_controller_resources, load_game_controller_sprites};
 use crate::features::lock::messages::CatchTumbler;
@@ -30,9 +30,8 @@ impl Plugin for LockpickFeaturesPlugin {
             load_effects_sprite_resources
         ).chain());
 
-        app.add_observer(on_lightning_effect);
+        app.add_observer(handle_game_effects);
         app.add_observer(on_break_rust);
-        app.add_observer(on_magic_effect);
         app.add_plugins(AnimationFeaturesPlugin);
         app.add_plugins(UserInterface{});
         app.add_message::<LockpickAction>();

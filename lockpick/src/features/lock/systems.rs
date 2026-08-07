@@ -1,24 +1,24 @@
 use bevy::prelude::*;
 use rand::RngExt;
-use super::components::{GameObjectAnchorMarker, LockComponent, TumblerChamberComponent};
+use super::components::{LockComponent, TumblerChamberComponent};
 use super::resource::{LockOffset, LockSpriteHandles, TumblerSpringPairings};
 use super::tumblers::components::{FocusedTumblerComponent, TumblerComponent, TumblerMagicComponent};
 use super::tumblers::resources::Directions;
 use super::super::game_controller::rust_randomizer::systems::chance_to_add_rust;
-use super::super::game_controller::resources::TumblerOrdering;
 use super::tumblers::components::{SetTumblerComponent};
 use crate::features::animation::components::{Animatable, Animated, AnimationShake};
 use crate::features::game_controller::tumbler_randomizer::systems::gen_random_tumbler;
 use crate::features::lock::messages::CatchTumbler;
 use crate::features::lock::spring::systems::{HEIGHT_OF_SPRING_SPRITE, gen_random_spring};
 use crate::features::lock::tumblers::messages::TumblerTimerMessage;
-use crate::features::lock::tumblers::resources::{TumblerSize, TumblerType};
+use crate::features::lock::tumblers::resources::*;
 use crate::features::lock::tumblers::systems::{
     HEIGHT_OF_LARGE_TUMBLER_SPRITE, HEIGHT_OF_MEDIUM_TUMBLER_SPRITE,
-    HEIGHT_OF_SMALL_TUMBLER_SPRITE, TUMBLER_DEFAULT_SET_TIME,
+    HEIGHT_OF_SMALL_TUMBLER_SPRITE,
 };
 use crate::features::rand::resources::RandomSeed;
 use crate::features::game_controller::game_effects::resources::EffectsSpriteHandles;
+use crate::features::game_controller::resources::NumberOfTumblers;
 
 //Hardcoded Sprite Sizes so that they don't have to be sought dynamically, async loading is a pain in the ass
 pub const TOP_OF_CHAMBER: f32 = 399.0;
@@ -70,18 +70,19 @@ pub fn load_lock_resources(
 ///Spawns and builds a Lock object of varying tumbler amount dynamically from parameters held in Resources
 pub fn spawn_lock(
     lock_sprite_handles: Res<LockSpriteHandles>,
+    tumbler_amount_resource: Res<NumberOfTumblers>,
     effects_sprite_handles: Res<EffectsSpriteHandles>,
     mut lock_offset: ResMut<LockOffset>,
     mut rng: ResMut<RandomSeed>,
     mut commands: Commands,
     mut tumbler_spring_pairings: ResMut<TumblerSpringPairings>,
-
+    tumbler_default_time: Res<TumblerTime>
 ) {
     //Sanity code
     println!("Building Locks");
     let mut offset: f32 = 0.0;
     //
-    let mut tumbler_set_timer = Timer::from_seconds(TUMBLER_DEFAULT_SET_TIME, TimerMode::Once);
+    let mut tumbler_set_timer = Timer::from_seconds(tumbler_default_time.set_time, TimerMode::Once);
     //Pause timer after creation
     tumbler_set_timer.pause();
 
@@ -89,7 +90,7 @@ pub fn spawn_lock(
     offset += (LOCK_START_SPRITE_WIDTH / 2.0) + 10.0; //Extra pixel gap
 
     let lock = LockComponent {
-        num_of_tumblers: 8, //Max amount for our purposes
+        num_of_tumblers: tumbler_amount_resource.number_of_tumblers, //Max amount for our purposes
         ..default()
     };
 
@@ -103,7 +104,7 @@ pub fn spawn_lock(
             //Start of Lock
             parent_node.spawn((
                 Sprite::from_image(lock_sprite_handles.start_sprite.clone()),
-                GameObjectAnchorMarker,
+                //GameObjectAnchorMarker,
                 Transform::from_xyz(offset, LOCK_START_OFFSET, 0.0),
                 Visibility::default(),
             ));
@@ -122,7 +123,7 @@ pub fn spawn_lock(
                 let mut tumbler_entity_commands: EntityCommands;
                 let tumbler_entity_id: Entity;
                 //Generate random tumbler attributes
-                let (mut tumbler, sprites) = gen_random_tumbler(
+                let (tumbler, sprites) = gen_random_tumbler(
                     x,
                     tumbler_set_timer.clone(),
                     &mut rng.random_number_generator,
@@ -143,7 +144,7 @@ pub fn spawn_lock(
                         .spawn((
                             // gen_random_tumbler(tumbler_translation,x, tumbler_set_timer.clone(), &mut rng.RandomNumberGenerator, &lock_sprite_handles,),
                             //Spawn sprite as a child with its own transform
-                            children![(spawn_animatable_sprite_child(
+                            children![(spawn_animatable_sprite_child_helper_function(
                                 sprites.0.clone(), //image
                                 sprites.1, //color
                             ),)],
@@ -160,7 +161,7 @@ pub fn spawn_lock(
                     tumbler_entity_commands = parent_node
                         .spawn((
                             //Spawn sprite as a child with its own transform
-                            children![(spawn_animatable_sprite_child(
+                            children![(spawn_animatable_sprite_child_helper_function(
                                 sprites.0.clone(),
                                 sprites.1,
                             ),)],
@@ -192,7 +193,7 @@ pub fn spawn_lock(
 
                 if tumbler.tumbler_type == TumblerType::Magic{
                     let mut magic_code: Vec<Directions> = Vec::new();
-                    for x in 0..=3 {
+                    for _ in 0..=3 {
                         let rand_dir = match rng.random_number_generator.random_range(0..4){
                             0 => {
                                 Directions::Left
@@ -299,8 +300,8 @@ pub fn handle_catching_tumblers(
     }
 }
 
-pub fn spawn_animatable_sprite_child(
 ///Helper function which returns a Sprite bundle with an Animated component.
+pub fn spawn_animatable_sprite_child_helper_function(
     tumbler_sprite: Handle<Image>,
     tumbler_color: Color,
 ) -> (Sprite, Animated, Transform, Visibility) {

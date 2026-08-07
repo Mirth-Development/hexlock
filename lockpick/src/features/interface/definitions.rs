@@ -1,7 +1,7 @@
 
 // Imports
 use bevy::prelude::*;
-use crate::features::lock::tumblers::resources::Directions;
+use crate::features::lock::tumblers::resources::{Directions, TumblerTime};
 
 // Plugin
 pub struct DefinitionsForUserInterface {}
@@ -13,6 +13,7 @@ impl Plugin for DefinitionsForUserInterface {
         app.register_type::<Interfaces>();
 
         // Resources
+        app.init_resource::<TumblerTime>();
         app.init_resource::<ButtonChain>();
         app.init_resource::<StateHistory>();
         app.init_resource::<InterfaceImages>();
@@ -61,6 +62,10 @@ pub struct ComboArrow {
     pub position: u32,
     pub code: Directions,
 }
+
+/// Using this as a way to mark the elements of the combo panel (not the arrows).
+#[derive(Component, Reflect)]
+pub struct ComboPanel;
 
 #[derive(Component, Reflect, PartialEq)]
 #[reflect(Component)]
@@ -188,8 +193,8 @@ impl FromWorld for InterfaceImages {
             arrow_down:             asset_server.load("images/Direction_Down.png"),
             arrow_left:             asset_server.load("images/Direction_Left.png"),
             arrow_right:            asset_server.load("images/Direction_Right.png"),
-            card_increase_time:     asset_server.load("images/Direction_Left.png"),
-            card_increase_set_time: asset_server.load("images/Direction_Right.png"),
+            card_increase_time:     asset_server.load("images/Card_IT.png"),
+            card_increase_set_time: asset_server.load("images/Card_IST.png"),
             button:                 asset_server.load("images/Button.png"),
         }
     }

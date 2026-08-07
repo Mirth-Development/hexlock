@@ -10,7 +10,8 @@ use crate::features::lock::spring::systems::*;
 use crate::features::controls::systems::*;
 use crate::features::game_controller::components::{ChargeBarMarker};
 use crate::features::game_controller::game_effects::systems::handle_lifetime_timers;
-use crate::features::game_controller::systems::{charge_charge_bar, check_game_state, check_tumbler_order, enter_arrow_code, handle_game_state, spawn_charge_bar, spawn_lock_order};
+use crate::features::game_controller::game_timer::definitions::TheTimer;
+use crate::features::game_controller::systems::{charge_charge_bar, check_game_state, check_tumbler_order, enter_arrow_code, handle_game_state, handle_lose_game, increase_tumbler_amount_per_level, spawn_charge_bar, spawn_lock_order};
 
 
 
@@ -24,20 +25,17 @@ impl Plugin for SystemsForUserInterfaceStates {
         app.add_systems(OnEnter(Interfaces::Level1), (setup_level_1, load_lock_resources, spawn_lock, spawn_lockpick, spawn_charge_bar,spawn_lock_order).chain());
         app.add_systems(OnExit(Interfaces::Level1), (record_level_1_exit, cleanup_entities).chain());
 
-        app.add_systems(OnEnter(Interfaces::Level2), (setup_level_2, load_lock_resources, spawn_lock, spawn_lockpick, spawn_charge_bar,spawn_lock_order).chain());
+        app.add_systems(OnEnter(Interfaces::Level2), (setup_level_2, load_lock_resources, increase_tumbler_amount_per_level.run_if(run_once), spawn_lock, spawn_lockpick, spawn_charge_bar,spawn_lock_order).chain());
         app.add_systems(OnExit(Interfaces::Level2), (record_level_2_exit, cleanup_entities).chain());
 
-        app.add_systems(OnEnter(Interfaces::Level3), (setup_level_3, load_lock_resources, spawn_lock, spawn_lockpick, spawn_charge_bar,spawn_lock_order).chain());
+        app.add_systems(OnEnter(Interfaces::Level3), (setup_level_3, load_lock_resources, increase_tumbler_amount_per_level.run_if(run_once), spawn_lock, spawn_lockpick, spawn_charge_bar,spawn_lock_order).chain());
         app.add_systems(OnExit(Interfaces::Level3), (record_level_3_exit, cleanup_entities).chain());
 
-        app.add_systems(OnEnter(Interfaces::Level4), (setup_level_4, load_lock_resources, spawn_lock, spawn_lockpick, spawn_charge_bar,spawn_lock_order).chain());
+        app.add_systems(OnEnter(Interfaces::Level4), (setup_level_4, load_lock_resources, increase_tumbler_amount_per_level.run_if(run_once), spawn_lock, spawn_lockpick, spawn_charge_bar,spawn_lock_order).chain());
         app.add_systems(OnExit(Interfaces::Level4), (record_level_4_exit, cleanup_entities).chain());
 
-        app.add_systems(OnEnter(Interfaces::Level5), (setup_level_5, load_lock_resources, spawn_lock, spawn_lockpick, spawn_charge_bar,spawn_lock_order).chain());
+        app.add_systems(OnEnter(Interfaces::Level5), (setup_level_5, load_lock_resources, increase_tumbler_amount_per_level.run_if(run_once), spawn_lock, spawn_lockpick, spawn_charge_bar,spawn_lock_order).chain());
         app.add_systems(OnExit(Interfaces::Level5), (record_level_5_exit, cleanup_entities).chain());
-
-        app.add_systems(OnEnter(Interfaces::Cards), setup_cards);
-        app.add_systems(OnExit(Interfaces::Cards), (record_cards_exit, cleanup_entities).chain());
 
         app.add_systems(OnEnter(Interfaces::Won), setup_won);
         app.add_systems(OnExit(Interfaces::Won), (record_won_exit, cleanup_entities).chain());
@@ -62,6 +60,7 @@ impl Plugin for SystemsForUserInterfaceStates {
             handle_game_state,
             handle_lockpick_charge,
             handle_lifetime_timers,
+            handle_lose_game
         ).chain().run_if(in_level_state)
         );
     }
@@ -169,15 +168,7 @@ fn setup_level_1(
     spawn_countdown(&mut commands, &asset_server, window, &images);
 
     // Spawning title related visuals and buttons.
-    spawn_level_title(
-        &mut commands,
-        &asset_server,
-        window,
-        &images,
-        "LEVEL 1",
-        Some(Buttons::GoToLevel1),
-        Some(Buttons::GoToLevel2)
-    );
+    spawn_level_title(&mut commands, &asset_server, window, "LEVEL 1");
 
     Ok(())
 }
@@ -187,9 +178,13 @@ fn setup_level_2(
     asset_server: Res<AssetServer>,
     window_query: Query<&Window>,
     images: Res<InterfaceImages>,
+    mut game_timer: ResMut<TheTimer>,
 ) -> Result<()> {
 
     let window = window_query.single()?;
+
+    // Spawning card visuals.
+    spawn_cards(&mut commands, &asset_server, window, &images, &mut game_timer);
 
     // Spawning background visual.
     spawn_background(&mut commands, window, Some(&images.background_level));
@@ -198,15 +193,7 @@ fn setup_level_2(
     spawn_countdown(&mut commands, &asset_server, window, &images);
 
     // Spawning title related visuals and buttons.
-    spawn_level_title(
-        &mut commands,
-        &asset_server,
-        window,
-        &images,
-        "LEVEL 2",
-        Some(Buttons::GoToLevel1),
-        Some(Buttons::GoToLevel3)
-    );
+    spawn_level_title(&mut commands, &asset_server, window, "LEVEL 2");
 
     Ok(())
 }
@@ -216,9 +203,13 @@ fn setup_level_3(
     asset_server: Res<AssetServer>,
     window_query: Query<&Window>,
     images: Res<InterfaceImages>,
+    mut game_timer: ResMut<TheTimer>,
 ) -> Result<()> {
 
     let window = window_query.single()?;
+
+    // Spawning card visuals.
+    spawn_cards(&mut commands, &asset_server, window, &images, &mut game_timer);
 
     // Spawning background visual.
     spawn_background(&mut commands, window, Some(&images.background_level));
@@ -227,15 +218,7 @@ fn setup_level_3(
     spawn_countdown(&mut commands, &asset_server, window, &images);
 
     // Spawning title related visuals and buttons.
-    spawn_level_title(
-        &mut commands,
-        &asset_server,
-        window,
-        &images,
-        "LEVEL 3",
-        Some(Buttons::GoToLevel2),
-        Some(Buttons::GoToLevel4)
-    );
+    spawn_level_title(&mut commands, &asset_server, window, "LEVEL 3");
 
     Ok(())
 }
@@ -245,9 +228,13 @@ fn setup_level_4(
     asset_server: Res<AssetServer>,
     window_query: Query<&Window>,
     images: Res<InterfaceImages>,
+    mut game_timer: ResMut<TheTimer>,
 ) -> Result<()> {
 
     let window = window_query.single()?;
+
+    // Spawning card visuals.
+    spawn_cards(&mut commands, &asset_server, window, &images, &mut game_timer);
 
     // Spawning background visual.
     spawn_background(&mut commands, window, Some(&images.background_level));
@@ -256,15 +243,7 @@ fn setup_level_4(
     spawn_countdown(&mut commands, &asset_server, window, &images);
 
     // Spawning title related visuals and buttons.
-    spawn_level_title(
-        &mut commands,
-        &asset_server,
-        window,
-        &images,
-        "LEVEL 4",
-        Some(Buttons::GoToLevel3),
-        Some(Buttons::GoToLevel5)
-    );
+    spawn_level_title(&mut commands, &asset_server, window, "LEVEL 4");
 
     Ok(())
 }
@@ -274,9 +253,13 @@ fn setup_level_5(
     asset_server: Res<AssetServer>,
     window_query: Query<&Window>,
     images: Res<InterfaceImages>,
+    mut game_timer: ResMut<TheTimer>,
 ) -> Result<()> {
 
     let window = window_query.single()?;
+
+    // Spawning card visuals.
+    spawn_cards(&mut commands, &asset_server, window, &images, &mut game_timer);
 
     // Spawning background visual.
     spawn_background(&mut commands, window, Some(&images.background_level));
@@ -285,29 +268,7 @@ fn setup_level_5(
     spawn_countdown(&mut commands, &asset_server, window, &images);
 
     // Spawning title related visuals and buttons.
-    spawn_level_title(
-        &mut commands,
-        &asset_server,
-        window,
-        &images,
-        "LEVEL 5",
-        Some(Buttons::GoToLevel4),
-        Some(Buttons::GoToLevel5)
-    );
-
-    Ok(())
-}
-
-fn setup_cards(
-    mut commands: Commands,
-    asset_server: Res<AssetServer>,
-    window_query: Query<&Window>,
-    images: Res<InterfaceImages>
-) -> Result<()> {
-
-    let window = window_query.single()?;
-
-    spawn_cards(&mut commands, &asset_server, window, &images);
+    spawn_level_title(&mut commands, &asset_server, window, "LEVEL 5");
 
     Ok(())
 }
@@ -379,7 +340,6 @@ fn record_level_2_exit(mut history: ResMut<StateHistory>) { history.push(Interfa
 fn record_level_3_exit(mut history: ResMut<StateHistory>) { history.push(Interfaces::Level3); }
 fn record_level_4_exit(mut history: ResMut<StateHistory>) { history.push(Interfaces::Level4); }
 fn record_level_5_exit(mut history: ResMut<StateHistory>) { history.push(Interfaces::Level5); }
-fn record_cards_exit(mut history: ResMut<StateHistory>) { history.push(Interfaces::Cards); }
 fn record_lost_exit(mut history: ResMut<StateHistory>) { history.push(Interfaces::Lost); }
 fn record_won_exit(mut history: ResMut<StateHistory>) { history.push(Interfaces::Won); }
 

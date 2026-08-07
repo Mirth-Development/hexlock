@@ -3,8 +3,9 @@ use bevy::prelude::*;
 #[derive(Component)]
 pub struct TumblerChamberComponent;
 
-#[derive(Component)]
-pub struct GameObjectAnchorMarker;
+//Unused
+// #[derive(Component)]
+// pub struct GameObjectAnchorMarker;
 
 #[derive(Component, Clone, Copy)]
 pub struct LockComponent {

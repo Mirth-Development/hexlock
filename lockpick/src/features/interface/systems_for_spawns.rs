@@ -1,4 +1,3 @@
-
 use bevy::prelude::*;
 use bevy::window::WindowResized;
 use crate::features::interface::definitions::*;
@@ -7,6 +6,9 @@ use crate::features::game_controller::resources::InputtedArrowCode;
 use crate::features::interface::systems_for_states::*;
 use crate::features::lock::tumblers::components::*;
 use crate::features::lock::tumblers::resources::*;
+
+const TIME_TO_ADD_TO_CLOCK: f32 = 10.0;
+const TIME_TO_ADD_TO_SET_TUMBLERS: f32 = 2.0;
 
 pub struct SystemsForUserInterfaceSpawns {}
 impl Plugin for SystemsForUserInterfaceSpawns {
@@ -97,10 +99,14 @@ pub fn spawn_ui_element(
                 Visibility::default(),
                 Text::new(text_spawn.content),
                 TextColor(text_spawn.color),
-                TextLayout::new_with_justify(Justify::Center),
+                //Bevy 0.19 Changes
+                TextLayout {
+                    justify: Justify::Center,
+                    ..default()
+                },
                 TextFont {
-                    font: asset_server.load(text_spawn.font_path),
-                    font_size: window.width() * text_spawn.font_size_scale,
+                    font: asset_server.load(text_spawn.font_path).into(), //Bevy 0.19 change
+                    font_size: FontSize::Px(window.width() * text_spawn.font_size_scale),
                     ..default()
                 },
                 text_spawn,
@@ -231,10 +237,7 @@ pub fn spawn_level_title(
     commands: &mut Commands,
     asset_server: &AssetServer,
     window: &Window,
-    images: &InterfaceImages,
     title_text: &'static str,
-    previous_level: Option<Buttons>,
-    next_level: Option<Buttons>,
 )
 {
     // Label for Level #
@@ -252,44 +255,6 @@ pub fn spawn_level_title(
             content: title_text,
             font_path: "fonts/Cinzel_Decorative.ttf",
             font_size_scale: 0.055,
-            color: Color::WHITE,
-        })
-    );
-
-    // Button for Previous Level
-    spawn_ui_element(
-        commands, &asset_server, window,
-        previous_level,
-        None,
-        None,
-        None,
-        Some(&images.button),
-        Vec3::new(16.0, 5.0, 2.0),
-        10.0,
-        Some(1115.0 / 200.0),
-        Some(TextSpawn {
-            content: "Previous",
-            font_path: "fonts/Spectral.ttf",
-            font_size_scale: 0.01,
-            color: Color::WHITE,
-        })
-    );
-
-    // Button for Next Level
-    spawn_ui_element(
-        commands, &asset_server, window,
-        next_level,
-        None,
-        None,
-        None,
-        Some(&images.button),
-        Vec3::new(27.0, 5.0, 2.0),
-        10.0,
-        Some(1115.0 / 200.0),
-        Some(TextSpawn {
-            content: "Next",
-            font_path: "fonts/Spectral.ttf",
-            font_size_scale: 0.01,
             color: Color::WHITE,
         })
     );
@@ -312,8 +277,8 @@ pub fn spawn_countdown(
         None,
         None,
         Some(&images.background_panel),
-        Vec3::new(89.0, 10.0, 3.0),
-        20.0,
+        Vec3::new(90.0, 10.0, 3.0),
+        15.0,
         Some(500.0 / 230.0),
         None
     );
@@ -328,13 +293,13 @@ pub fn spawn_countdown(
         None,
         None,
         None,
-        Vec3::new(89.0, 6.0, 4.0),
+        Vec3::new(90.0, 6.0, 4.0),
         15.0,
         Some(100.0 / 20.0),
         Some(TextSpawn {
             content: "Time Until You Lose",
             font_path: "fonts/Cinzel_Decorative.ttf",
-            font_size_scale: 0.01,
+            font_size_scale: 0.0075,
             color: Color::WHITE,
         })
     );
@@ -389,8 +354,8 @@ pub fn spawn_countdown_digits(
         None,
         None,
         Some(digit_images[hundreds]),
-        Vec3::new(86.0, 12.0, 4.0),
-        2.5,
+        Vec3::new(87.0, 11.0, 4.0),
+        2.25,
         Some(85.0 / 135.0),
         None
     );
@@ -405,8 +370,8 @@ pub fn spawn_countdown_digits(
         None,
         None,
         Some(digit_images[tens]),
-        Vec3::new(89.0, 12.0, 4.0),
-        2.5,
+        Vec3::new(90.0, 11.0, 4.0),
+        2.25,
         Some(85.0 / 135.0),
         None
     );
@@ -421,8 +386,8 @@ pub fn spawn_countdown_digits(
         None,
         None,
         Some(digit_images[ones]),
-        Vec3::new(92.0, 12.0, 4.0),
-        2.5,
+        Vec3::new(93.0, 11.0, 4.0),
+        2.25,
         Some(85.0 / 135.0),
         None
     );
@@ -441,8 +406,49 @@ pub fn spawn_cards(
     asset_server: &AssetServer,
     window: &Window,
     images: &InterfaceImages,
+    timer: &mut TheTimer,
 )
 {
+    // Cards have spawned, hence we pause timer for buff selection.
+    timer.chronolog.pause();
+
+    // Container
+    spawn_ui_element(
+        commands,
+        asset_server,
+        window,
+        None,
+        Some(Containers::Card),
+        None,
+        None,
+        Some(&images.background_panel),
+        Vec3::new(50.0, 50.0, 5.0),
+        80.0,
+        Some(530.0 / 330.0),
+        None
+    );
+
+    // Label
+    spawn_ui_element(
+        commands,
+        asset_server,
+        window,
+        None,
+        Some(Containers::Card),
+        Some(Labels::Card),
+        None,
+        None,
+        Vec3::new(50.0, 20.0, 6.0),
+        50.0,
+        Some(200.0 / 20.0),
+        Some(TextSpawn {
+            content: "Click a Card",
+            font_path: "fonts/Cinzel_Decorative.ttf",
+            font_size_scale: 0.03,
+            color: Color::WHITE,
+        })
+    );
+
     // Card for Timer Increase
     {
         // Container
@@ -455,8 +461,8 @@ pub fn spawn_cards(
             None,
             None,
             Some(&images.card_increase_time),
-            Vec3::new(35.0, 50.0, 3.0),
-            25.0,
+            Vec3::new(35.0, 55.0, 6.0),
+            20.0,
             Some(560.0 / 920.0),
             None
         );
@@ -471,7 +477,7 @@ pub fn spawn_cards(
             Some(Labels::Card),
             None,
             None,
-            Vec3::new(35.25, 50.0, 4.0),
+            Vec3::new(35.25, 55.0, 7.0),
             20.0,
             Some(100.0 / 20.0),
             Some(TextSpawn {
@@ -492,11 +498,11 @@ pub fn spawn_cards(
             Some(Labels::Card),
             None,
             None,
-            Vec3::new(35.25, 57.0, 4.0),
-            20.0,
-            Some(100.0 / 20.0),
+            Vec3::new(35.25, 63.0, 7.0),
+            15.0,
+            Some(80.0 / 20.0),
             Some(TextSpawn {
-                content: "Clicking this card will add X amount of seconds to your timer.",
+                content: format!("Clicking this card will add {} seconds to your timer.", TIME_TO_ADD_TO_CLOCK).leak(), // Probably shouldn't be using leak on this, but I need it to work with my crappy spawn_ui_element function (definitely gotta improve the spawn_ui_element after the jam.)
                 font_path: "fonts/Spectral.ttf",
                 font_size_scale: 0.01,
                 color: Color::WHITE,
@@ -516,8 +522,8 @@ pub fn spawn_cards(
             None,
             None,
             Some(&images.card_increase_set_time),
-            Vec3::new(65.0, 50.0, 3.0),
-            25.0,
+            Vec3::new(65.0, 55.0, 6.0),
+            20.0,
             Some(560.0 / 920.0),
             None
         );
@@ -532,7 +538,7 @@ pub fn spawn_cards(
             Some(Labels::Card),
             None,
             None,
-            Vec3::new(65.25, 50.0, 4.0),
+            Vec3::new(65.25, 55.0, 7.0),
             20.0,
             Some(100.0 / 20.0),
             Some(TextSpawn {
@@ -553,11 +559,11 @@ pub fn spawn_cards(
             Some(Labels::Card),
             None,
             None,
-            Vec3::new(65.25, 59.0, 4.0),
-            20.0,
-            Some(100.0 / 20.0),
+            Vec3::new(65.25, 65.0, 7.0),
+            15.0,
+            Some(80.0 / 20.0),
             Some(TextSpawn {
-                content: "Clicking this card will add X amount of seconds to how long your tumblers stay in the set position.",
+                content: format!("Clicking this card will add {} seconds to how long your tumblers stay in the set position.", TIME_TO_ADD_TO_SET_TUMBLERS).leak(),  // Probably shouldn't be using leak on this, but I need it to work with my crappy spawn_ui_element function (definitely gotta improve the spawn_ui_element after the jam.)
                 font_path: "fonts/Spectral.ttf",
                 font_size_scale: 0.01,
                 color: Color::WHITE,
@@ -569,9 +575,9 @@ pub fn spawn_cards(
 pub fn spawn_combo(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
-    mut inputted_arrow_code: ResMut<InputtedArrowCode>,
+    inputted_arrow_code: ResMut<InputtedArrowCode>,
     window_query: Query<&Window>,
-    tumbler_query: Query<(Entity, &TumblerMagicComponent),( With<FocusedTumblerComponent>)>,
+    tumbler_query: Query<(Entity, &TumblerMagicComponent), With<FocusedTumblerComponent>>,
     images: Res<InterfaceImages>,
 ) -> Result<()>
 {
@@ -584,7 +590,7 @@ pub fn spawn_combo(
     // for each and every frame.  I kind of doubt that's the problem, but I can't think of anything else.
     let Ok(window) = window_query.single()
     else { return Ok(()); };
-    let Ok((entity, tumbler)) = tumbler_query.single()
+    let Ok((_entity, tumbler)) = tumbler_query.single()
     else { return Ok(()); };
 
     // Creating a list of 4 images off of the queried tumbler's arrow codes.
@@ -709,8 +715,8 @@ pub fn spawn_combo(
     );
 
     // Marking combo UI so that they can be deleted by their despawner.
-    // commands.entity(container).insert(ComboArrow);
-    // commands.entity(label).insert(ComboArrow);
+    commands.entity(container).insert(ComboPanel);
+    commands.entity(label).insert(ComboPanel);
     commands.entity(arrow_1).insert(ComboArrow{position: 1, code: tumbler.arrow_code[0]});
     commands.entity(arrow_2).insert(ComboArrow{position: 2, code: tumbler.arrow_code[1]});
     commands.entity(arrow_3).insert(ComboArrow{position: 3, code: tumbler.arrow_code[2]});
@@ -723,9 +729,14 @@ pub fn spawn_combo(
 pub fn despawn_combo(
     mut commands: Commands,
     arrow_query: Query<Entity, With<ComboArrow>>,
+    panel_query: Query<Entity, With<ComboPanel>>,
 ) {
     for arrow in arrow_query.iter() {
         commands.entity(arrow).despawn();
+    }
+
+    for panel in panel_query.iter() {
+        commands.entity(panel).despawn();
     }
 }
 
@@ -754,6 +765,7 @@ pub fn despawn_container(
         }
     }
 }
+
 
 /// This will resize text to always be relative to a text's set scaling factor and the
 /// window's current width.  I say "current" since this system is running every frame but its
@@ -785,12 +797,13 @@ pub fn resize(
 
         // Resize all text.
         for (mut text_font, text_spawn) in text_query.iter_mut() {
-            text_font.font_size = window.width() * text_spawn.font_size_scale;
+            text_font.font_size = FontSize::Px(window.width() * text_spawn.font_size_scale);
         }
     }
 
     Ok(())
 }
+
 
 pub fn resize_background(
     window_query: Query<&Window>,
@@ -802,7 +815,7 @@ pub fn resize_background(
         let Ok(window) = window_query.single()
         else { return; };
 
-        let aspect_ratio = window.width() / window.height();
+        let aspect_ratio: f32 = window.width() / window.height();
         let world_height = 1080.0 * 1.3;
         let world_width = world_height * aspect_ratio;
 
@@ -827,10 +840,11 @@ pub fn handle_button_interactions(
     mut state_history: ResMut<StateHistory>,
     mut app_exit: MessageWriter<AppExit>,
     mut the_timer: ResMut<TheTimer>,
+    mut tumbler_time: ResMut<TumblerTime>,
 ) -> Result<()>
 {
     for (interaction, button) in interaction_query.iter() {
-        println!("Button clicked: {:?}", button);
+
         if *interaction == Interaction::Pressed {
 
             match (button_chain.as_slice(), button) {
@@ -869,7 +883,37 @@ pub fn handle_button_interactions(
                     button_chain.clear();
                     next_state.set(Interfaces::Level1);
                     the_timer.chronolog.reset();
-                    the_timer.chronolog.start_value = Some(111.0);
+                },
+
+                (_, Buttons::CardTimerIncrease) => {
+                    button_chain.clear();
+
+                    // Deleting cards.
+                    for (entity, container) in container_query.iter() {
+                        if *container == Containers::Card {
+                            commands.entity(entity).despawn();
+                        }
+                    }
+
+                    the_timer.chronolog.add_to_countdown(TIME_TO_ADD_TO_CLOCK);
+
+                    the_timer.chronolog.unpause();
+                },
+
+                (_, Buttons::CardSetTimeIncrease) => {
+                    button_chain.clear();
+
+                    // Deleting cards.
+                    for (entity, container) in container_query.iter() {
+                        if *container == Containers::Card {
+                            commands.entity(entity).despawn();
+                        }
+                    }
+
+                    tumbler_time.set_time += TIME_TO_ADD_TO_SET_TUMBLERS;
+
+                    println!("tumbler time: {}", tumbler_time.set_time);
+                    the_timer.chronolog.unpause();
                 },
 
                 (_, Buttons::GoToLevel1) => {
