@@ -2,7 +2,7 @@ name: 'Check for missing Due Dates'
 
 on:
   schedule:
-    - cron: '06 21 * * *'
+    - cron: '11 20 * * *'
 
 jobs:
   reminder:
