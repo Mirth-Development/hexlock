@@ -2,7 +2,7 @@ name: 'Check for missing Due Dates'
 
 on:
   schedule:
-  - cron: '29 21 * * *'
+  - cron: '45 21 * * *'
     timezone: 'Europe/London'
 jobs:
   reminder:
