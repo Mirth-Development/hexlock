@@ -2,7 +2,7 @@ name: 'Check for missing Due Dates'
 
 on:
   schedule:
-    - cron: '36 20 * * *'
+    - cron: '06 21 * * *'
 
 jobs:
   reminder:
@@ -11,7 +11,7 @@ jobs:
       - name: Check for missing due dates and write a comment
         uses: petrandr/duedate_reminders@latest
         with:
-          gh_token: ${{ secrets.GITHUB_TOKEN }}
+          gh_token: ${{ secrets.DUE_DATE_TOKEN }}
           project_number: 2
           notify_for: "missing_duedate"
           duedate_field_name: "Due Date"
